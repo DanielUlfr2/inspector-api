@@ -1,0 +1,109 @@
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-content {
+  background: rgba(255,255,255,0.78);
+  border-radius: 24px;
+  width: 90%;
+  max-width: 500px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow-y: auto;
+  max-height: 90vh;
+  color: #003DA5;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  animation: fadeInScale 0.3s ease forwards;
+}
+
+.modal-header {
+  background: linear-gradient(to right, #003DA5, #009DFF);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 1rem 1.2rem;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 56px;
+}
+
+.modal-header h2 {
+  font-size: 1.2rem;
+  margin: 0;
+  color: #fff !important;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: white;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 2px 8px;
+  transition: background 0.18s;
+}
+.modal-close:hover {
+  background: rgba(0,0,0,0.08);
+}
+
+.modal-body {
+  margin-top: 10px;
+  flex: 1;
+  overflow-y: auto;
+  color: #003DA5;
+  font-size: 1rem;
+}
+
+.modal-content, .modal-body, .modal-header, .modal-close, input, label {
+  color: #111 !important;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 98vw;
+    max-width: 99vw;
+    max-height: 92vh;
+    border-radius: 14px;
+    padding: 0.5rem;
+  }
+  .modal-header {
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    padding: 0.8rem 0.7rem;
+    min-height: 44px;
+  }
+  .modal-header h2 {
+    font-size: 1rem;
+  }
+  .modal-body {
+    font-size: 0.97rem;
+  }
+}
+  

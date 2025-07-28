@@ -1,0 +1,69 @@
+{
+  "testConfig": {
+    "baseUrl": "http://localhost:5173",
+    "timeout": 5000,
+    "retries": 3,
+    "users": {
+      "admin": {
+        "username": "DaniB",
+        "password": "wolfyago9246",
+        "role": "admin"
+      },
+      "user": {
+        "username": "user",
+        "password": "user123",
+        "role": "user"
+      }
+    },
+    "selectors": {
+      "login": {
+        "usernameInput": "input[name='username']",
+        "passwordInput": "input[type='password']",
+        "submitButton": "button[type='submit']"
+      },
+      "dashboard": {
+        "container": ".dashboard",
+        "table": ".record-table",
+        "searchInput": "input[placeholder*='buscar']",
+        "pagination": ".pagination"
+      },
+      "table": {
+        "rows": "tbody tr",
+        "editButton": ".btn-edit",
+        "deleteButton": ".btn-delete",
+        "checkbox": "input[type='checkbox']"
+      },
+      "modals": {
+        "createButton": ".btn-create",
+        "modalContainer": ".modal",
+        "closeButton": ".modal-close"
+      },
+      "userMenu": {
+        "avatar": ".user-avatar",
+        "menu": ".user-menu",
+        "logoutButton": ".logout-button"
+      }
+    },
+    "testData": {
+      "newRecord": {
+        "inspector": "Test Inspector",
+        "fecha": "2024-01-15",
+        "tipo_cambio": "Mejora",
+        "descripcion": "Prueba de creación"
+      },
+      "searchTerms": [
+        "test",
+        "inspector",
+        "2024",
+        "mejora"
+      ]
+    },
+    "responsive": {
+      "breakpoints": {
+        "mobile": 768,
+        "tablet": 1024,
+        "desktop": 1200
+      }
+    }
+  }
+} 

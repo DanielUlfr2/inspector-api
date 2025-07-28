@@ -1,0 +1,92 @@
+# Archivos y directorios a excluir del contexto de Docker
+# Autor: Daniel Bermúdez
+# Versión: 1.0.0
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Archivos de configuración local
+.env
+.env.local
+.env.production
+
+# Archivos de test
+tests/
+test_*.py
+*_test.py
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Archivos de Git
+.git/
+.gitignore
+
+# Archivos de Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Archivos de documentación
+*.md
+docs/
+
+# Archivos temporales
+*.tmp
+*.temp
+.cache/
+
+# Archivos de base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de migración (se copian manualmente)
+alembic/versions/*.py
+!alembic/versions/__init__.py
+
+# Archivos de configuración de desarrollo
+pytest.ini
+setup.py
+setup.cfg 

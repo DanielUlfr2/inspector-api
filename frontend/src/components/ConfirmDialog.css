@@ -1,0 +1,124 @@
+
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.confirm-box {
+  animation: fadeInScale 0.3s ease forwards;
+  background: rgba(255,255,255,0.78);
+  padding: 1.5rem;
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  width: 320px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.confirm-header {
+  background: linear-gradient(to right, #003DA5, #009DFF);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 1rem 1.2rem;
+  color: #fff !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: -1.5rem -1.5rem 1.2rem -1.5rem;
+}
+
+.confirm-buttons {
+  margin-top: 1.2rem;
+  display: flex;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.confirm-yes {
+  background: linear-gradient(90deg, #003DA5 0%, #009DFF 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,61,165,0.10);
+}
+
+.confirm-yes:hover {
+  background: linear-gradient(90deg, #009DFF 0%, #003DA5 100%);
+  color: #ffe600;
+}
+
+.confirm-no {
+  background: rgba(0,61,165,0.13);
+  color: #003DA5;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0,61,165,0.10);
+}
+
+.confirm-no:hover {
+  background: #009DFF;
+  color: #fff;
+}
+
+.confirm-box, .confirm-header, .confirm-yes, .confirm-no {
+  color: #111 !important;
+}
+
+@media (max-width: 768px) {
+  .confirm-box {
+    width: 98vw;
+    max-width: 99vw;
+    max-height: 92vh;
+    border-radius: 14px;
+    padding: 0.5rem;
+  }
+  .confirm-header {
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    padding: 0.8rem 0.7rem;
+    font-size: 1rem;
+    margin: -0.5rem -0.5rem 1rem -0.5rem;
+  }
+  .confirm-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .confirm-yes, .confirm-no {
+    width: 100%;
+  }
+}
+  

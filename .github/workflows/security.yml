@@ -1,0 +1,173 @@
+# GitHub Actions Security Workflow para Inspector API
+# Autor: Daniel Bermúdez
+# Versión: 1.0.0
+# Descripción: Análisis de seguridad automatizado
+
+name: Security Analysis
+
+on:
+  schedule:
+    # Ejecutar diariamente a las 2:00 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  # Análisis de dependencias
+  dependency-check:
+    name: Análisis de Dependencias
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Análisis de vulnerabilidades con safety
+      run: |
+        safety check --json --output safety-report.json
+        safety check --bare --full-report
+        
+    - name: Análisis con bandit
+      run: |
+        bandit -r app/ -f json -o bandit-report.json
+        bandit -r app/ -f txt -o bandit-report.txt
+        
+    - name: Subir reportes de seguridad
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          safety-report.json
+          bandit-report.json
+          bandit-report.txt
+
+  # Análisis de secretos en código
+  secret-scanning:
+    name: Análisis de Secretos
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      
+    - name: Análisis con TruffleHog
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: HEAD~1
+        head: HEAD
+        
+    - name: Análisis con gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Análisis de configuración de Docker
+  docker-security:
+    name: Análisis de Seguridad Docker
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      
+    - name: Análisis con Hadolint
+      run: |
+        docker run --rm -i hadolint/hadolint < Dockerfile
+        
+    - name: Análisis con Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-fs-results.sarif'
+        
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-fs-results.sarif'
+
+  # Análisis de configuración de infraestructura
+  infrastructure-security:
+    name: Análisis de Seguridad de Infraestructura
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      
+    - name: Análisis de docker-compose
+      run: |
+        echo "Verificando configuración de docker-compose.yml..."
+        # Aquí podrías agregar validaciones específicas
+        
+    - name: Análisis de nginx.conf
+      run: |
+        echo "Verificando configuración de nginx.conf..."
+        # Aquí podrías agregar validaciones específicas
+
+  # Reporte de seguridad
+  security-report:
+    name: Generar Reporte de Seguridad
+    runs-on: ubuntu-latest
+    needs: [dependency-check, secret-scanning, docker-security, infrastructure-security]
+    if: always()
+    
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+      
+    - name: Descargar reportes
+      uses: actions/download-artifact@v3
+      with:
+        name: security-reports
+        
+    - name: Generar reporte consolidado
+      run: |
+        echo "# Reporte de Seguridad - Inspector API" > security-report.md
+        echo "Fecha: $(date)" >> security-report.md
+        echo "" >> security-report.md
+        
+        if [ -f safety-report.json ]; then
+          echo "## Análisis de Dependencias" >> security-report.md
+          echo "Se encontraron vulnerabilidades en las dependencias." >> security-report.md
+        fi
+        
+        if [ -f bandit-report.json ]; then
+          echo "## Análisis de Código" >> security-report.md
+          echo "Se encontraron problemas de seguridad en el código." >> security-report.md
+        fi
+        
+        echo "" >> security-report.md
+        echo "Reporte generado automáticamente por GitHub Actions." >> security-report.md
+        
+    - name: Subir reporte
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: security-report.md
+        
+    - name: Notificar resultados
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#security'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} 

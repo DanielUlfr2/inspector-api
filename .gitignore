@@ -1,0 +1,117 @@
+# ========================================
+# GITIGNORE - INSPECTOR API
+# ========================================
+
+# ===== ARCHIVOS DE ENTORNO =====
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# ===== BASE DE DATOS =====
+*.db
+*.sqlite
+*.sqlite3
+test_*.db
+
+# ===== LOGS =====
+*.log
+logs/
+app.log
+
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===== ENTORNO VIRTUAL =====
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== SISTEMA =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===== NODE.JS =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn-integrity
+
+# ===== FRONTEND BUILD =====
+frontend/dist/
+frontend/build/
+
+# ===== ARCHIVOS TEMPORALES =====
+*.tmp
+*.temp
+temp/
+tmp/
+
+# ===== ARCHIVOS DE UPLOAD =====
+uploads/
+app/static/uploads/
+
+# ===== ARCHIVOS DE TESTING =====
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+
+# ===== ARCHIVOS DE DEPLOYMENT =====
+*.tar.gz
+*.zip
+deploy/
+
+# ===== ARCHIVOS DE CONFIGURACIÓN LOCAL =====
+config.local.py
+settings.local.py
+
+# ===== ARCHIVOS DE BACKUP =====
+*.bak
+*.backup
+*.old
+
+# ===== ARCHIVOS DE MONITORING =====
+metrics/
+monitoring/ 
