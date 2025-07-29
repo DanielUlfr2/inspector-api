@@ -1,51 +1,78 @@
 #!/usr/bin/env python3
 """
-Script para probar la conexión a la base de datos de test
+Script para probar la conexión a la base de datos PostgreSQL
 """
+
 import asyncio
-import sys
-import os
-
-# Agregar el directorio raíz al path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from app.config import TEST_DATABASE_URL
-from app.db.base import Base
+import asyncpg
+from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.asyncio import AsyncSession
+import os
+from dotenv import load_dotenv
 
-async def test_db_connection():
-    """Probar la conexión a la base de datos de test"""
-    print(f"URL de base de datos de test: {TEST_DATABASE_URL}")
-    
+load_dotenv()
+
+
+async def test_postgresql_connection():
+    """Prueba la conexión a PostgreSQL usando asyncpg"""
     try:
-        # Crear motor de base de datos
-        engine = create_async_engine(TEST_DATABASE_URL, echo=True)
-        print("✅ Motor de base de datos creado correctamente")
-        
-        # Crear tablas
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-        print("✅ Tablas creadas correctamente")
-        
-        # Probar sesión
-        async_session = sessionmaker(
-            engine, class_=AsyncSession, expire_on_commit=False
-        )
-        
-        async with async_session() as session:
-            print("✅ Sesión de base de datos creada correctamente")
+        # Obtener URL desde variables de entorno
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            print("❌ DATABASE_URL no encontrada en .env")
+            return False
             
-        print("✅ Todas las pruebas de base de datos pasaron")
+        print(f"🔍 Probando conexión a: {database_url}")
+        
+        # Probar con asyncpg
+        conn = await asyncpg.connect(database_url)
+        print("✅ Conexión exitosa con asyncpg")
+        await conn.close()
+        
+        # Probar con SQLAlchemy async
+        engine = create_async_engine(database_url)
+        async with engine.begin() as conn:
+            result = await conn.execute("SELECT version();")
+            version = result.scalar()
+            print(f"✅ SQLAlchemy async funcionando - PostgreSQL {version}")
+        
+        await engine.dispose()
+        return True
         
     except Exception as e:
-        print(f"❌ Error en la base de datos: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"❌ Error de conexión: {e}")
         return False
-    
-    return True
+
+
+def test_sqlalchemy_sync():
+    """Prueba la conexión síncrona con SQLAlchemy"""
+    try:
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            print("❌ DATABASE_URL no encontrada en .env")
+            return False
+            
+        engine = create_engine(database_url)
+        with engine.connect() as conn:
+            result = conn.execute("SELECT version();")
+            version = result.scalar()
+            print(f"✅ SQLAlchemy sync funcionando - PostgreSQL {version}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error de conexión síncrona: {e}")
+        return False
+
 
 if __name__ == "__main__":
-    asyncio.run(test_db_connection()) 
+    print("🔧 Probando conexiones a base de datos...")
+    
+    # Probar conexión síncrona
+    print("\n📡 Probando SQLAlchemy síncrono:")
+    test_sqlalchemy_sync()
+    
+    # Probar conexión asíncrona
+    print("\n📡 Probando SQLAlchemy asíncrono:")
+    asyncio.run(test_postgresql_connection())
+    
+    print("\n✅ Pruebas completadas") 
