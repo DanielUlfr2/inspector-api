@@ -13,19 +13,25 @@ Sistema de gestión de inspecciones con API REST y frontend React.
 
 ## 📋 Estado del CI/CD
 
-- ✅ Análisis de código (Flake8, Black, Isort, Mypy)
-- ✅ Tests automatizados con cobertura
+- ✅ Análisis de código (Flake8, Black, Isort)
+- ✅ Tests automatizados
 - ✅ Build de Docker optimizado
-- ✅ Análisis de seguridad (Trivy, Bandit)
+- ✅ Análisis de seguridad
 - ✅ Despliegue automático
 - ✅ Releases automáticos
+
+## 📊 Métricas de CI/CD
+
+![CI/CD Pipeline](https://github.com/DanielUlfr2/inspector-api/workflows/CI/CD%20Pipeline/badge.svg)
+![Security Analysis](https://github.com/DanielUlfr2/inspector-api/workflows/Security%20Analysis/badge.svg)
+![Dependabot](https://img.shields.io/badge/dependabot-enabled-brightgreen)
 
 ## 🔧 Instalación
 
 ```bash
 # Clonar repositorio
-git clone https://github.com/DanielUlfr2/inventario-web-inspector.git
-cd inventario-web-inspector
+git clone https://github.com/DanielUlfr2/inspector-api.git
+cd inspector-api
 
 # Instalar dependencias
 pip install -r requirements.txt
@@ -40,10 +46,28 @@ alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
-## 📊 Métricas
+## 🐳 Docker
 
-![CI/CD](https://github.com/DanielUlfr2/inventario-web-inspector/workflows/CI/CD/badge.svg)
-![Security](https://github.com/DanielUlfr2/inventario-web-inspector/workflows/Security/badge.svg)
+```bash
+# Construir imagen
+docker build -t inspector-api .
+
+# Ejecutar contenedor
+docker run -p 8000:8000 inspector-api
+```
+
+## 📚 Documentación
+
+- **API Docs**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **Health Check**: http://localhost:8000/health
+
+## 🔒 Seguridad
+
+- ✅ Análisis de vulnerabilidades automático
+- ✅ Detección de secretos en código
+- ✅ Análisis de dependencias
+- ✅ Escaneo de Docker
 
 ## 📝 Licencia
 
