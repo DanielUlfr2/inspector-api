@@ -75,7 +75,7 @@ yarn-error.log*
 .yarn-integrity
 
 # ===== FRONTEND BUILD =====
-frontend/dist/
+# frontend/dist/  # Comentado para permitir GitHub Pages
 frontend/build/
 
 # ===== ARCHIVOS TEMPORALES =====
