@@ -174,6 +174,7 @@ class HistorialCambio(Base):
     
     Atributos:
         id: Identificador único del cambio
+        registro_id: ID del registro relacionado
         numero_inspector: Número del inspector relacionado
         fecha: Fecha y hora del cambio
         usuario: Usuario que realizó el cambio
@@ -186,6 +187,7 @@ class HistorialCambio(Base):
     __tablename__ = "historial_cambios"
 
     id = Column(Integer, primary_key=True, index=True)
+    registro_id = Column(Integer, ForeignKey("registros.id"), nullable=False, index=True)
     numero_inspector = Column(Integer, nullable=False, index=True)
     fecha = Column(DateTime, default=datetime.datetime.utcnow, nullable=False, index=True)
     usuario = Column(String, nullable=False)

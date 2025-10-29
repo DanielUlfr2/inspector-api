@@ -27,9 +27,17 @@ export async function getRegistros({ limit = 10, offset = 0, sortBy = 'id', sort
   }
 }
 
-export async function getTotalRegistros(): Promise<{ total: number }> {
+export async function getTotalRegistros(columnFilters: { [key: string]: string } = {}): Promise<{ total: number }> {
   try {
-    return await apiGet(`${import.meta.env.VITE_API_URL}/registros/total`);
+    const params = new URLSearchParams();
+    Object.entries(columnFilters).forEach(([key, value]) => {
+      if (value && value.trim() !== '') {
+        params.append(key, value);
+      }
+    });
+    
+    const url = `${import.meta.env.VITE_API_URL}/registros/total${params.toString() ? `?${params.toString()}` : ''}`;
+    return await apiGet(url);
   } catch (error) {
     console.error("[ERROR getTotalRegistros]:", error);
     throw error;

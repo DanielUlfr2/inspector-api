@@ -142,9 +142,16 @@ function RecordTable() {
   
   const { notification, showSuccess, showError, hideNotification } = useNotification();
 
+  // useEffect inicial para cargar datos al montar el componente
+  useEffect(() => {
+    fetchRegistros();
+    fetchTotalRegistros();
+  }, []); // Array vacío para ejecutar solo al montar
+
   // useEffect para recargar registros al cambiar sortConfig o página
   useEffect(() => {
     fetchRegistros();
+    fetchTotalRegistros(); // Agregar llamada para actualizar el total
     // Limpiar selección cuando cambie la página o el orden
     setSeleccionados([]);
   }, [pagina, sortConfig]);

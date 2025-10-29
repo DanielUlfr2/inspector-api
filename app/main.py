@@ -34,6 +34,7 @@ from app.routes import upload_excel  # Corregido: era excel_upload
 from app.routes import excel_export  # ✅ sin cambios
 from app.routes import usuarios
 from app.routes import auth
+from app.routes import cache_monitor
 
 try:
     from app.routes import historial
@@ -48,14 +49,20 @@ app = FastAPI(
     version="1.0.0",
     openapi_tags=[
         {"name": "autenticación", "description": "Operaciones de login y autenticación"},
+        {"name": "registros", "description": "Operaciones CRUD de registros de inspección"},
+        {"name": "usuarios", "description": "Gestión de usuarios del sistema"},
+        {"name": "monitoring", "description": "Endpoints de monitoreo y salud"},
     ],
     openapi_url="/openapi.json"
 )
 
-# Esquema OAuth2 Password para Swagger UI
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+# Esquema OAuth2 Password para Swagger UI - Corregido para usar JSON
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/auth/login",
+    scheme_name="JWT"
+)
 
-# Configuración de CORS
+# Configurar esquema de seguridad para Swagger UI
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:8000", "http://127.0.0.1:8000"],
@@ -84,6 +91,7 @@ app.include_router(upload_excel.router)  # Corregido: era excel_upload.router
 app.include_router(excel_export.router)
 app.include_router(usuarios.router)
 app.include_router(auth.router)
+app.include_router(cache_monitor.router)
 
 if HAS_HISTORIAL:
     app.include_router(historial.router)
@@ -92,6 +100,39 @@ if HAS_HISTORIAL:
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 logger = logging.getLogger(__name__)
+
+# Configurar esquema de seguridad personalizado para OpenAPI
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # Agregar esquema de seguridad
+    openapi_schema["components"]["securitySchemes"] = {
+        "JWT": {
+            "type": "oauth2",
+            "flows": {
+                "password": {
+                    "tokenUrl": "/auth/login",
+                    "scopes": {}
+                }
+            }
+        }
+    }
+    
+    # Agregar seguridad global
+    openapi_schema["security"] = [{"JWT": []}]
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 @app.on_event("startup")
 async def startup_event():
@@ -177,33 +218,3 @@ async def health():
         "message": "Inspector API está funcionando correctamente",
         "version": "1.0.0"
     }
-
-def custom_openapi():
-    """
-    Personalización del esquema OpenAPI.
-    
-    Modifica el esquema OpenAPI generado automáticamente para incluir
-    información adicional y mejorar la documentación de la API.
-    
-    Returns:
-        dict: Esquema OpenAPI personalizado
-    """
-    if app.openapi_schema:
-        return app.openapi_schema
-    
-    openapi_schema = get_openapi(
-        title="Inspector API",
-        version="1.0.0",
-        description="API completa para gestión de inventario de registros de inspección",
-        routes=app.routes,
-    )
-    
-    # Personalizaciones adicionales del esquema
-    openapi_schema["info"]["x-logo"] = {
-        "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
-    }
-    
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
-
-app.openapi = custom_openapi

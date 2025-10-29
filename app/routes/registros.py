@@ -9,6 +9,7 @@ from app.db.connection import get_async_session
 from app.db.models import Registro, Base, HistorialCambio
 from app.schemas.registro import RegistroCreate, RegistroUpdate, RegistroOut
 from app.services.cache import cache
+from app.services.registro_cache_service import registro_cache_service
 from app.services.deps import require_admin, require_user_or_admin
 from app.services.validation import validate_single_registro, ValidationError
 from app.schemas.respuesta import TotalRegistrosResponse
@@ -104,19 +105,20 @@ async def actualizar_registro(
                     "valor_nuevo": nuevo_valor
                 })
 
-        # Comentado temporalmente para evitar errores con el modelo HistorialCambio
-        # for cambio in cambios:
-        #     historial = HistorialCambio(
-        #         numero_inspector=registro.numero_inspector,
-        #         fecha=datetime.datetime.utcnow(),
-        #         usuario=user["sub"] if isinstance(user, dict) and "sub" in user else str(user),
-        #         accion="edicion",
-        #         campo=cambio["campo"],
-        #         valor_anterior=str(cambio["valor_anterior"]) if cambio["valor_anterior"] is not None else None,
-        #         valor_nuevo=str(cambio["valor_nuevo"]) if cambio["valor_nuevo"] is not None else None,
-        #         descripcion=f"Cambio en campo '{cambio['campo']}'"
-        #     )
-        #     session.add(historial)
+        # Registrar cambios en el historial
+        for cambio in cambios:
+            historial = HistorialCambio(
+                registro_id=registro.id,
+                numero_inspector=registro.numero_inspector,
+                fecha=datetime.datetime.utcnow(),
+                usuario=user["sub"] if isinstance(user, dict) and "sub" in user else str(user),
+                accion="edicion",
+                campo=cambio["campo"],
+                valor_anterior=str(cambio["valor_anterior"]) if cambio["valor_anterior"] is not None else None,
+                valor_nuevo=str(cambio["valor_nuevo"]) if cambio["valor_nuevo"] is not None else None,
+                descripcion=f"Cambio en campo '{cambio['campo']}'"
+            )
+            session.add(historial)
 
         # Aplicar cambios al registro
         for key, value in update_data.items():
@@ -126,8 +128,9 @@ async def actualizar_registro(
         await session.refresh(registro)
         logger.info(f"Registro ID={id} actualizado correctamente.")
         
-        # Invalidar cache de registros
-        cache.clear()
+        # Invalidar cache de registros usando el servicio avanzado
+        from app.services.registro_cache_service import registro_cache_service
+        registro_cache_service.invalidate_registro_cache(id)
         logger.info("Cache invalidated after update")
         
         return registro
@@ -190,8 +193,24 @@ async def crear_registro(
         await session.refresh(nuevo_registro)
         logger.info(f"Registro creado con ID={nuevo_registro.id}")
         
-        # Invalidar cache de registros
-        cache.clear()
+        # Registrar creación en el historial
+        historial = HistorialCambio(
+            registro_id=nuevo_registro.id,
+            numero_inspector=nuevo_registro.numero_inspector,
+            fecha=datetime.datetime.utcnow(),
+            usuario=user["sub"] if isinstance(user, dict) and "sub" in user else str(user),
+            accion="creacion",
+            campo=None,
+            valor_anterior=None,
+            valor_nuevo=None,
+            descripcion=f"Registro creado: {nuevo_registro.nombre}"
+        )
+        session.add(historial)
+        await session.commit()
+        
+        # Invalidar cache de registros usando el servicio avanzado
+        from app.services.registro_cache_service import registro_cache_service
+        registro_cache_service.invalidate_registro_cache()
         logger.info("Cache invalidated after create")
         
         return nuevo_registro
@@ -247,6 +266,37 @@ async def contar_registros(
     user=Depends(require_user_or_admin)
 ):
     try:
+        # Usar el servicio de cache avanzado de manera transparente
+        from app.services.registro_cache_service import registro_cache_service
+        
+        # Intentar obtener del cache primero
+        cached_result = await registro_cache_service.get_cached_total_registros(
+            session,
+            numero_inspector=numero_inspector,
+            uuid=uuid,
+            nombre=nombre,
+            observaciones=observaciones,
+            status=status,
+            region=region,
+            flota=flota,
+            encargado=encargado,
+            celular=celular,
+            correo=correo,
+            direccion=direccion,
+            uso=uso,
+            departamento=departamento,
+            ciudad=ciudad,
+            tecnologia=tecnologia,
+            cmts_olt=cmts_olt,
+            id_servicio=id_servicio,
+            mac_sn=mac_sn
+        )
+        
+        if cached_result is not None:
+            logger.info(f"Cache hit para total de registros")
+            return cached_result
+        
+        # Si no está en cache, calcular desde BD (código original)
         from sqlalchemy import func
         filtros = []
         if numero_inspector:
@@ -272,97 +322,121 @@ async def contar_registros(
                 valor = str(observaciones)[9:]
                 filtros.append(cast(Registro.observaciones, String) == valor)
             else:
-                filtros.append(Registro.observaciones.ilike(f"%{observaciones}%"))
+                filtros.append(cast(Registro.observaciones, String).ilike(f"%{observaciones}%"))
         if status:
             if str(status).startswith("__EXACT__"):
                 valor = str(status)[9:]
                 filtros.append(cast(Registro.status, String) == valor)
             else:
-                filtros.append(Registro.status.ilike(f"%{status}%"))
+                filtros.append(cast(Registro.status, String).ilike(f"%{status}%"))
         if region:
             if str(region).startswith("__EXACT__"):
                 valor = str(region)[9:]
                 filtros.append(cast(Registro.region, String) == valor)
             else:
-                filtros.append(Registro.region.ilike(f"%{region}%"))
+                filtros.append(cast(Registro.region, String).ilike(f"%{region}%"))
         if flota:
             if str(flota).startswith("__EXACT__"):
                 valor = str(flota)[9:]
                 filtros.append(cast(Registro.flota, String) == valor)
             else:
-                filtros.append(Registro.flota.ilike(f"%{flota}%"))
+                filtros.append(cast(Registro.flota, String).ilike(f"%{flota}%"))
         if encargado:
             if str(encargado).startswith("__EXACT__"):
                 valor = str(encargado)[9:]
                 filtros.append(cast(Registro.encargado, String) == valor)
             else:
-                filtros.append(Registro.encargado.ilike(f"%{encargado}%"))
+                filtros.append(cast(Registro.encargado, String).ilike(f"%{encargado}%"))
         if celular:
             if str(celular).startswith("__EXACT__"):
                 valor = str(celular)[9:]
                 filtros.append(cast(Registro.celular, String) == valor)
             else:
-                filtros.append(Registro.celular.ilike(f"%{celular}%"))
+                filtros.append(cast(Registro.celular, String).ilike(f"%{celular}%"))
         if correo:
             if str(correo).startswith("__EXACT__"):
                 valor = str(correo)[9:]
                 filtros.append(cast(Registro.correo, String) == valor)
             else:
-                filtros.append(Registro.correo.ilike(f"%{correo}%"))
+                filtros.append(cast(Registro.correo, String).ilike(f"%{correo}%"))
         if direccion:
             if str(direccion).startswith("__EXACT__"):
                 valor = str(direccion)[9:]
                 filtros.append(cast(Registro.direccion, String) == valor)
             else:
-                filtros.append(Registro.direccion.ilike(f"%{direccion}%"))
+                filtros.append(cast(Registro.direccion, String).ilike(f"%{direccion}%"))
         if uso:
             if str(uso).startswith("__EXACT__"):
                 valor = str(uso)[9:]
                 filtros.append(cast(Registro.uso, String) == valor)
             else:
-                filtros.append(Registro.uso.ilike(f"%{uso}%"))
+                filtros.append(cast(Registro.uso, String).ilike(f"%{uso}%"))
         if departamento:
             if str(departamento).startswith("__EXACT__"):
                 valor = str(departamento)[9:]
                 filtros.append(cast(Registro.departamento, String) == valor)
             else:
-                filtros.append(Registro.departamento.ilike(f"%{departamento}%"))
+                filtros.append(cast(Registro.departamento, String).ilike(f"%{departamento}%"))
         if ciudad:
             if str(ciudad).startswith("__EXACT__"):
                 valor = str(ciudad)[9:]
                 filtros.append(cast(Registro.ciudad, String) == valor)
             else:
-                filtros.append(Registro.ciudad.ilike(f"%{ciudad}%"))
+                filtros.append(cast(Registro.ciudad, String).ilike(f"%{ciudad}%"))
         if tecnologia:
             if str(tecnologia).startswith("__EXACT__"):
                 valor = str(tecnologia)[9:]
                 filtros.append(cast(Registro.tecnologia, String) == valor)
             else:
-                filtros.append(Registro.tecnologia.ilike(f"%{tecnologia}%"))
+                filtros.append(cast(Registro.tecnologia, String).ilike(f"%{tecnologia}%"))
         if cmts_olt:
             if str(cmts_olt).startswith("__EXACT__"):
                 valor = str(cmts_olt)[9:]
                 filtros.append(cast(Registro.cmts_olt, String) == valor)
             else:
-                filtros.append(Registro.cmts_olt.ilike(f"%{cmts_olt}%"))
+                filtros.append(cast(Registro.cmts_olt, String).ilike(f"%{cmts_olt}%"))
         if id_servicio:
             if str(id_servicio).startswith("__EXACT__"):
                 valor = str(id_servicio)[9:]
                 filtros.append(cast(Registro.id_servicio, String) == valor)
             else:
-                filtros.append(Registro.id_servicio.ilike(f"%{id_servicio}%"))
+                filtros.append(cast(Registro.id_servicio, String).ilike(f"%{id_servicio}%"))
         if mac_sn:
             if str(mac_sn).startswith("__EXACT__"):
                 valor = str(mac_sn)[9:]
                 filtros.append(cast(Registro.mac_sn, String) == valor)
             else:
-                filtros.append(Registro.mac_sn.ilike(f"%{mac_sn}%"))
+                filtros.append(cast(Registro.mac_sn, String).ilike(f"%{mac_sn}%"))
         stmt = select(func.count()).select_from(Registro)
         if filtros:
             stmt = stmt.where(*filtros)
         total = await session.scalar(stmt)
+        result = {"total": total}
+        
+        # Guardar en cache para futuras consultas
+        registro_cache_service.save_to_cache("total_registros", result, **{
+            "numero_inspector": numero_inspector,
+            "uuid": uuid,
+            "nombre": nombre,
+            "observaciones": observaciones,
+            "status": status,
+            "region": region,
+            "flota": flota,
+            "encargado": encargado,
+            "celular": celular,
+            "correo": correo,
+            "direccion": direccion,
+            "uso": uso,
+            "departamento": departamento,
+            "ciudad": ciudad,
+            "tecnologia": tecnologia,
+            "cmts_olt": cmts_olt,
+            "id_servicio": id_servicio,
+            "mac_sn": mac_sn
+        })
+        
         logger.info(f"Conteo de registros exitoso. Total: {total}")
-        return {"total": total}
+        return result
     except Exception as e:
         import traceback
         print("Error al contar registros:", e)
@@ -644,6 +718,17 @@ async def obtener_historial_registro(
     user=Depends(require_admin)
 ):
     try:
+        # Usar el servicio de cache avanzado de manera transparente
+        from app.services.registro_cache_service import registro_cache_service
+        
+        # Intentar obtener del cache primero
+        cached_historial = await registro_cache_service.get_cached_historial(session, numero_inspector)
+        
+        if cached_historial is not None:
+            logger.info(f"Cache hit para historial inspector {numero_inspector}")
+            return cached_historial
+        
+        # Si no está en cache, consultar BD (código original)
         from datetime import datetime, timedelta
         hace_15_dias = datetime.utcnow() - timedelta(days=15)
         logger.info(f"Consultando historial para inspector {numero_inspector} desde {hace_15_dias}")
@@ -658,7 +743,7 @@ async def obtener_historial_registro(
             return []
         # El historial ya se ordena por fecha descendente (más reciente primero)
         historial_ordenado = sorted(historial, key=lambda h: h.fecha or datetime.min, reverse=True)
-        return [
+        historial_json = [
             {
                 "fecha": h.fecha.isoformat() if h.fecha else None,
                 "usuario": h.usuario,
@@ -670,6 +755,11 @@ async def obtener_historial_registro(
             }
             for h in historial_ordenado
         ]
+        
+        # Guardar en cache para futuras consultas
+        registro_cache_service.save_to_cache("historial", historial_json, numero_inspector=numero_inspector)
+        
+        return historial_json
     except Exception as e:
         import traceback
         logger.error(f"Error al obtener historial para inspector {numero_inspector}: {e}")
@@ -689,13 +779,29 @@ async def obtener_registro_por_id(
 ):
     logger.info(f"GET recibido para consultar ID={id}")
     try:
+        # Usar el servicio de cache avanzado de manera transparente
+        from app.services.registro_cache_service import registro_cache_service
+        
+        # Intentar obtener del cache primero
+        cached_registro = await registro_cache_service.get_cached_registro_by_id(session, id)
+        
+        if cached_registro is not None:
+            logger.info(f"Cache hit para registro ID={id}")
+            return cached_registro
+        
+        # Si no está en cache, consultar BD (código original)
         result = await session.execute(select(Registro).where(Registro.id == id))
         registro = result.scalar_one_or_none()
+        
         if not registro:
             raise HTTPException(
                 status_code=404, 
                 detail="ERROR Registro no encontrado: No existe un registro con el ID especificado. Verifica el ID e intenta nuevamente."
             )
+        
+        # Guardar en cache para futuras consultas
+        registro_cache_service.save_to_cache("registro_individual", registro, id=id)
+        
         return registro
     except HTTPException:
         raise
@@ -736,24 +842,27 @@ async def eliminar_registro(
                 detail="ERROR Registro no encontrado: No existe un registro con el ID especificado para eliminar. Verifica el ID e inténtalo nuevamente."
             )
 
-        # Comentado temporalmente para evitar errores con el modelo HistorialCambio
-        # historial = HistorialCambio(
-        #     numero_inspector=registro.numero_inspector,
-        #     fecha=datetime.datetime.utcnow(),
-        #     usuario=user["sub"] if isinstance(user, dict) and "sub" in user else str(user),
-        #     accion="eliminacion",
-        #     campo=None,
-        #     valor_anterior=json.dumps(registro.as_dict(), ensure_ascii=False),
-        #     valor_nuevo=None,
-        #     descripcion="Registro eliminado"
-        # )
-        # session.add(historial)
+        # Registrar eliminación en el historial
+        historial = HistorialCambio(
+            registro_id=registro.id,
+            numero_inspector=registro.numero_inspector,
+            fecha=datetime.datetime.utcnow(),
+            usuario=user["sub"] if isinstance(user, dict) and "sub" in user else str(user),
+            accion="eliminacion",
+            campo=None,
+            valor_anterior=json.dumps(registro.as_dict(), ensure_ascii=False),
+            valor_nuevo=None,
+            descripcion="Registro eliminado"
+        )
+        session.add(historial)
 
         await session.delete(registro)
         await session.commit()
         logger.info(f"Registro ID={id} eliminado correctamente.")
         
-        cache.clear()
+        # Invalidar cache usando el servicio avanzado
+        from app.services.registro_cache_service import registro_cache_service
+        registro_cache_service.invalidate_registro_cache(id)
         logger.info("Cache invalidated after delete")
         
         return {"mensaje": f"Registro con ID={id} eliminado exitosamente"}
@@ -863,19 +972,40 @@ async def unique_values(
     if isinstance(col, list):
         col = col[0]
     logging.info(f"[unique_values] col: '{col}', search: '{search}'")
-    allowed_cols = [
-        "numero_inspector", "nombre", "observaciones", "status", "region", "flota", "encargado", "celular", "correo", "direccion", "uso", "departamento", "ciudad", "tecnologia", "cmts_olt", "id_servicio", "mac_sn"
-    ]
-    if not col or col not in allowed_cols:
-        logging.error(f"[unique_values] Columna no permitida o vacía: '{col}'")
-        raise HTTPException(status_code=400, detail=f"Columna no permitida: '{col}'")
-    model_col = getattr(Registro, col)
-    stmt = select(model_col).distinct().order_by(model_col)
-    if search:
-        stmt = stmt.where(cast(model_col, String).ilike(f"%{search}%"))
-    result = await session.execute(stmt)
-    values = [row[0] for row in result.fetchall() if row[0] is not None]
-    return {"values": values}
+    
+    try:
+        # Usar el servicio de cache avanzado de manera transparente
+        from app.services.registro_cache_service import registro_cache_service
+        
+        # Intentar obtener del cache primero
+        cached_result = await registro_cache_service.get_cached_unique_values(session, col, search)
+        
+        if cached_result is not None:
+            logger.info(f"Cache hit para valores únicos columna {col}")
+            return cached_result
+        
+        # Si no está en cache, consultar BD (código original)
+        allowed_cols = [
+            "numero_inspector", "nombre", "observaciones", "status", "region", "flota", "encargado", "celular", "correo", "direccion", "uso", "departamento", "ciudad", "tecnologia", "cmts_olt", "id_servicio", "mac_sn"
+        ]
+        if not col or col not in allowed_cols:
+            logging.error(f"[unique_values] Columna no permitida o vacía: '{col}'")
+            raise HTTPException(status_code=400, detail=f"Columna no permitida: '{col}'")
+        model_col = getattr(Registro, col)
+        stmt = select(model_col).distinct().order_by(model_col)
+        if search:
+            stmt = stmt.where(cast(model_col, String).ilike(f"%{search}%"))
+        result = await session.execute(stmt)
+        values = [row[0] for row in result.fetchall() if row[0] is not None]
+        result_dict = {"values": values}
+        
+        # Guardar en cache para futuras consultas
+        registro_cache_service.save_to_cache("valores_unicos", result_dict, column=col, search=search)
+        
+        return result_dict
+    except Exception as e:
+        logger.error(f"Error al obtener valores únicos para columna {col}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener valores únicos: {str(e)}")
 
 @router.get(
     "/historial-cambios/exportar",

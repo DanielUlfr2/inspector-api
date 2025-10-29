@@ -3,6 +3,7 @@ import { getUsers, deleteUser, createUser, updateUser, resetUserPassword, toggle
 import { useUser } from "../context/UserContext";
 import Toast from "./Toast";
 import "../styles/modal.css";
+import "./UserManagementModal.css";
 
 interface UserManagementModalProps {
   onClose: () => void;
@@ -233,8 +234,11 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ onClose }) =>
 
   return (
     <>
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-overlay user-management-modal" onClick={onClose}>
+        <div 
+          className="modal-content" 
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="modal-header">
             <h2>Gestión de Usuarios</h2>
             <button className="modal-close" onClick={onClose}>×</button>
@@ -386,14 +390,8 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ onClose }) =>
                 {error}
               </div>
             ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ 
-                  width: "100%", 
-                  borderCollapse: "collapse", 
-                  marginTop: "1rem",
-                  minWidth: "800px",
-                  fontSize: "0.9rem"
-                }}>
+              <div className="table-container">
+                <table>
                   <thead>
                     <tr style={{ backgroundColor: "#f8f9fa" }}>
                       <th style={{ 
