@@ -23,7 +23,7 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Verificar estructura del proyecto
       run: |
@@ -71,7 +71,7 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Configurar Python
       uses: actions/setup-python@v4
@@ -99,7 +99,7 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Configurar Python
       uses: actions/setup-python@v4
@@ -125,7 +125,7 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Verificar Dockerfile
       run: |
@@ -163,7 +163,7 @@ jobs:
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Simular despliegue
       run: |
