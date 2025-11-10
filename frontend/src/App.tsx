@@ -15,9 +15,11 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 };
 
 const App = () => {
+  const basename =
+    (import.meta.env.BASE_URL || "/").replace(/\/$/, "") || "/";
   return (
     <UserProvider>
-      <Router>
+      <Router basename={basename}>
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route
