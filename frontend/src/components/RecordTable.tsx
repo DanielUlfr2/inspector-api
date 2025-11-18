@@ -562,7 +562,7 @@ function RecordTable() {
       
       <div className="barra-insta" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32 }}>
         <div className="busqueda-logo-row" style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-          <img src="/logo-inspector.png" alt="Inspector" style={{ height: 112, marginLeft: '2cm', marginRight: 24, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }} />
+          <img src={`${import.meta.env.BASE_URL}logo-inspector.png`} alt="Inspector" style={{ height: 112, marginLeft: '2cm', marginRight: 24, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }} />
           <input
             type="text"
             placeholder="Buscar en registros..."

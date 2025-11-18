@@ -40,7 +40,7 @@ export default function LoginPage() {
   return (
     <div className="login-bg-tigo-soft">
       <div className="login-card">
-        <img src="/logo-inspector.png" alt="Inspector" className="login-logo-tigo" />
+        <img src={`${import.meta.env.BASE_URL}logo-inspector.png`} alt="Inspector" className="login-logo-tigo" />
         <h2 className="login-title-tigo">Iniciar Sesión</h2>
         {isDemoMode && (
           <div style={{

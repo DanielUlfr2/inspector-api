@@ -99,7 +99,7 @@ function UserMenu() {
       return foto;
     }
     // Si no, usar placeholder SVG
-    return "/default-avatar.svg";
+    return `${import.meta.env.BASE_URL}default-avatar.svg`;
   };
 
   // Función para exportar historial global
