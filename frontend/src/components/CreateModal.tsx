@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNotification } from "../hooks/useNotification";
+import { createRegistro } from "../services/recordService";
 import Notification from "./Notification";
 import "./Modal.css";
 
@@ -34,22 +35,7 @@ function CreateModal({ isOpen, onClose, onCreated }: CreateModalProps) {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/registros`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.detail || "Error al crear registro");
-      }
-
-      const newRegistro = await res.json();
+      await createRegistro(formData);
       showSuccess("Registro creado exitosamente");
       onCreated(); // Para recargar registros
       onClose();

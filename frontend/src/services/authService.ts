@@ -1,5 +1,20 @@
 import { LoginCredentials, LoginResponse, User } from '../types/Auth';
 
+const isDemoMode =
+  import.meta.env.VITE_DEMO_MODE === 'true' ||
+  import.meta.env.MODE === 'demo';
+
+const DEMO_USER: LoginResponse = {
+  access_token: 'demo-token',
+  token_type: 'bearer',
+  user: {
+    id: 0,
+    username: 'Demo Admin',
+    rol: 'admin',
+    foto_perfil: undefined,
+  },
+};
+
 // Función para obtener el token de autenticación desde localStorage
 export function getToken(): string | null {
   return localStorage.getItem('token');
@@ -17,6 +32,9 @@ export function removeToken(): void {
 
 // Función para verificar si el usuario está autenticado
 export function isAuthenticated(): boolean {
+  if (isDemoMode) {
+    return localStorage.getItem('user') !== null;
+  }
   const token = getToken();
   return token !== null && token !== '';
 }
@@ -24,6 +42,16 @@ export function isAuthenticated(): boolean {
 // Función para hacer login
 export async function login(credentials: LoginCredentials): Promise<LoginResponse> {
   try {
+    if (isDemoMode) {
+      const { username, password } = credentials;
+      if (username === 'demo' && password === 'demo123') {
+        setToken(DEMO_USER.access_token);
+        localStorage.setItem('user', JSON.stringify(DEMO_USER.user));
+        return DEMO_USER;
+      }
+      throw new Error('Credenciales incorrectas');
+    }
+
     const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -110,6 +138,9 @@ export function isTokenExpiringSoon(): boolean {
 
 // Función para renovar el token automáticamente
 export async function refreshToken(): Promise<boolean> {
+  if (isDemoMode) {
+    return false;
+  }
   try {
     const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/refresh`, {
       method: 'POST',

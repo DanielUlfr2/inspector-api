@@ -49,24 +49,46 @@ const EditProfile: React.FC = () => {
     setLoading(true);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/editar-perfil`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          nombre: formData.username,
-          email: formData.email
-        })
-      });
+      const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || import.meta.env.MODE === 'demo';
+      
+      let response: Response;
+      
+      if (isDemoMode) {
+        // Simular delay y respuesta en modo demo
+        await new Promise(resolve => setTimeout(resolve, 500));
+        response = new Response(
+          JSON.stringify({
+            message: "Perfil actualizado correctamente (demo)",
+            username: formData.username,
+            email: formData.email,
+            rol: "admin",
+            foto: null
+          }),
+          { status: 200 }
+        );
+      } else {
+        response = await fetch(`${import.meta.env.VITE_API_URL}/auth/editar-perfil`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            nombre: formData.username,
+            email: formData.email
+          })
+        });
+      }
 
       if (response.ok) {
         const data = await response.json();
         
         // Actualizar el contexto del usuario
         if (updateUser) {
-          updateUser({ ...data });
+          updateUser({ 
+            nombre: data.username || formData.username,
+            email: data.email || formData.email
+          });
         }
         
         showSuccess("Perfil actualizado correctamente");

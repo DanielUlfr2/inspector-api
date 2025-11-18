@@ -52,27 +52,38 @@ function ChangePhoto() {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-
-      // Debug: ver qué información tiene el usuario
-      console.log('ID del usuario:', id);
-      console.log('Nombre del usuario:', nombre);
-      console.log('Foto del usuario:', foto);
-
+      const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || import.meta.env.MODE === 'demo';
+      
       // Obtener el ID del usuario del contexto
       if (!id) {
         showError('No se pudo obtener la información del usuario. Por favor, inicia sesión nuevamente.');
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${id}/foto`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: formData
-      });
+      let response: Response;
+      
+      if (isDemoMode) {
+        // Simular delay y respuesta en modo demo
+        await new Promise(resolve => setTimeout(resolve, 500));
+        response = new Response(
+          JSON.stringify({
+            message: "Foto actualizada correctamente (demo)",
+            foto: `/static/fotos/demo_${id}.jpg`
+          }),
+          { status: 200 }
+        );
+      } else {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        response = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/${id}/foto`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: formData
+        });
+      }
 
       if (response.ok) {
         const data = await response.json();

@@ -3,6 +3,11 @@ import { useUser } from "../context/UserContext";
 import "../styles/login.css";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
+import { login as authLogin } from "../services/authService";
+
+const isDemoMode =
+  import.meta.env.VITE_DEMO_MODE === 'true' ||
+  import.meta.env.MODE === 'demo';
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -14,24 +19,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:8000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) throw new Error("Credenciales inválidas");
-
-      const data = await response.json();
-      
-      // Debug: verificar la respuesta del backend
-      console.log('Respuesta del login:', data);
-      console.log('ID del usuario:', data.user.id);
-      console.log('Foto del usuario:', data.user.foto);
-      console.log('Todos los campos del usuario:', data.user);
-      
-      // Guardar token en localStorage para persistencia
-      localStorage.setItem("token", data.access_token);
+      const data = await authLogin({ username, password });
       
       // Usar la información del usuario que viene en la respuesta
       setUser({
@@ -39,13 +27,13 @@ export default function LoginPage() {
         id: data.user.id,
         nombre: data.user.username,
         rol: data.user.rol,
-        foto: data.user.foto
+        foto: data.user.foto_perfil
       });
       
       // Redirigir al dashboard usando React Router
       navigate("/dashboard");
-    } catch (err) {
-      setError("Usuario o contraseña incorrectos");
+    } catch (err: any) {
+      setError(err.message || "Usuario o contraseña incorrectos");
     }
   };
 
@@ -54,6 +42,21 @@ export default function LoginPage() {
       <div className="login-card">
         <img src="/logo-inspector.png" alt="Inspector" className="login-logo-tigo" />
         <h2 className="login-title-tigo">Iniciar Sesión</h2>
+        {isDemoMode && (
+          <div style={{
+            backgroundColor: '#e0f2fe',
+            border: '1px solid #0284c7',
+            borderRadius: '8px',
+            padding: '12px 16px',
+            marginBottom: '20px',
+            fontSize: '14px',
+            color: '#0c4a6e'
+          }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>🎭 Modo Demo</div>
+            <div>Usuario: <strong>demo</strong></div>
+            <div>Contraseña: <strong>demo123</strong></div>
+          </div>
+        )}
         <form className="login-form-tigo" onSubmit={handleSubmit}>
           <div className="input-group-tigo">
             <span className="input-icon-tigo"><FaUser /></span>

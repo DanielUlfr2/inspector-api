@@ -16,6 +16,7 @@ jobs:
       contents: write
     env:
       VITE_API_URL: https://inspector-api-backend.onrender.com
+      VITE_DEMO_MODE: "true"
 
     steps:
       - name: Checkout
@@ -34,6 +35,7 @@ jobs:
       - name: Configurar variables de entorno
         run: |
           echo "VITE_API_URL=${VITE_API_URL}" >> .env.production
+          echo "VITE_DEMO_MODE=${VITE_DEMO_MODE}" >> .env.production
 
       - name: Compilar proyecto
         run: npm run build

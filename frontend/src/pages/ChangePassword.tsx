@@ -73,17 +73,30 @@ function ChangePassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/cambiar-contraseña`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          current_password: formData.currentPassword,
-          new_password: formData.newPassword
-        })
-      });
+      const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' || import.meta.env.MODE === 'demo';
+      
+      let response: Response;
+      
+      if (isDemoMode) {
+        // Simular delay y respuesta en modo demo
+        await new Promise(resolve => setTimeout(resolve, 500));
+        response = new Response(
+          JSON.stringify({ message: "Contraseña cambiada correctamente (demo)" }),
+          { status: 200 }
+        );
+      } else {
+        response = await fetch(`${import.meta.env.VITE_API_URL}/auth/cambiar-contraseña`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            current_password: formData.currentPassword,
+            new_password: formData.newPassword
+          })
+        });
+      }
 
       if (response.ok) {
         showSuccess('Contraseña actualizada correctamente');

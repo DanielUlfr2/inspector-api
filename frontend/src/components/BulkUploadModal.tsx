@@ -3,6 +3,7 @@
 // Si necesitas modificar la lógica de carga masiva, asegúrate de mantener este comportamiento.
 import React, { useState, useRef } from "react";
 import { useNotification } from "../hooks/useNotification";
+import { uploadCsvFile } from "../services/recordService";
 import Notification from "./Notification";
 import "./Modal.css";
 import Papa from "papaparse";
@@ -126,10 +127,6 @@ function BulkUploadModal({ isOpen, onClose, onUploaded }: BulkUploadModalProps) 
     setUploadProgress(0);
 
     try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
-      formData.append("file", file);
-
       // Simular progreso de carga
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
@@ -141,24 +138,12 @@ function BulkUploadModal({ isOpen, onClose, onUploaded }: BulkUploadModalProps) 
         });
       }, 200);
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/upload_csv`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+      const result = await uploadCsvFile(file);
 
       clearInterval(progressInterval);
       setUploadProgress(100);
 
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.detail || "Error al subir CSV");
-      }
-
-      const result = await res.json();
-      showSuccess(`Archivo subido exitosamente. ${result.registros_creados || 0} registros procesados.`);
+      showSuccess(`Archivo subido exitosamente. ${result.registros_procesados || result.total_registros || 0} registros procesados.`);
       setFile(null);
       onUploaded();
       onClose();

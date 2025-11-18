@@ -1,11 +1,155 @@
 import { getToken, logout } from "./authService";
 
+const isDemoMode =
+  import.meta.env.VITE_DEMO_MODE === "true" ||
+  import.meta.env.MODE === "demo";
+
 interface ApiRequestOptions extends RequestInit {
   skipAuth?: boolean; // Para endpoints que no requieren autenticación
 }
 
 export async function apiRequest(url: string, options: ApiRequestOptions = {}) {
   const { skipAuth = false, ...fetchOptions } = options;
+
+  // Construir URL completa si es una ruta relativa
+  if (url.startsWith('/') && !url.startsWith('//')) {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    url = `${baseUrl}${url}`;
+  }
+
+  if (isDemoMode && !skipAuth) {
+    console.log(`[DEMO MODE] Mocking API request to: ${url}`);
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Mock responses for common endpoints
+    if (url.includes("/auth/me")) {
+      return new Response(
+        JSON.stringify({
+          id: 0,
+          username: "Demo Admin",
+          email: "demo@example.com",
+          nombre: "Demo",
+          apellido: "Admin",
+          rol: "admin",
+          foto: null,
+          activo: true,
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    
+    if (url.includes("/auth/editar-perfil")) {
+      const body = JSON.parse(fetchOptions.body as string || '{}');
+      return new Response(
+        JSON.stringify({
+          message: "Perfil actualizado correctamente (demo)",
+          username: body.nombre || "Demo Admin",
+          email: body.email || "demo@example.com",
+          rol: "admin",
+          foto: null
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+    
+    if (url.includes("/auth/cambiar-contraseña")) {
+      return new Response(
+        JSON.stringify({ message: "Contraseña cambiada correctamente (demo)" }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (url.includes("/usuarios") && options.method === 'GET' && !url.includes("/historial")) {
+      return new Response(
+        JSON.stringify([
+          {
+            id: 1,
+            username: "demo",
+            email: "demo@example.com",
+            nombre: "Demo",
+            apellido: "Admin",
+            rol: "admin",
+            foto_perfil: null,
+            fecha_creacion: new Date().toISOString(),
+            activo: true
+          },
+          {
+            id: 2,
+            username: "usuario1",
+            email: "usuario1@example.com",
+            nombre: "Usuario",
+            apellido: "Uno",
+            rol: "user",
+            foto_perfil: null,
+            fecha_creacion: new Date().toISOString(),
+            activo: true
+          },
+          {
+            id: 3,
+            username: "usuario2",
+            email: "usuario2@example.com",
+            nombre: "Usuario",
+            apellido: "Dos",
+            rol: "user",
+            foto_perfil: null,
+            fecha_creacion: new Date().toISOString(),
+            activo: true
+          }
+        ]),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (url.includes("/usuarios") && url.includes("/foto") && options.method === 'POST') {
+      return new Response(
+        JSON.stringify({
+          message: "Foto actualizada correctamente (demo)",
+          foto: "/static/fotos/demo_0.jpg"
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    if (url.includes("/historial-cambios/exportar")) {
+      return new Response(
+        JSON.stringify([
+          {
+            id: 1,
+            fecha: new Date().toISOString(),
+            usuario: "Demo Admin",
+            accion: "creacion",
+            campo: null,
+            valor_anterior: null,
+            valor_nuevo: null,
+            descripcion: "Registro creado en modo demo",
+            numero_inspector: 1001,
+            registro_id: 1
+          },
+          {
+            id: 2,
+            fecha: new Date(Date.now() - 86400000).toISOString(),
+            usuario: "Demo Admin",
+            accion: "modificacion",
+            campo: "status",
+            valor_anterior: "inactivo",
+            valor_nuevo: "activo",
+            descripcion: "Estado cambiado a activo",
+            numero_inspector: 1001,
+            registro_id: 1
+          }
+        ]),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    // Fallback for unmocked demo requests
+    console.warn(`[DEMO MODE] Unmocked request: ${url}`);
+    return new Response(
+      JSON.stringify({ detail: `[DEMO MODE] Unmocked request: ${url}` }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
   
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
