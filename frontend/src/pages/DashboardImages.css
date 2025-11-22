@@ -47,6 +47,14 @@
   min-width: 0; /* Permitir que el grid se contraiga */
 }
 
+/* Forzar una sola columna en pantallas pequeñas para evitar overflow */
+@media screen and (max-width: 500px) {
+  .images-container {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+}
+
 /* Forzar que todas las imágenes y cards respeten el ancho del contenedor */
 .images-container *,
 .image-card * {
@@ -168,15 +176,18 @@
     margin-left: 0 !important;
     overflow-x: hidden !important;
     box-sizing: border-box !important;
+    position: relative;
   }
 
   .images-dashboard {
     min-height: calc(100vh - 20px);
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: calc(100% - 0px) !important; /* Asegurar que no exceda el ancho disponible */
     padding: 0 !important;
     margin: 0 !important;
     box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    position: relative;
   }
 
   .images-header {
@@ -480,16 +491,60 @@
 }
 
 @media screen and (max-width: 480px) {
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    position: relative;
+  }
+  
+  .dashboard {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
   .dashboard-body {
     padding-left: 10px !important;
     padding-right: 10px !important;
     width: 100% !important;
     max-width: 100vw !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+  
+  .images-dashboard {
+    width: 100% !important;
+    max-width: calc(100vw - 20px) !important; /* Restar padding */
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   .images-container {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .image-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+  
+  .images-header,
+  .images-title,
+  .images-subtitle {
+    width: 100% !important;
+    max-width: 100% !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 
