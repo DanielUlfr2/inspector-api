@@ -25,22 +25,39 @@ const ImageModal: React.FC<ImageModalProps> = ({
   onPrevious,
   onNext
 }) => {
+  const canGoPrevious = currentIndex !== undefined && currentIndex > 0;
+  const canGoNext = currentIndex !== undefined && totalImages !== undefined && currentIndex < totalImages - 1;
+
+  // Prevenir scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Manejar eventos de teclado
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
-      } else if (e.key === 'ArrowLeft' && onPrevious) {
+      } else if (e.key === 'ArrowLeft' && onPrevious && canGoPrevious) {
         onPrevious();
-      } else if (e.key === 'ArrowRight' && onNext) {
+      } else if (e.key === 'ArrowRight' && onNext && canGoNext) {
         onNext();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, onPrevious, onNext]);
+  }, [isOpen, onClose, onPrevious, onNext, canGoPrevious, canGoNext]);
 
   if (!isOpen) return null;
 
@@ -50,14 +67,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
     }
   };
 
-  const canGoPrevious = currentIndex !== undefined && currentIndex > 0;
-  const canGoNext = currentIndex !== undefined && totalImages !== undefined && currentIndex < totalImages - 1;
-
   return (
     <div
       className="image-modal-overlay"
       onClick={handleOverlayClick}
-      onKeyDown={handleKeyDown}
       role="dialog"
       aria-modal="true"
       aria-labelledby="image-modal-description"

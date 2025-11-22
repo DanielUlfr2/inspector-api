@@ -50,8 +50,10 @@ const DashboardImages = () => {
 
   const handleImageClick = (image: ImageItem) => {
     const index = images.findIndex(img => img.id === image.id);
-    setSelectedImageIndex(index);
-    setIsModalOpen(true);
+    if (index !== -1) {
+      setSelectedImageIndex(index);
+      setIsModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -125,7 +127,7 @@ const DashboardImages = () => {
             )}
           </div>
         </div>
-        {currentImage && selectedImageIndex !== null && (
+        {isModalOpen && currentImage && selectedImageIndex !== null && selectedImageIndex >= 0 && (
           <ImageModal
             isOpen={isModalOpen}
             onClose={handleCloseModal}
