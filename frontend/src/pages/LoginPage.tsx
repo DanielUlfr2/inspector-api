@@ -4,6 +4,7 @@ import "../styles/login.css";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
 import { login as authLogin } from "../services/authService";
+import PosterModal from "../components/PosterModal";
 
 const isDemoMode =
   import.meta.env.VITE_DEMO_MODE === 'true' ||
@@ -13,8 +14,19 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPoster, setShowPoster] = useState(false);
   const { setUser } = useUser();
   const navigate = useNavigate();
+
+  // Verificar si el usuario ya vio el poster
+  const hasSeenPoster = (): boolean => {
+    return localStorage.getItem('inspector_poster_seen') === 'true';
+  };
+
+  // Marcar que el usuario ya vio el poster
+  const markPosterAsSeen = (): void => {
+    localStorage.setItem('inspector_poster_seen', 'true');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,11 +42,25 @@ export default function LoginPage() {
         foto: data.user.foto_perfil
       });
       
-      // Redirigir al dashboard usando React Router
-      navigate("/dashboard");
+      // Verificar si el usuario ya vio el poster
+      if (!hasSeenPoster()) {
+        // Mostrar el poster solo si no lo ha visto antes
+        setShowPoster(true);
+      } else {
+        // Si ya lo vio, ir directamente al dashboard
+        navigate("/dashboard");
+      }
     } catch (err: any) {
       setError(err.message || "Usuario o contraseña incorrectos");
     }
+  };
+
+  const handleClosePoster = () => {
+    setShowPoster(false);
+    // Marcar que el usuario ya vio el poster
+    markPosterAsSeen();
+    // Redirigir al dashboard después de cerrar el poster
+    navigate("/dashboard");
   };
 
   return (
@@ -82,6 +108,11 @@ export default function LoginPage() {
           <button type="submit" className="login-btn-tigo">Acceder</button>
         </form>
       </div>
+      <PosterModal
+        isOpen={showPoster}
+        onClose={handleClosePoster}
+        posterUrl={`${import.meta.env.BASE_URL}poster.jpg`}
+      />
     </div>
   );
 }
