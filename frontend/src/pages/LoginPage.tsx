@@ -48,7 +48,7 @@ export default function LoginPage() {
         setShowPoster(true);
       } else {
         // Si ya lo vio, ir directamente al dashboard
-        navigate("/dashboard");
+      navigate("/dashboard");
       }
     } catch (err: any) {
       setError(err.message || "Usuario o contraseña incorrectos");
