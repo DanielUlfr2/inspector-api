@@ -20,6 +20,48 @@ body {
     background-color: white;
     min-height: 100vh;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  
+  /* Responsive padding para dashboard-body */
+  @media (max-width: 768px) {
+    .dashboard-body {
+      padding: 15px !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      margin-left: 0 !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+    }
+    
+    /* Anular cualquier margin-left del sidebar en m√≥viles */
+    .sidebar-ig-tigo.visible ~ .dashboard-body,
+    body.sidebar-ig-visible .dashboard-body {
+      margin-left: 0 !important;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .dashboard-body {
+      padding: 12px !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      margin-left: 0 !important;
+      overflow-x: hidden !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .dashboard-body {
+      padding: 10px !important;
+      width: 100% !important;
+      max-width: 100vw !important;
+      margin-left: 0 !important;
+      box-sizing: border-box !important;
+      overflow-x: hidden !important;
+    }
   }
   
   .table-placeholder {
@@ -493,14 +535,24 @@ body {
 .dashboard-body {
   margin-left: 0;
   transition: margin-left 0.2s;
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 .sidebar-ig-tigo.visible ~ .dashboard-body,
 body.sidebar-ig-visible .dashboard-body {
   margin-left: 90px;
 }
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .dashboard-body {
-    margin-left: 0;
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  
+  .sidebar-ig-tigo.visible ~ .dashboard-body,
+  body.sidebar-ig-visible .dashboard-body {
+    margin-left: 0 !important;
   }
 }
   
@@ -739,3 +791,22 @@ body.sidebar-ig-visible .dashboard-body {
   }
 }
   
+/* Reglas finales de responsive con m·xima prioridad */
+@media screen and (max-width: 768px) {
+  .dashboard .dashboard-body,
+  body .dashboard-body,
+  .dashboard-body {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Anular CUALQUIER margin-left del sidebar */
+  .sidebar-ig-tigo.visible ~ .dashboard-body,
+  body.sidebar-ig-visible .dashboard-body,
+  .dashboard .sidebar-ig-tigo.visible ~ .dashboard-body {
+    margin-left: 0 !important;
+  }
+}

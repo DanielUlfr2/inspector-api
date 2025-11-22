@@ -3,19 +3,14 @@
   min-height: calc(100vh - 40px);
   padding: 0;
   box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
 }
 
-/* Ajustar padding del dashboard-body en móviles */
-@media (max-width: 768px) {
-  .dashboard-body {
-    padding: 15px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard-body {
-    padding: 10px !important;
-  }
+/* Asegurar que no haya desbordamiento horizontal */
+.images-dashboard * {
+  box-sizing: border-box;
 }
 
 .images-header {
@@ -41,10 +36,21 @@
 
 .images-container {
   width: 100%;
+  max-width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
   padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Asegurar que las cards no se salgan del contenedor */
+.image-card {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .images-placeholder {
@@ -124,6 +130,7 @@
   color: #374151;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -132,16 +139,28 @@
 
 /* Tablet Landscape */
 @media (max-width: 1024px) {
+  .dashboard-body {
+    padding: 18px !important;
+  }
+
   .images-container {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 20px;
+    width: 100%;
+    max-width: 100%;
   }
 }
 
 /* Tablet Portrait */
 @media (max-width: 768px) {
+  .dashboard-body {
+    padding: 15px !important;
+  }
+
   .images-dashboard {
     min-height: calc(100vh - 20px);
+    width: 100%;
+    max-width: 100%;
   }
 
   .images-header {
@@ -160,6 +179,8 @@
   .images-container {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 16px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .images-placeholder {
@@ -167,8 +188,14 @@
     font-size: 1rem;
   }
 
+  .image-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .image-card-thumbnail {
     height: 180px;
+    width: 100%;
   }
 
   .image-card-description {
@@ -178,11 +205,16 @@
   .image-card-text {
     font-size: 0.85rem;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 }
 
 /* Mobile Large */
 @media (max-width: 640px) {
+  .dashboard-body {
+    padding: 12px !important;
+  }
+
   .images-header {
     margin-bottom: 20px;
     padding-bottom: 14px;
@@ -199,17 +231,33 @@
   .images-container {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 14px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .image-card {
+    width: 100%;
+    max-width: 100%;
   }
 
   .image-card-thumbnail {
     height: 160px;
+    width: 100%;
   }
 }
 
 /* Mobile */
 @media (max-width: 480px) {
+  .dashboard-body {
+    padding: 10px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
   .images-dashboard {
     min-height: calc(100vh - 10px);
+    width: 100%;
+    max-width: 100%;
   }
 
   .images-header {
@@ -228,8 +276,10 @@
   }
 
   .images-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 12px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .images-placeholder {
@@ -239,10 +289,13 @@
 
   .image-card {
     border-radius: 10px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .image-card-thumbnail {
     height: 150px;
+    width: 100%;
     border-radius: 10px 10px 0 0;
   }
 
@@ -253,6 +306,7 @@
   .image-card-text {
     font-size: 0.8rem;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     line-height: 1.4;
   }
 }
@@ -297,6 +351,62 @@
 
   .images-container {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
+
+/* Forzar responsive en todos los tamaños - reglas finales con mayor especificidad */
+@media screen and (max-width: 768px) {
+  .dashboard-body {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+  
+  /* Anular cualquier margin-left del sidebar */
+  body.sidebar-ig-visible .dashboard-body,
+  .sidebar-ig-tigo.visible ~ .dashboard-body,
+  .dashboard .dashboard-body {
+    margin-left: 0 !important;
+  }
+  
+  .images-dashboard {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  
+  .images-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+  }
+  
+  .image-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .dashboard-body {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  
+  .images-container {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
   }
 }
 
