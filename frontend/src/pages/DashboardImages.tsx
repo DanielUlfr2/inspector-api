@@ -6,7 +6,7 @@ import { ImageItem } from "../types/Image";
 import "./DashboardImages.css";
 
 const DashboardImages = () => {
-  const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Array de imágenes - aquí se agregarán las imágenes con sus descripciones
@@ -49,14 +49,29 @@ const DashboardImages = () => {
   ];
 
   const handleImageClick = (image: ImageItem) => {
-    setSelectedImage(image);
+    const index = images.findIndex(img => img.id === image.id);
+    setSelectedImageIndex(index);
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedImage(null);
+    setSelectedImageIndex(null);
   };
+
+  const handlePrevious = () => {
+    if (selectedImageIndex !== null && selectedImageIndex > 0) {
+      setSelectedImageIndex(selectedImageIndex - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (selectedImageIndex !== null && selectedImageIndex < images.length - 1) {
+      setSelectedImageIndex(selectedImageIndex + 1);
+    }
+  };
+
+  const currentImage = selectedImageIndex !== null ? images[selectedImageIndex] : null;
 
   return (
     <div className="dashboard">
@@ -110,13 +125,17 @@ const DashboardImages = () => {
             )}
           </div>
         </div>
-        {selectedImage && (
+        {currentImage && selectedImageIndex !== null && (
           <ImageModal
             isOpen={isModalOpen}
             onClose={handleCloseModal}
-            imageUrl={selectedImage.url}
-            description={selectedImage.description}
-            imageAlt={selectedImage.alt || selectedImage.description}
+            imageUrl={currentImage.url}
+            description={currentImage.description}
+            imageAlt={currentImage.alt || currentImage.description}
+            currentIndex={selectedImageIndex}
+            totalImages={images.length}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
           />
         )}
       </main>

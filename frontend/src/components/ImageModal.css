@@ -70,7 +70,6 @@
 .image-modal-close {
   background: none;
   border: none;
-  font-size: 1.5rem;
   color: white;
   cursor: pointer;
   border-radius: 8px;
@@ -114,6 +113,7 @@
   min-height: 300px;
   max-height: 60vh;
   overflow: hidden;
+  position: relative;
 }
 
 .image-modal-image {
@@ -124,6 +124,50 @@
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.3s ease;
+}
+
+.image-modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #0033A0;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.image-modal-nav:hover {
+  background: #ffffff;
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 51, 160, 0.3);
+  color: #009FE3;
+}
+
+.image-modal-nav:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.image-modal-nav:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.3);
+}
+
+.image-modal-nav-prev {
+  left: 16px;
+}
+
+.image-modal-nav-next {
+  right: 16px;
 }
 
 .image-modal-description {
@@ -175,6 +219,24 @@
     max-height: 50vh;
   }
 
+  .image-modal-nav {
+    width: 40px;
+    height: 40px;
+  }
+
+  .image-modal-nav svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .image-modal-nav-prev {
+    left: 8px;
+  }
+
+  .image-modal-nav-next {
+    right: 8px;
+  }
+
   .image-modal-description {
     font-size: 0.9rem;
     padding: 0.75rem;
@@ -216,6 +278,24 @@
 
   .image-modal-image {
     max-height: 40vh;
+  }
+
+  .image-modal-nav {
+    width: 36px;
+    height: 36px;
+  }
+
+  .image-modal-nav svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .image-modal-nav-prev {
+    left: 4px;
+  }
+
+  .image-modal-nav-next {
+    right: 4px;
   }
 
   .image-modal-description {
