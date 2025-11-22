@@ -386,6 +386,8 @@ td > .action-btn + .action-btn {
   
   .busqueda-input-group {
     max-width: none;
+    margin-left: 0 !important; /* Anular margin-left en móviles */
+    width: 100%;
   }
   
   .btn-buscar {

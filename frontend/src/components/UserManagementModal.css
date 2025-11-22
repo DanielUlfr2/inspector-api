@@ -26,17 +26,41 @@
 @media (max-width: 768px) {
   .user-management-modal .modal-content {
     width: 98% !important;
-    max-width: 98% !important;
+    max-width: 98vw !important;
     min-width: auto !important;
+    margin: 10px !important;
+    box-sizing: border-box !important;
   }
   
   .user-management-modal .table-container {
     padding: 0.5rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   
   .user-management-modal .table-container table {
     min-width: 600px;
     font-size: 0.8rem;
+  }
+}
+
+/* Ajustes adicionales para móviles pequeños */
+@media (max-width: 480px) {
+  .user-management-modal .modal-content {
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 5px !important;
+    padding: 10px !important;
+  }
+  
+  .user-management-modal .table-container {
+    padding: 0.25rem;
+  }
+  
+  .user-management-modal .table-container table {
+    min-width: 500px;
+    font-size: 0.75rem;
   }
 }
 
