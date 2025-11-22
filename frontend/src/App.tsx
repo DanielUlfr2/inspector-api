@@ -3,6 +3,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import DashboardDB from "./pages/DashboardDB";
+import DashboardImages from "./pages/DashboardImages";
 import EditProfile from "./pages/EditProfile";
 import ViewProfile from "./pages/ViewProfile";
 import ChangePhoto from "./pages/ChangePhoto";
@@ -27,6 +28,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <DashboardDB />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/imagenes"
+            element={
+              <ProtectedRoute>
+                <DashboardImages />
               </ProtectedRoute>
             }
           />

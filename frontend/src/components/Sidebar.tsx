@@ -3,7 +3,7 @@ import { useUser } from "../context/UserContext";
 import { getImageUrl } from "../utils/imageUtils";
 import { getTotalRegistros } from "../services/recordService";
 import { useNavigate } from "react-router-dom";
-import { FiHome, FiUsers, FiClock, FiUser, FiEdit, FiRefreshCw, FiLogOut } from "react-icons/fi";
+import { FiHome, FiUsers, FiClock, FiUser, FiEdit, FiRefreshCw, FiLogOut, FiImage } from "react-icons/fi";
 import UserManagementModal from "./UserManagementModal";
 import "./Sidebar.css";
 
@@ -80,8 +80,13 @@ function Sidebar() {
         <nav className="sidebar-ig-nav">
           <ul>
             <li>
-              <a href="#" title="Inventario">
+              <a href="#" title="Inventario" onClick={e => { e.preventDefault(); navigate("/dashboard"); }}>
                 <FiHome size={26} />
+              </a>
+            </li>
+            <li>
+              <a href="#" title="Imágenes" onClick={e => { e.preventDefault(); navigate("/imagenes"); }}>
+                <FiImage size={26} />
               </a>
             </li>
             {isAdmin && (
