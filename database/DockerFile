@@ -1,0 +1,38 @@
+# Usamos PostgreSQL 16 (La versión 18 podría no tener extensiones estables aún)
+FROM postgres:17
+
+# 1. CONFIGURACIÓN DE ZONA HORARIA (Vital para logs y particionamiento)
+ENV TZ=America/Bogota
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# 2. INSTALACIÓN DE PAQUETES Y EXTENSIONES
+# postgresql-16-partman: Para particionamiento
+# postgresql-16-postgis-3: Para datos geográficos (si usas mapas)
+# postgresql-16-cron: Para programar tareas dentro de la DB
+RUN apt-get update && apt-get install -y \
+    postgresql-17-partman \
+    postgresql-contrib \
+    postgis \
+    postgresql-17-postgis-3 \
+    postgresql-17-cron \
+    build-essential \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. COPIA DE ARCHIVOS
+# Copiamos tu configuración personalizada
+COPY postgresql.conf /etc/postgresql/postgresql.conf
+
+# Copiamos los scripts de inicialización (Se ejecutarán en orden alfanumérico)
+COPY init.sql /docker-entrypoint-initdb.d/01_init.sql
+COPY defaults_registers.sql /docker-entrypoint-initdb.d/02_defaults_registers.sql
+
+# Permisos (Buena práctica)
+RUN chmod 755 /docker-entrypoint-initdb.d/*.sql
+
+# Exponer puerto
+EXPOSE 5432
+
+# Usamos el comando por defecto de la imagen oficial, 
+# pero le forzamos a usar nuestra config
+CMD ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
