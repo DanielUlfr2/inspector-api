@@ -1,18 +1,17 @@
-version: '3.9'
-
 services:
 ### ==========================================
-### 1. APLICACIÓN PRINCIPAL (Backend & Frontend)
+### 1. APLICACIÓN PRINCIPAL
 ### ==========================================
   open_balena_apis:
     build:
-      context: ./backend
+      context: ./backend        # Coincide con tu carpeta 'backend'
+      dockerfile: Dockerfile    # Busca el archivo renombrado
     container_name: open_balena_apis
     restart: unless-stopped
     ports:
       - "5000:5000"
     env_file:
-      - ./backend/.env
+      - ./backend/.env          # Variables internas de Python
     networks:
       InspecNet:
         ipv4_address: 172.10.0.2
@@ -22,11 +21,12 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend       # Coincide con tu carpeta 'frontend'
+      dockerfile: Dockerfile
     container_name: frontend
     restart: unless-stopped
     ports:
-      - "3001:3000"
+      - "3001:80"              # Frontend expone 80 internamente (Nginx), 3001 fuera
     depends_on:
       - redis
       - postgres_principal
@@ -41,10 +41,7 @@ services:
     image: redis:latest
     container_name: redis
     restart: unless-stopped
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    env_file:
-      - ./backend/.env
+    # Redis usa variables del .env RAÍZ directamente
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
     networks:
       InspecNet:
@@ -56,22 +53,22 @@ services:
 
   postgres_principal:
     build:
-      context: ./database
+      context: ./database       # Coincide con tu carpeta 'database'
+      dockerfile: Dockerfile
     container_name: postgres_principal
+    # Usamos variables del .env RAÍZ para la infraestructura
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       TZ: ${TZ}
-    env_file:
-      - ./backend/.env
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./database/defaults_registers.sql:/docker-entrypoint-initdb.d/defaults_registers.sql
+      # Nota: En tu Dockerfile ya copiaste los scripts, 
+      # pero dejarlos aquí no hace daño para desarrollo local
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01_init.sql
     restart: unless-stopped
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     networks:
@@ -84,7 +81,7 @@ services:
       retries: 5
 
 ### ==========================================
-### 3. SEGURIDAD (Keycloak & KrakenD)
+### 3. SEGURIDAD
 ### ==========================================
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
@@ -110,11 +107,11 @@ services:
         ipv4_address: 172.10.0.10
 
   krakend:
-    image: devopsfaith/krakend:2.6
+    build:
+      context: ./gateway        # Coincide con tu carpeta 'gateway'
+      dockerfile: Dockerfile
     container_name: krakend
     restart: unless-stopped
-    volumes:
-      - ./gateway/krakend.json:/etc/krakend/krakend.json
     ports:
       - "8081:8080"
     depends_on:
@@ -125,17 +122,15 @@ services:
         ipv4_address: 172.10.0.11
 
 ### ==========================================
-### 4. VPN & GESTIÓN DE DISPOSITIVOS (WireGuard)
+### 4. VPN
 ### ==========================================
-  
-  # El servidor VPN oficial con interfaz web
   wg-easy:
     image: weejewel/wg-easy:latest
     container_name: wg-easy
     restart: always
     ports:
-      - "${WG_PORT:-51820}:51820/udp" # Puerto VPN
-      - "${WG_EASY_PORT:-51821}:51821/tcp" # UI Web
+      - "${WG_PORT:-51820}:51820/udp"
+      - "${WG_EASY_PORT:-51821}:51821/tcp"
     environment:
       - WG_HOST=${WG_HOST}
       - PASSWORD=${WG_EASY_PASSWORD}
@@ -160,29 +155,19 @@ services:
       InspecNet:
         ipv4_address: 172.10.0.12
 
-  # Tu API personalizada para controlar WireGuard
   wg-fastapi:
     build: 
-      context: ./vpn  # <--- ASEGURATE DE QUE TU CÓDIGO DE WG-API ESTÉ EN ESTA CARPETA
+      context: ./vpn      # Coincide con tu carpeta 'vpn'
+      dockerfile: Dockerfile
     container_name: wg-fastapi-api
     restart: always
     expose:
-      - "5000" # Puerto interno de la API de WG (Ojo: no confundir con el puerto 5000 de open_balena_apis)
+      - "5000"
     volumes:
       - ./wireguard_data/data:/data
-      - /var/run/docker.sock:/var/run/docker.sock # Necesario para controlar el contenedor wg-easy
-    environment:
-      PYTHONUNBUFFERED: 1
-      WG_API_PASSWORD: ${WG_API_PASSWORD}
-      WG_EASY_PASSWORD: ${WG_EASY_PASSWORD}
-      WG_INTERFACE: ${WG_INTERFACE:-wg0}
-      WG_CONTAINER_NAME: wg-easy # Nombre del contenedor de arriba
-      WG_EASY_HOST: 172.10.0.12  # IP directa del contenedor wg-easy
-      WG_EASY_PORT: 51821
-      DEVICES_DB: ${DEVICES_DB:-/data/devices.json}
-      API_PORT: 5000
-      WG_HOST: ${WG_HOST}
-      WG_PORT: ${WG_PORT:-51820}
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - ./vpn/.env        # Usa su propio archivo .env
     depends_on:
       - wg-easy
     networks:

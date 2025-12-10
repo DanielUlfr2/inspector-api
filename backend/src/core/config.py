@@ -1,13 +1,26 @@
 import os
 from pydantic_settings import BaseSettings
-from dotenv import load_dotenv
-import logging
-import json
 
-load_dotenv(override=True)
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "Inspector API"
+    API_V1_STR: str = "/api/v1"
+    
+    # Postgres (Docker inyectará esto desde backend/.env)
+    POSTGRES_SERVER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    POSTGRES_PORT: int = 5432
 
-DB_APP_USER=os.environ.get("DB_APP_USER")
-DB_APP_PASSWORD=os.environ.get("DB_APP_PASSWORD")
-DB_APP_PORT=os.environ.get("DB_APP_PORT")
-DB_APP_HOST=os.environ.get("DB_APP_HOST")
-DB_APP_NAME=os.environ.get("DB_APP_NAME")
+    # Redis
+    REDIS_PASSWORD: str
+    REDIS_HOST: str = "redis"
+    REDIS_PORT: int = 6379
+
+    class Config:
+        case_sensitive = True
+        # Esto es útil si corres local sin docker, 
+        # pero en Docker tomará las vars del sistema primero.
+        env_file = ".env" 
+
+settings = Settings()

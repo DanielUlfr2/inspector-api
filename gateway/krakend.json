@@ -1,0 +1,23 @@
+{
+    "$schema": "https://www.krakend.io/schema/v2.6/krakend.json",
+    "version": 3,
+    "endpoints": [
+        {
+            "endpoint": "/health",
+            "method": "GET",
+            "output_encoding": "json",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/health/",
+                    "encoding": "json",
+                    "sd": "static",
+                    "method": "GET",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ],
+                    "disable_host_sanitize": false
+                }
+            ]
+        }
+    ]
+}

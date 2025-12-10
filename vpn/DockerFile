@@ -1,0 +1,22 @@
+# vpn/Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# WireGuard necesita herramientas de red en el sistema
+RUN apt-get update && apt-get install -y \
+    iproute2 \
+    iptables \
+    wireguard-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalamos dependencias de Python (FastAPI, Uvicorn, etc.)
+# Asumo que tienes un requirements.txt en la carpeta vpn/
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiamos el código de la API
+COPY . .
+
+# Ejecutamos la API en el puerto 5000 interno
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]

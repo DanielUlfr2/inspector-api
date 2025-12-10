@@ -1,0 +1,5 @@
+# Usamos la imagen oficial de KrakenD
+FROM krakend:latest
+
+# Copiamos nuestro archivo de configuración al lugar que KrakenD espera
+COPY krakend.json /etc/krakend/krakend.json

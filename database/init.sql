@@ -6,10 +6,10 @@ CREATE DATABASE keycloak_db;
 
 CREATE DATABASE wireguard_db;
 
-CREATE DATABASE Inspectordb;
+CREATE DATABASE inspector_db;
 
 -- Conectamos a la DB principal para crear el esquema de la App
-\c inspectordb;
+\c inspector_db;
 
 -- =========================================================
 -- 2. EXTENSIONES Y ESQUEMAS

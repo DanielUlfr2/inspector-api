@@ -1,13 +1,13 @@
-INSERT INTO inspectordb.Country (strCountryName, dtModificationDate)VALUES 
+INSERT INTO inspector_db.Country (strCountryName, dtModificationDate)VALUES 
 ('Colombia',CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.Region (strRegionName, idCountry, dtModificationDate)VALUES
+INSERT INTO inspector_db.Region (strRegionName, idCountry, dtModificationDate)VALUES
 ('Andina', 1, CURRENT_TIMESTAMP),
 ('Bogota', 1, CURRENT_TIMESTAMP),
 ('Costa', 1, CURRENT_TIMESTAMP),
 ('Sur', 1, CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.Department (strDepartmentName, idRegion, dtModificationDate)VALUES
+INSERT INTO inspector_db.Department (strDepartmentName, idRegion, dtModificationDate)VALUES
 ('Antioquia', 1, CURRENT_TIMESTAMP),
 ('Arauca', 1, CURRENT_TIMESTAMP),
 ('Bolívar', 1, CURRENT_TIMESTAMP),
@@ -44,7 +44,7 @@ INSERT INTO inspectordb.Department (strDepartmentName, idRegion, dtModificationD
 ('Vaupés', 4, CURRENT_TIMESTAMP),
 ('Vichada', 4, CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.City (strCityName, idDepartment, dtModificationDate)VALUES
+INSERT INTO inspector_db.City (strCityName, idDepartment, dtModificationDate)VALUES
 ('Indeterminado', 19, CURRENT_TIMESTAMP),
 ('LINARES', 28, CURRENT_TIMESTAMP),
 ('SIACHOQUE', 4, CURRENT_TIMESTAMP),
@@ -1088,7 +1088,7 @@ INSERT INTO inspectordb.City (strCityName, idDepartment, dtModificationDate)VALU
 ('SAN MIGUEL DE SEMA', 4, CURRENT_TIMESTAMP),
 ('ZAMBRANO', 12, CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.TerminalType (strTerminalType, dtModificationDate)VALUES
+INSERT INTO inspector_db.TerminalType (strTerminalType, dtModificationDate)VALUES
 ('CMTS', CURRENT_TIMESTAMP),
 ('OLT', CURRENT_TIMESTAMP),
 ('COS', CURRENT_TIMESTAMP),
@@ -1099,7 +1099,7 @@ INSERT INTO inspectordb.TerminalType (strTerminalType, dtModificationDate)VALUES
 ('AndroidTv', CURRENT_TIMESTAMP),
 ('Extensor', CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.TerminalBrand (strTerminalBrand, dtModificationDate)VALUES
+INSERT INTO inspector_db.TerminalBrand (strTerminalBrand, dtModificationDate)VALUES
 ('Arris', CURRENT_TIMESTAMP),
 ('Casa', CURRENT_TIMESTAMP),
 ('Cisco', CURRENT_TIMESTAMP),
@@ -1119,7 +1119,7 @@ INSERT INTO inspectordb.TerminalBrand (strTerminalBrand, dtModificationDate)VALU
 ('Sercomm', CURRENT_TIMESTAMP),
 ('Sei Robotics', CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.TerminalReference (strTerminalReference, idTerminalBrand, idTerminalType, dtModificationDate)VALUES
+INSERT INTO inspector_db.TerminalReference (strTerminalReference, idTerminalBrand, idTerminalType, dtModificationDate)VALUES
 ('E6000', 1, 1, CURRENT_TIMESTAMP),
 ('E6000-G2', 1, 1, CURRENT_TIMESTAMP),
 ('C100G', 2, 1, CURRENT_TIMESTAMP),
@@ -1162,7 +1162,7 @@ INSERT INTO inspectordb.TerminalReference (strTerminalReference, idTerminalBrand
 ('7360FX-16',6, 2, CURRENT_TIMESTAMP); --40
 
 
-INSERT INTO inspectordb.CmtsOlt (strCmtsOltName, idTerminalReference, idCity, dtModificationDate)VALUES
+INSERT INTO inspector_db.CmtsOlt (strCmtsOltName, idTerminalReference, idCity, dtModificationDate)VALUES
 ('Indeterminado', 6, 1, CURRENT_TIMESTAMP),
 ('apo-eda-cmts-01', 3, 603, CURRENT_TIMESTAMP),
 ('axm-mir-cmts-01', 3, 1002, CURRENT_TIMESTAMP),
@@ -1493,18 +1493,18 @@ INSERT INTO inspectordb.CmtsOlt (strCmtsOltName, idTerminalReference, idCity, dt
 ('MDE-AME-OLT-5800-003102', 39, 289, CURRENT_TIMESTAMP),
 ('CTG-TUR-OLT-5800-460402', 39, 770, CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.Tecnology (strTecnologyName, dtModificationDate)VALUES
+INSERT INTO inspector_db.Tecnology (strTecnologyName, dtModificationDate)VALUES
 ('HFC', CURRENT_TIMESTAMP),
 ('GPON', CURRENT_TIMESTAMP),
 ('5G/LTE', CURRENT_TIMESTAMP),
 ('DEFAULT', CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.Product (strProductName, dtModificationDate)VALUES
+INSERT INTO inspector_db.Product (strProductName, dtModificationDate)VALUES
 ('BA', CURRENT_TIMESTAMP),
 ('TOIP', CURRENT_TIMESTAMP),
 ('TV', CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.Crm (strCrmName, dtModificationDate)VALUES
+INSERT INTO inspector_db.Crm (strCrmName, dtModificationDate)VALUES
 ('Siebel', CURRENT_TIMESTAMP),
 ('Fenix', CURRENT_TIMESTAMP),
 ('Edatel', CURRENT_TIMESTAMP),
@@ -1512,7 +1512,7 @@ INSERT INTO inspectordb.Crm (strCrmName, dtModificationDate)VALUES
 ('Elite', CURRENT_TIMESTAMP),
 ('DEFAULT', CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.ServiceType (strServiceTypeName, strDescription, dtModificationDate)VALUES
+INSERT INTO inspector_db.ServiceType (strServiceTypeName, strDescription, dtModificationDate)VALUES
 ('Default', 'Generico usado por Inspector nuevos, asignar el tipo correcto', CURRENT_TIMESTAMP),
 ('Interno Tigo', 'Clientes internos de Tigo', CURRENT_TIMESTAMP),
 ('Externo Tigo', 'Clientes externos de Tigo', CURRENT_TIMESTAMP),
@@ -1523,10 +1523,10 @@ INSERT INTO inspectordb.ServiceType (strServiceTypeName, strDescription, dtModif
 ('Autoconsumo', 'Inspector instalados sobre autoconsumos', CURRENT_TIMESTAMP),
 ('Laboratorio', 'Inspector instalados en Laboratorio', CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.InspectorServices (strServiceId, strAddress, intDownSpeed, intUpSpeed, idProduct, idTecnology, idCity, idServiceType, idCmtsOlt, idCrm, dtModificationDate)VALUES
+INSERT INTO inspector_db.InspectorServices (strServiceId, strAddress, intDownSpeed, intUpSpeed, idProduct, idTecnology, idCity, idServiceType, idCmtsOlt, idCrm, dtModificationDate)VALUES
 ('1111', 'DEFAULT', 0, 0, 1, 4, 1, 1, 2, 6, CURRENT_TIMESTAMP);
 
-INSERT INTO inspectordb.InventoryInspectorStatus (strInventoryStatus, strDescriptionStatus, dtModificationDate)VALUES
+INSERT INTO inspector_db.InventoryInspectorStatus (strInventoryStatus, strDescriptionStatus, dtModificationDate)VALUES
 ('Ocupado', 'Inspector instalados', CURRENT_TIMESTAMP),
 ('Libre', 'Inspector libres', CURRENT_TIMESTAMP),
 ('Falla Hardware', 'Inspector con problemas en harware', CURRENT_TIMESTAMP),
@@ -1538,7 +1538,7 @@ INSERT INTO inspectordb.InventoryInspectorStatus (strInventoryStatus, strDescrip
 -- ===========================================
 -- INSERT DEFAULT FLEET
 -- ===========================================
-INSERT INTO inspectordb.InspectorFleets
+INSERT INTO inspector_db.InspectorFleets
 (stridInspectorFleet, strSlug, strDeviceType, intDeviceCount, dtCreate, dtModificationDate)VALUES
 ('DEFAULT', 'DEFAULT', 'DEFAULT', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (stridInspectorFleet) DO NOTHING;
@@ -1547,7 +1547,7 @@ ON CONFLICT (stridInspectorFleet) DO NOTHING;
 -- ===========================================
 -- INSERT DEFAULT INSPECTOR
 -- ===========================================
-INSERT INTO inspectordb.Inspector
+INSERT INTO inspector_db.Inspector
 (uuidInspector, idInventoryInspectorStatus, strInspectorServiceId, stridInspectorFleet,
  strInspectorName, boolOnline, boolApiHearbeatState, dtLastConnectivityEvent,
  strSupervisorVersion, strOsVersion, strNote,
@@ -1566,21 +1566,24 @@ INSERT INTO inspectordb.Inspector
  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (uuidInspector) DO NOTHING;
 
-INSERT INTO inspectordb.InspectorDeviceVariables (idInspectorDeviceVar, uuidInspector, strDeviceVarValue, dtCreate, dtModificationDate) VALUES
-('DEFAULT', 'DEFAULT', 'DEFAULT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+INSERT INTO inspector_db.InspectorDeviceVariables (uuidInspector, strDeviceVarValue, dtCreate, dtModificationDate) VALUES
+('DEFAULT', 'DEFAULT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (idInspectorDeviceVar) DO NOTHING;
 
-INSERT INTO inspectordb.InspectorFleetsVariables (idInspectorHistory, uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
+INSERT INTO inspector_db.InspectorFleetsVariables (uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
 intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuTempC, intHistoryCpuUsagePercent, dtValidate)
 VALUES
-('DEFAULT', 'DEFAULT', FALSE, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP)
+('DEFAULT', FALSE, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP)
 ON CONFLICT (idInspectorFleetVar) DO NOTHING;
 
-INSERT INTO inspectordb.StatusInspectorHistory(idInspectorHistory, uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
+INSERT INTO inspector_db.StatusInspectorHistory(uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
 intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, insHistoryCpuTempC, dtValidate)
+VALUES
+('DEFAULT', FALSE, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP)
+ON CONFLICT (idInspectorHistory) DO NOTHING;
 
 
-INSERT INTO inspectordb.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
+INSERT INTO inspector_db.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
 ('Activo', CURRENT_TIMESTAMP),
 ('Suspendido', CURRENT_TIMESTAMP),
 ('En proceso de retiro', CURRENT_TIMESTAMP),
@@ -1588,14 +1591,14 @@ INSERT INTO inspectordb.ServiceStatus (strServiceStatus, dtModificationDate)VALU
 ('Indeterminado', CURRENT_TIMESTAMP);
 
 
-INSERT INTO inspectordb.transactionstatus (strtransactionstatus, dtModificationDate) values
+INSERT INTO inspector_db.transactionstatus (strtransactionstatus, dtModificationDate) values
 ('Sin iniciar', CURRENT_TIMESTAMP),
 ('En progreso', CURRENT_TIMESTAMP),
 ('Fallido', CURRENT_TIMESTAMP),
 ('Completo', CURRENT_TIMESTAMP),
 ('Cancelado', CURRENT_TIMESTAMP);
 
-insert into inspectordb.ScriptTransaction (strscriptid, strscriptdescription, dtlastexecutionstart, dtlastexecutionfinish, idtransactionstatus) values
+insert into inspector_db.ScriptTransaction (strscriptid, strscriptdescription, dtlastexecutionstart, dtlastexecutionfinish, idtransactionstatus) values
 ('AUTOMATIC_RESTART_INSPECTOR', 'Reinicio automatico de los servicios  de los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_RESTART_INSPECTOR', 'Reinicio manual de los servicios (contenedores) de los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_SHUTDOWN_INSPECTOR', 'Apagado total del inspector.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
