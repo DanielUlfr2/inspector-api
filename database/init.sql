@@ -2,11 +2,15 @@
 -- 1. CREACIÓN DE BASES DE DATOS (Servicios Externos)
 -- =========================================================
 -- Estas DBs deben crearse antes de que los servicios arranquen
-CREATE DATABASE keycloak_db;
+-- Verificamos si la DB existe antes de crearla (Truco para psql: \gexec ejecuta el resultado del query)
+SELECT 'CREATE DATABASE keycloak_db' 
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'keycloak_db')\gexec
 
-CREATE DATABASE wireguard_db;
+SELECT 'CREATE DATABASE wireguard_db' 
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'wireguard_db')\gexec
 
-CREATE DATABASE inspector_db;
+SELECT 'CREATE DATABASE inspector_db' 
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'inspector_db')\gexec
 
 -- Conectamos a la DB principal para crear el esquema de la App
 \c inspector_db;
@@ -227,8 +231,35 @@ CREATE TABLE "BlackList" (
 -- 4. TABLA PARTICIONADA (Histórico)
 -- =========================================================
 
+CREATE TABLE "TransactionStatus"(
+	"idTransactionStatus" SERIAL PRIMARY KEY,
+	"strTransactionStatus" VARCHAR(20) NOT NULL,
+	"dtModificationDate" TIMESTAMP NOT NULL
+);
+
+CREATE TABLE "ScriptTransaction"(
+	"strScriptId" varchar(50) PRIMARY KEY,
+	"strScriptDescription" varchar(300) NOT NULL,
+	"dtLastExecutionStart" TIMESTAMP NOT NULL,
+	"dtLastExecutionFinish" TIMESTAMP NOT NULL,
+	"idTransactionStatus" INT NOT NULL,
+	CONSTRAINT "fk_scripttransaction_transactionstatus" FOREIGN KEY ("idTransactionStatus") REFERENCES "TransactionStatus" ("idTransactionStatus")
+);
+
+CREATE TABLE "HistoricScriptTransaction"(
+	"idHistoricScript" BIGSERIAL,
+	"strDescriptionFinish" VARCHAR(3000) NOT NULL,
+	"dtExecutionStart" TIMESTAMP NOT NULL,
+	"dtExecutionFinish" TIMESTAMP NOT NULL,
+	"idTransactionStatus" INT NOT NULL,
+	"strScriptId" varchar(50) NOT NULL,
+	CONSTRAINT "fk_historicscript_transactionstatus" FOREIGN KEY ("idTransactionStatus") REFERENCES "TransactionStatus" ("idTransactionStatus"),
+	CONSTRAINT "fk_historicscript_scripttransaction" FOREIGN KEY ("strScriptId") REFERENCES "ScriptTransaction" ("strScriptId"),
+	PRIMARY KEY ("idHistoricScript", "dtExecutionStart")
+)PARTITION BY RANGE ("dtExecutionStart");
+
 CREATE TABLE "StatusInspectorHistory" (
-  "idInspectorHistory" SERIAL, -- OJO: En particiones, el PK global es complejo. Lo dejamos como serial simple pero no PK global.
+  "idInspectorHistory" SERIAL, 
   "uuidInspector" varchar(200) NOT NULL,
   "idTransactionStatus" INT NOT NULL,
   "boolOnline" boolean NOT NULL,
@@ -241,73 +272,52 @@ CREATE TABLE "StatusInspectorHistory" (
   "strScriptId" varchar(50) NOT NULL,
   "dtValidate" timestamp NOT NULL,
   CONSTRAINT "fk_statushistory_inspector" FOREIGN KEY ("uuidInspector") REFERENCES "Inspector" ("uuidInspector"),
-  CONSTRAINT "fk_statushistory_transactionstatus" FOREIGN KEY ("idTransactionStatus") REFERENCES "TransactionStatus" ("idTransactionStatus")
-  CONSTRAINT "fk_statushistory_scripttransaction" FOREIGN KEY ("strScriptId") REFERENCES "ScriptTransaction" ("strScriptId")
+  CONSTRAINT "fk_statushistory_transactionstatus" FOREIGN KEY ("idTransactionStatus") REFERENCES "TransactionStatus" ("idTransactionStatus"),
+  CONSTRAINT "fk_statushistory_scripttransaction" FOREIGN KEY ("strScriptId") REFERENCES "ScriptTransaction" ("strScriptId"),
+  CONSTRAINT "pk_constraint_statusinsphist" PRIMARY KEY ("idInspectorHistory", "dtValidate") 
 ) PARTITION BY RANGE ("dtValidate");
-
-
-CREATE TABLE TransactionStatus(
-	"idTransactionStatus" SERIAL PRIMARY KEY,
-	"strTransactionStatus" VARCHAR(20) NOT NULL,
-	"dtModificationDate" TIMESTAMP NOT NULL
-);
-
-CREATE TABLE ScriptTransaction(
-	"strScriptId" varchar(50) PRIMARY KEY,
-	"strScriptDescription" varchar(300) NOT NULL,
-	"dtLastExecutionStart" TIMESTAMP NOT NULL,
-	"dtLastExecutionFinish" TIMESTAMP NOT NULL,
-	"idTransactionStatus" INT NOT NULL,
-	CONSTRAINT "fk_scripttransaction_transactionstatus" FOREIGN KEY ("idTransactionStatus") REFERENCES "TransactionStatus" ("idTransactionStatus")
-);
-
-CREATE TABLE HistoricScriptTransaction(
-	"idHistoricScript" BIGSERIAL,
-	"strDescriptionFinish" VARCHAR(3000) NOT NULL,
-	"dtExecutionStart" TIMESTAMP NOT NULL,
-	"dtExecutionFinish" TIMESTAMP NOT NULL,
-	"idTransactionStatus" INT NOT NULL,
-	"strScriptId" varchar(50) NOT NULL,
-	CONSTRAINT "fk_historicscript_transactionstatus" FOREIGN KEY ("idTransactionStatus") REFERENCES "TransactionStatus" ("idTransactionStatus"),
-	CONSTRAINT "fk_historicscript_scripttransaction" FOREIGN KEY ("strScriptId") REFERENCES "ScriptTransaction" ("strScriptId")
-)PARTITION BY RANGE ("dtExecutionStart");
-
 
 -- Crea las particiones usando pg_partman
 -- Nota: p_jobmon se establece en FALSE si no has instalado la extensión pg_jobmon (que es diferente a pg_partman)
+
+-- 1. Particionamiento para StatusInspectorHistory
 SELECT partman.create_parent(
     p_parent_table := 'public."StatusInspectorHistory"',
-    p_control := 'dtValidate',
+    p_control := 'dtValidate',           -- Quitamos comillas dobles internas innecesarias
     p_interval := '1 day',
     p_type := 'range',
     p_epoch := 'none',
     p_premake := 7,
-    p_start_partition := (NOW() - interval '7 days')::text,
+    -- CORRECCIÓN: Usamos CURRENT_DATE para evitar problemas de zona horaria al convertir a texto
+    p_start_partition := (CURRENT_DATE - interval '7 days')::text, 
     p_default_table := true,
     p_automatic_maintenance := 'on'::text,
     p_constraint_cols := NULL,
     p_template_table := NULL,
-    p_jobmon := false, -- IMPORTANTE: False si no instalamos pg_jobmon explícitamente
+    p_jobmon := false,                   -- IMPORTANTE: False
     p_date_trunc_interval := NULL
 );
 
+-- 2. Particionamiento para HistoricScriptTransaction
 SELECT partman.create_parent(
     p_parent_table := 'public."HistoricScriptTransaction"',
-    p_control := 'dtexecutionstart',
+    p_control := 'dtExecutionStart',     -- Quitamos comillas dobles internas
     p_interval := '1 day',
     p_type := 'range',
     p_epoch := 'none',
     p_premake := 7,
-    p_start_partition := (current_date - interval '7 days')::text,
+    p_start_partition := (CURRENT_DATE - interval '7 days')::text,
     p_default_table := true,
     p_automatic_maintenance := 'on'::text,
     p_constraint_cols := NULL,
     p_template_table := NULL,
-    p_jobmon := true,
+    p_jobmon := false,                   -- CORRECCIÓN: Estaba en true, cambiado a false
     p_date_trunc_interval := NULL
 );
 
+-- 3. Configurar retención para AMBAS tablas
 UPDATE partman.part_config
-SET retention = '1 month', infinite_time_partitions = TRUE
-WHERE parent_table = 'public."StatusInspectorHistory"';
+SET retention = '1 month', 
+    infinite_time_partitions = TRUE
+WHERE parent_table IN ('public."StatusInspectorHistory"', 'public."HistoricScriptTransaction"');
 

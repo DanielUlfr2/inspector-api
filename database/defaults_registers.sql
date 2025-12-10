@@ -1,13 +1,13 @@
-INSERT INTO inspector_db.Country (strCountryName, dtModificationDate)VALUES 
+INSERT INTO inspectordb.Country (strCountryName, dtModificationDate)VALUES 
 ('Colombia',CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.Region (strRegionName, idCountry, dtModificationDate)VALUES
+INSERT INTO inspectordb.Region (strRegionName, idCountry, dtModificationDate)VALUES
 ('Andina', 1, CURRENT_TIMESTAMP),
 ('Bogota', 1, CURRENT_TIMESTAMP),
 ('Costa', 1, CURRENT_TIMESTAMP),
 ('Sur', 1, CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.Department (strDepartmentName, idRegion, dtModificationDate)VALUES
+INSERT INTO inspectordb.Department (strDepartmentName, idRegion, dtModificationDate)VALUES
 ('Antioquia', 1, CURRENT_TIMESTAMP),
 ('Arauca', 1, CURRENT_TIMESTAMP),
 ('Bolívar', 1, CURRENT_TIMESTAMP),
@@ -44,7 +44,7 @@ INSERT INTO inspector_db.Department (strDepartmentName, idRegion, dtModification
 ('Vaupés', 4, CURRENT_TIMESTAMP),
 ('Vichada', 4, CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.City (strCityName, idDepartment, dtModificationDate)VALUES
+INSERT INTO inspectordb.City (strCityName, idDepartment, dtModificationDate)VALUES
 ('Indeterminado', 19, CURRENT_TIMESTAMP),
 ('LINARES', 28, CURRENT_TIMESTAMP),
 ('SIACHOQUE', 4, CURRENT_TIMESTAMP),
@@ -1088,7 +1088,7 @@ INSERT INTO inspector_db.City (strCityName, idDepartment, dtModificationDate)VAL
 ('SAN MIGUEL DE SEMA', 4, CURRENT_TIMESTAMP),
 ('ZAMBRANO', 12, CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.TerminalType (strTerminalType, dtModificationDate)VALUES
+INSERT INTO inspectordb.TerminalType (strTerminalType, dtModificationDate)VALUES
 ('CMTS', CURRENT_TIMESTAMP),
 ('OLT', CURRENT_TIMESTAMP),
 ('COS', CURRENT_TIMESTAMP),
@@ -1099,7 +1099,7 @@ INSERT INTO inspector_db.TerminalType (strTerminalType, dtModificationDate)VALUE
 ('AndroidTv', CURRENT_TIMESTAMP),
 ('Extensor', CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.TerminalBrand (strTerminalBrand, dtModificationDate)VALUES
+INSERT INTO inspectordb.TerminalBrand (strTerminalBrand, dtModificationDate)VALUES
 ('Arris', CURRENT_TIMESTAMP),
 ('Casa', CURRENT_TIMESTAMP),
 ('Cisco', CURRENT_TIMESTAMP),
@@ -1119,7 +1119,7 @@ INSERT INTO inspector_db.TerminalBrand (strTerminalBrand, dtModificationDate)VAL
 ('Sercomm', CURRENT_TIMESTAMP),
 ('Sei Robotics', CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.TerminalReference (strTerminalReference, idTerminalBrand, idTerminalType, dtModificationDate)VALUES
+INSERT INTO inspectordb.TerminalReference (strTerminalReference, idTerminalBrand, idTerminalType, dtModificationDate)VALUES
 ('E6000', 1, 1, CURRENT_TIMESTAMP),
 ('E6000-G2', 1, 1, CURRENT_TIMESTAMP),
 ('C100G', 2, 1, CURRENT_TIMESTAMP),
@@ -1162,7 +1162,7 @@ INSERT INTO inspector_db.TerminalReference (strTerminalReference, idTerminalBran
 ('7360FX-16',6, 2, CURRENT_TIMESTAMP); --40
 
 
-INSERT INTO inspector_db.CmtsOlt (strCmtsOltName, idTerminalReference, idCity, dtModificationDate)VALUES
+INSERT INTO inspectordb.CmtsOlt (strCmtsOltName, idTerminalReference, idCity, dtModificationDate)VALUES
 ('Indeterminado', 6, 1, CURRENT_TIMESTAMP),
 ('apo-eda-cmts-01', 3, 603, CURRENT_TIMESTAMP),
 ('axm-mir-cmts-01', 3, 1002, CURRENT_TIMESTAMP),
@@ -1359,152 +1359,153 @@ INSERT INTO inspector_db.CmtsOlt (strCmtsOltName, idTerminalReference, idCity, d
 ('pei-cen-cmts-02', 2, 870, CURRENT_TIMESTAMP),
 ('pei-gam-cmts-04', 2, 870, CURRENT_TIMESTAMP),
 ('pie-pdp-cmts-01', 2, 994, CURRENT_TIMESTAMP),
-('BOG-WTC-OLT-5603-980701', 37, 582, CURRENT_TIMESTAMP),
-('BOG-ENG-OLT-5603-990801', 37, 582, CURRENT_TIMESTAMP),
-('BOG-CAN-OLT-5603-980101', 37, 582, CURRENT_TIMESTAMP),
-('CLO-VCO-OLT-5603-480101', 37, 646, CURRENT_TIMESTAMP),
-('BOG-MON-OLT-5600-990601', 38, 582, CURRENT_TIMESTAMP),
-('BOG-VCO-OLT-5600-980201', 38, 582, CURRENT_TIMESTAMP),
-('BOG-SBI-OLT-5600-990101', 38, 582, CURRENT_TIMESTAMP),
-('CLO-LIM-OLT-5600-480001', 38, 646, CURRENT_TIMESTAMP),
-('BAQ-TAB-OLT-5600-700601', 38, 528, CURRENT_TIMESTAMP),
-('SMR-ECE-OLT-5600-580101', 38, 1037, CURRENT_TIMESTAMP),
-('MDE-LBA-OLT-5600-008001', 38, 289, CURRENT_TIMESTAMP),
-('MDE-ENV-OLT-5600-001101', 38, 137, CURRENT_TIMESTAMP),
-('MDE-SAB-OLT-5600-001301', 38, 237, CURRENT_TIMESTAMP),
-('BOG-QCA-OLT-5600-990201', 38, 582, CURRENT_TIMESTAMP),
-('MDE-RIO-OLT-5600-002101', 38, 273, CURRENT_TIMESTAMP),
-('IBE-JAR-OLT-5600-00201', 38, 839, CURRENT_TIMESTAMP),
-('IBE-JAR-OLT-5600-00202', 38, 839, CURRENT_TIMESTAMP),
-('ETP-CEN-OLT-5600-00101', 38, 870, CURRENT_TIMESTAMP),
-('IBE-CAR-OLT-5600-00101', 38, 839, CURRENT_TIMESTAMP),
-('BOG-SUB-OLT-5600-993201', 38, 582, CURRENT_TIMESTAMP),
-('MDE-POB-OLT-5600-04002', 38, 289, CURRENT_TIMESTAMP),
-('MDE-CEN-OLT-5600-03002', 38, 289, CURRENT_TIMESTAMP),
-('BOG-CAN-OLT-5603-980102', 37, 582, CURRENT_TIMESTAMP),
-('BOG-CEN-OLT-5600-980001', 38, 582, CURRENT_TIMESTAMP),
-('CLO-VCO-OLT-5600-480102', 38, 646, CURRENT_TIMESTAMP),
-('MZL-CEN-OLT-5600-642001', 38, 122, CURRENT_TIMESTAMP),
-('BGA-CAB-OLT-5600-400201', 38, 205, CURRENT_TIMESTAMP),
-('BOG-LFR-OLT-5603-990701', 37, 582, CURRENT_TIMESTAMP),
-('MDE-GUA-OLT-5600-03501', 38, 289, CURRENT_TIMESTAMP),
-('MDE-LFE-OLT-5600-76101', 38, 955, CURRENT_TIMESTAMP),
-('MDE-NIQ-OLT-5600-05701', 38, 108, CURRENT_TIMESTAMP),
-('MDE-LCE-OLT-5600-08201', 38, 312, CURRENT_TIMESTAMP),
-('MDE-GIR-OLT-5600-01901', 38, 409, CURRENT_TIMESTAMP),
-('MDE-GNE-OLT-5600-008101', 38, 599, CURRENT_TIMESTAMP),
-('MDE-SHE-OLT-5600-036101', 38, 289, CURRENT_TIMESTAMP),
-('MDE-ITA-OLT-5600-001201', 38, 385, CURRENT_TIMESTAMP),
-('MDE-CAL-OLT-5600-001601', 38, 849, CURRENT_TIMESTAMP),
-('SFA-EDA-OLT-5800-100101', 39, 273, CURRENT_TIMESTAMP),
-('BAQ-SBO-OLT-5800-700701', 39, 333, CURRENT_TIMESTAMP),
-('DORADA-MA5600-1', 38, 783, CURRENT_TIMESTAMP),
-('PTO-BOYACA-OLT-MA5600T-1', 38, 267, CURRENT_TIMESTAMP),
-('AGUACHICA-MA5600-1', 38, 720, CURRENT_TIMESTAMP),
-('MAGANGUE-MA5600-1', 38, 548, CURRENT_TIMESTAMP),
-('BOSCONIA-MA5600-1', 38, 468, CURRENT_TIMESTAMP),
-('CODAZZI-MA5600-1', 38, 513, CURRENT_TIMESTAMP),
-('MDE-SCR-OLT-5800-002001', 39, 289, CURRENT_TIMESTAMP),
-('CTG-ZAR-OLT-5800-460301', 39, 488, CURRENT_TIMESTAMP),
-('PEI-TRI-OLT-5800-00301', 39, 870, CURRENT_TIMESTAMP),
-('CUC-QVE-OLT-5800-100301', 39, 273, CURRENT_TIMESTAMP),
-('MDE-COL-OLT-5800-03402', 39, 289, CURRENT_TIMESTAMP),
-('ETP-CER-OLT-5800-000501', 39, 870, CURRENT_TIMESTAMP),
-('MDE-CEN-OLT-5800-003003', 39, 289, CURRENT_TIMESTAMP),
-('BGA-FBL-OLT-5800-400101', 39, 273, CURRENT_TIMESTAMP),
-('BAQ-POC-OLT-5800-700202', 39, 528, CURRENT_TIMESTAMP),
-('MDE-NUT-OLT-5800-03802', 39, 289, CURRENT_TIMESTAMP),
-('BOG-ECA-OLT-5800-990501', 39, 582, CURRENT_TIMESTAMP),
-('BOG-TIM-OLT-5800-990401', 39, 582, CURRENT_TIMESTAMP),
-('VUP-EDA-OLT-5800-100201', 39, 582, CURRENT_TIMESTAMP),
-('TUN-AUT-OLT-5800-100401', 39, 582, CURRENT_TIMESTAMP),
-('MDE-LLA-OLT-5800-016101', 39, 9, CURRENT_TIMESTAMP),
-('MDE-CAR-OLT-5800-002601', 39, 289, CURRENT_TIMESTAMP),
-('MDE-BAI-OLT-5800-000201', 39, 289, CURRENT_TIMESTAMP),
-('MDE-OTR-OLT-5800-003901', 39, 289, CURRENT_TIMESTAMP),
-('MDE-SBE-OLT-5800-001001', 39, 289, CURRENT_TIMESTAMP),
-('MDE-BAR-OLT-5800-005401', 39, 528, CURRENT_TIMESTAMP),
-('MDE-COP-OLT-5800-001801', 39, 770, CURRENT_TIMESTAMP),
-('MDE-AUT-OLT-5800-046101', 39, 261, CURRENT_TIMESTAMP),
-('MDE-RIO-OLT-5800-002102', 39, 205, CURRENT_TIMESTAMP),
-('MDE-BEL-OLT-5800-001701', 39, 108, CURRENT_TIMESTAMP),
-('BOG-QCA-OLT-5800-990202', 39, 582, CURRENT_TIMESTAMP),
-('BOG-LFR-OLT-5800-990702', 39, 582, CURRENT_TIMESTAMP),
-('BOG-ENG-OLT-5800-990802', 39, 5, CURRENT_TIMESTAMP),
-('BOG-CTJ-OLT-5800-986103', 39, 535, CURRENT_TIMESTAMP),
-('RCH-0003-OLT-5800-100501', 39, 297, CURRENT_TIMESTAMP),
-('MDE-ECV-OLT-5800-086101', 39, 77, CURRENT_TIMESTAMP),
-('MDE-ESA-OLT-5800-018301', 39, 998, CURRENT_TIMESTAMP),
-('MDE-LUN-OLT-5800-018201', 39, 81, CURRENT_TIMESTAMP),
-('AXM-MIR-OLT-5800-100601', 39, 106, CURRENT_TIMESTAMP),
-('MDE-MAR-OLT-5800-008301', 39, 611, CURRENT_TIMESTAMP),
-('MDE-LPA-OLT-5800-33402', 39, 289, CURRENT_TIMESTAMP),
-('CTG-BOS-OLT-5800-462202', 39, 770, CURRENT_TIMESTAMP),
-('BOG-DOR-OLT-5800-980901', 39, 582, CURRENT_TIMESTAMP),
-('CZU-EDA-OLT-5800-100701', 39, 665, CURRENT_TIMESTAMP),
-('VVC-SBE-OLT-5800-600101', 39, 958, CURRENT_TIMESTAMP),
-('FUS-BAL-OLT-5800-300201', 39, 389, CURRENT_TIMESTAMP),
-('FAC-FAC3-OLT-5800-991001', 39, 923, CURRENT_TIMESTAMP),
-('MTR-EDA-OLT-5800-620001', 39, 556, CURRENT_TIMESTAMP),
-('BAQ-MTC-OLT-5800-102801', 39, 528, CURRENT_TIMESTAMP),
-('MDE-ERE-OLT-5800-066101', 39, 955, CURRENT_TIMESTAMP),
-('CAQ-EDA-OLT-5800-100901', 39, 146, CURRENT_TIMESTAMP),
-('APO-EDA-OLT-5800-101001', 39, 603, CURRENT_TIMESTAMP),
-('TRB-EDA-OLT-5800-101101', 39, 73, CURRENT_TIMESTAMP),
-('MDE-IGU-OLT-5800-003601', 39, 289, CURRENT_TIMESTAMP),
-('MDE-CEN-OLT-5800-003004', 39, 289, CURRENT_TIMESTAMP),
-('MDE-LES-OLT-5800-001401', 39, 289, CURRENT_TIMESTAMP),
-('MDE-SJA-OLT-5800-002201', 39, 289, CURRENT_TIMESTAMP),
-('PEI-GAM-OLT-5800-101201', 39, 870, CURRENT_TIMESTAMP),
-('PEI-CAM-OLT-5800-101401', 39, 697, CURRENT_TIMESTAMP),
-('CLO-CCI-OLT-5800-101501', 39, 646, CURRENT_TIMESTAMP),
-('PPN-PRN-OLT-5800-500201', 39, 493, CURRENT_TIMESTAMP),
-('IBE-CAR-OLT-5800-000102', 39, 839, CURRENT_TIMESTAMP),
-('PSO-FLO-OLT-5800-101601', 39, 400, CURRENT_TIMESTAMP),
-('ULQ-CAM-OLT-5800-101701', 39, 195, CURRENT_TIMESTAMP),
-('MZL-PAL-OLT-5800-644501', 39, 122, CURRENT_TIMESTAMP),
-('PAL-VSO-OLT-5800-480501', 39, 523, CURRENT_TIMESTAMP),
-('EJA-BAI-OLT-5800-410001', 39, 431, CURRENT_TIMESTAMP),
-('BGA-AVI-OLT-5800-400001', 39, 205, CURRENT_TIMESTAMP),
-('PIE-PDP-OLT-5800-111701', 39, 994, CURRENT_TIMESTAMP),
-('MDE-SAP-OLT-5800-102901', 39, 289, CURRENT_TIMESTAMP),
-('MDE-POB-OLT-5800-004003', 39, 289, CURRENT_TIMESTAMP),
-('MDE-GNE-OLT-5800-008102', 39, 599, CURRENT_TIMESTAMP),
-('MDE-LFE-OLT-5800-076102', 39, 955, CURRENT_TIMESTAMP),
-('COR-EDA-OLT-7360-101801', 40, 311, CURRENT_TIMESTAMP),
-('MDE-ENV-OLT-7360-001102', 40, 137, CURRENT_TIMESTAMP),
-('MDE-ITA-OLT-7360-001202', 40, 385, CURRENT_TIMESTAMP),
-('MDE-BOS-OLT-7360-003201', 40, 289, CURRENT_TIMESTAMP),
-('MDE-MIR-OLT-7360-003701', 40, 289, CURRENT_TIMESTAMP),
-('MDE-RIO-OLT-7360-002103', 40, 273, CURRENT_TIMESTAMP),
-('SOG-SBA-OLT-7360-102101', 40, 239, CURRENT_TIMESTAMP),
-('DUI-SBO-OLT-7360-102001', 40, 288, CURRENT_TIMESTAMP),
-('PEI-COL-OLT-7360-102701', 40, 870, CURRENT_TIMESTAMP),
-('MDE-BER-OLT-5800-000401', 39, 289, CURRENT_TIMESTAMP),
-('MDE-CAS-OLT-5800-003301', 39, 289, CURRENT_TIMESTAMP),
-('PEI-ALA-OLT-5800-103101', 39, 870, CURRENT_TIMESTAMP),
-('CLO-LIM-OLT-7360-480002', 40, 646, CURRENT_TIMESTAMP),
-('MZL-BEL-OLT-7360-643001', 40, 122, CURRENT_TIMESTAMP),
-('BGA-SFR-OLT-7360-103201', 40, 205, CURRENT_TIMESTAMP),
-('MDE-LBA-OLT-7360-008002', 40, 289, CURRENT_TIMESTAMP),
-('CUC-QVE-OLT-7360-100302', 40, 261, CURRENT_TIMESTAMP),
-('BOG-MON-OLT-7360-990602', 40, 582, CURRENT_TIMESTAMP),
-('MDE-JMC-OLT-5800-660301', 39, 273, CURRENT_TIMESTAMP),
-('MDE-AME-OLT-5800-003102', 39, 289, CURRENT_TIMESTAMP),
-('CTG-TUR-OLT-5800-460402', 39, 770, CURRENT_TIMESTAMP);
+('bog-wtc-olt-5603-980701', 37, 582, CURRENT_TIMESTAMP),
+('bog-eng-olt-5603-990801', 37, 582, CURRENT_TIMESTAMP),
+('bog-can-olt-5603-980101', 37, 582, CURRENT_TIMESTAMP),
+('clo-vco-olt-5603-480101', 37, 646, CURRENT_TIMESTAMP),
+('bog-mon-olt-5600-990601', 38, 582, CURRENT_TIMESTAMP),
+('bog-vco-olt-5600-980201', 38, 582, CURRENT_TIMESTAMP),
+('bog-sbi-olt-5600-990101', 38, 582, CURRENT_TIMESTAMP),
+('clo-lim-olt-5600-480001', 38, 646, CURRENT_TIMESTAMP),
+('baq-tab-olt-5600-700601', 38, 528, CURRENT_TIMESTAMP),
+('smr-ece-olt-5600-580101', 38, 1037, CURRENT_TIMESTAMP),
+('mde-lba-olt-5600-008001', 38, 289, CURRENT_TIMESTAMP),
+('mde-env-olt-5600-001101', 38, 137, CURRENT_TIMESTAMP),
+('mde-sab-olt-5600-001301', 38, 237, CURRENT_TIMESTAMP),
+('bog-qca-olt-5600-990201', 38, 582, CURRENT_TIMESTAMP),
+('mde-rio-olt-5600-002101', 38, 273, CURRENT_TIMESTAMP),
+('ibe-jar-olt-5600-00201', 38, 839, CURRENT_TIMESTAMP),
+('ibe-jar-olt-5600-00202', 38, 839, CURRENT_TIMESTAMP),
+('etp-cen-olt-5600-00101', 38, 870, CURRENT_TIMESTAMP),
+('ibe-car-olt-5600-00101', 38, 839, CURRENT_TIMESTAMP),
+('bog-sub-olt-5600-993201', 38, 582, CURRENT_TIMESTAMP),
+('mde-pob-olt-5600-04002', 38, 289, CURRENT_TIMESTAMP),
+('mde-cen-olt-5600-03002', 38, 289, CURRENT_TIMESTAMP),
+('bog-can-olt-5603-980102', 37, 582, CURRENT_TIMESTAMP),
+('bog-cen-olt-5600-980001', 38, 582, CURRENT_TIMESTAMP),
+('clo-vco-olt-5600-480102', 38, 646, CURRENT_TIMESTAMP),
+('mzl-cen-olt-5600-642001', 38, 122, CURRENT_TIMESTAMP),
+('bga-cab-olt-5600-400201', 38, 205, CURRENT_TIMESTAMP),
+('bog-lfr-olt-5603-990701', 37, 582, CURRENT_TIMESTAMP),
+('mde-gua-olt-5600-03501', 38, 289, CURRENT_TIMESTAMP),
+('mde-lfe-olt-5600-76101', 38, 955, CURRENT_TIMESTAMP),
+('mde-niq-olt-5600-05701', 38, 108, CURRENT_TIMESTAMP),
+('mde-lce-olt-5600-08201', 38, 312, CURRENT_TIMESTAMP),
+('mde-gir-olt-5600-01901', 38, 409, CURRENT_TIMESTAMP),
+('mde-gne-olt-5600-008101', 38, 599, CURRENT_TIMESTAMP),
+('mde-she-olt-5600-036101', 38, 289, CURRENT_TIMESTAMP),
+('mde-ita-olt-5600-001201', 38, 385, CURRENT_TIMESTAMP),
+('mde-cal-olt-5600-001601', 38, 849, CURRENT_TIMESTAMP),
+('sfa-eda-olt-5800-100101', 39, 273, CURRENT_TIMESTAMP),
+('baq-sbo-olt-5800-700701', 39, 333, CURRENT_TIMESTAMP),
+('dorada-ma5600-1', 38, 783, CURRENT_TIMESTAMP),
+('pto-boyaca-olt-ma5600t-1', 38, 267, CURRENT_TIMESTAMP),
+('aguachica-ma5600-1', 38, 720, CURRENT_TIMESTAMP),
+('magangue-ma5600-1', 38, 548, CURRENT_TIMESTAMP),
+('bosconia-ma5600-1', 38, 468, CURRENT_TIMESTAMP),
+('codazzi-ma5600-1', 38, 513, CURRENT_TIMESTAMP),
+('mde-scr-olt-5800-002001', 39, 289, CURRENT_TIMESTAMP),
+('ctg-zar-olt-5800-460301', 39, 488, CURRENT_TIMESTAMP),
+('pei-tri-olt-5800-00301', 39, 870, CURRENT_TIMESTAMP),
+('cuc-qve-olt-5800-100301', 39, 273, CURRENT_TIMESTAMP),
+('mde-col-olt-5800-03402', 39, 289, CURRENT_TIMESTAMP),
+('etp-cer-olt-5800-000501', 39, 870, CURRENT_TIMESTAMP),
+('mde-cen-olt-5800-003003', 39, 289, CURRENT_TIMESTAMP),
+('bga-fbl-olt-5800-400101', 39, 273, CURRENT_TIMESTAMP),
+('baq-poc-olt-5800-700202', 39, 528, CURRENT_TIMESTAMP),
+('mde-nut-olt-5800-03802', 39, 289, CURRENT_TIMESTAMP),
+('bog-eca-olt-5800-990501', 39, 582, CURRENT_TIMESTAMP),
+('bog-tim-olt-5800-990401', 39, 582, CURRENT_TIMESTAMP),
+('vup-eda-olt-5800-100201', 39, 582, CURRENT_TIMESTAMP),
+('tun-aut-olt-5800-100401', 39, 582, CURRENT_TIMESTAMP),
+('mde-lla-olt-5800-016101', 39, 9, CURRENT_TIMESTAMP),
+('mde-car-olt-5800-002601', 39, 289, CURRENT_TIMESTAMP),
+('mde-bai-olt-5800-000201', 39, 289, CURRENT_TIMESTAMP),
+('mde-otr-olt-5800-003901', 39, 289, CURRENT_TIMESTAMP),
+('mde-sbe-olt-5800-001001', 39, 289, CURRENT_TIMESTAMP),
+('mde-bar-olt-5800-005401', 39, 528, CURRENT_TIMESTAMP),
+('mde-cop-olt-5800-001801', 39, 770, CURRENT_TIMESTAMP),
+('mde-aut-olt-5800-046101', 39, 261, CURRENT_TIMESTAMP),
+('mde-rio-olt-5800-002102', 39, 205, CURRENT_TIMESTAMP),
+('mde-bel-olt-5800-001701', 39, 108, CURRENT_TIMESTAMP),
+('bog-qca-olt-5800-990202', 39, 582, CURRENT_TIMESTAMP),
+('bog-lfr-olt-5800-990702', 39, 582, CURRENT_TIMESTAMP),
+('bog-eng-olt-5800-990802', 39, 5, CURRENT_TIMESTAMP),
+('bog-ctj-olt-5800-986103', 39, 535, CURRENT_TIMESTAMP),
+('rch-0003-olt-5800-100501', 39, 297, CURRENT_TIMESTAMP),
+('mde-ecv-olt-5800-086101', 39, 77, CURRENT_TIMESTAMP),
+('mde-esa-olt-5800-018301', 39, 998, CURRENT_TIMESTAMP),
+('mde-lun-olt-5800-018201', 39, 81, CURRENT_TIMESTAMP),
+('axm-mir-olt-5800-100601', 39, 106, CURRENT_TIMESTAMP),
+('mde-mar-olt-5800-008301', 39, 611, CURRENT_TIMESTAMP),
+('mde-lpa-olt-5800-33402', 39, 289, CURRENT_TIMESTAMP),
+('ctg-bos-olt-5800-462202', 39, 770, CURRENT_TIMESTAMP),
+('bog-dor-olt-5800-980901', 39, 582, CURRENT_TIMESTAMP),
+('czu-eda-olt-5800-100701', 39, 665, CURRENT_TIMESTAMP),
+('vvc-sbe-olt-5800-600101', 39, 958, CURRENT_TIMESTAMP),
+('fus-bal-olt-5800-300201', 39, 389, CURRENT_TIMESTAMP),
+('fac-fac3-olt-5800-991001', 39, 923, CURRENT_TIMESTAMP),
+('mtr-eda-olt-5800-620001', 39, 556, CURRENT_TIMESTAMP),
+('baq-mtc-olt-5800-102801', 39, 528, CURRENT_TIMESTAMP),
+('mde-ere-olt-5800-066101', 39, 955, CURRENT_TIMESTAMP),
+('caq-eda-olt-5800-100901', 39, 146, CURRENT_TIMESTAMP),
+('apo-eda-olt-5800-101001', 39, 603, CURRENT_TIMESTAMP),
+('trb-eda-olt-5800-101101', 39, 73, CURRENT_TIMESTAMP),
+('mde-igu-olt-5800-003601', 39, 289, CURRENT_TIMESTAMP),
+('mde-cen-olt-5800-003004', 39, 289, CURRENT_TIMESTAMP),
+('mde-les-olt-5800-001401', 39, 289, CURRENT_TIMESTAMP),
+('mde-sja-olt-5800-002201', 39, 289, CURRENT_TIMESTAMP),
+('pei-gam-olt-5800-101201', 39, 870, CURRENT_TIMESTAMP),
+('pei-cam-olt-5800-101401', 39, 697, CURRENT_TIMESTAMP),
+('clo-cci-olt-5800-101501', 39, 646, CURRENT_TIMESTAMP),
+('ppn-prn-olt-5800-500201', 39, 493, CURRENT_TIMESTAMP),
+('ibe-car-olt-5800-000102', 39, 839, CURRENT_TIMESTAMP),
+('pso-flo-olt-5800-101601', 39, 400, CURRENT_TIMESTAMP),
+('ulq-cam-olt-5800-101701', 39, 195, CURRENT_TIMESTAMP),
+('mzl-pal-olt-5800-644501', 39, 122, CURRENT_TIMESTAMP),
+('pal-vso-olt-5800-480501', 39, 523, CURRENT_TIMESTAMP),
+('eja-bai-olt-5800-410001', 39, 431, CURRENT_TIMESTAMP),
+('bga-avi-olt-5800-400001', 39, 205, CURRENT_TIMESTAMP),
+('pie-pdp-olt-5800-111701', 39, 994, CURRENT_TIMESTAMP),
+('mde-sap-olt-5800-102901', 39, 289, CURRENT_TIMESTAMP),
+('mde-pob-olt-5800-004003', 39, 289, CURRENT_TIMESTAMP),
+('mde-gne-olt-5800-008102', 39, 599, CURRENT_TIMESTAMP),
+('mde-lfe-olt-5800-076102', 39, 955, CURRENT_TIMESTAMP),
+('cor-eda-olt-7360-101801', 40, 311, CURRENT_TIMESTAMP),
+('mde-env-olt-7360-001102', 40, 137, CURRENT_TIMESTAMP),
+('mde-ita-olt-7360-001202', 40, 385, CURRENT_TIMESTAMP),
+('mde-bos-olt-7360-003201', 40, 289, CURRENT_TIMESTAMP),
+('mde-mir-olt-7360-003701', 40, 289, CURRENT_TIMESTAMP),
+('mde-rio-olt-7360-002103', 40, 273, CURRENT_TIMESTAMP),
+('sog-sba-olt-7360-102101', 40, 239, CURRENT_TIMESTAMP),
+('dui-sbo-olt-7360-102001', 40, 288, CURRENT_TIMESTAMP),
+('pei-col-olt-7360-102701', 40, 870, CURRENT_TIMESTAMP),
+('mde-ber-olt-5800-000401', 39, 289, CURRENT_TIMESTAMP),
+('mde-cas-olt-5800-003301', 39, 289, CURRENT_TIMESTAMP),
+('pei-ala-olt-5800-103101', 39, 870, CURRENT_TIMESTAMP),
+('clo-lim-olt-7360-480002', 40, 646, CURRENT_TIMESTAMP),
+('mzl-bel-olt-7360-643001', 40, 122, CURRENT_TIMESTAMP),
+('bga-sfr-olt-7360-103201', 40, 205, CURRENT_TIMESTAMP),
+('mde-lba-olt-7360-008002', 40, 289, CURRENT_TIMESTAMP),
+('cuc-qve-olt-7360-100302', 40, 261, CURRENT_TIMESTAMP),
+('bog-mon-olt-7360-990602', 40, 582, CURRENT_TIMESTAMP),
+('mde-jmc-olt-5800-660301', 39, 273, CURRENT_TIMESTAMP),
+('mde-ame-olt-5800-003102', 39, 289, CURRENT_TIMESTAMP),
+('ctg-tur-olt-5800-460402', 39, 770, CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.Tecnology (strTecnologyName, dtModificationDate)VALUES
+
+INSERT INTO inspectordb.Tecnology (strTecnologyName, dtModificationDate)VALUES
 ('HFC', CURRENT_TIMESTAMP),
 ('GPON', CURRENT_TIMESTAMP),
 ('5G/LTE', CURRENT_TIMESTAMP),
 ('DEFAULT', CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.Product (strProductName, dtModificationDate)VALUES
+INSERT INTO inspectordb.Product (strProductName, dtModificationDate)VALUES
 ('BA', CURRENT_TIMESTAMP),
 ('TOIP', CURRENT_TIMESTAMP),
 ('TV', CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.Crm (strCrmName, dtModificationDate)VALUES
+INSERT INTO inspectordb.Crm (strCrmName, dtModificationDate)VALUES
 ('Siebel', CURRENT_TIMESTAMP),
 ('Fenix', CURRENT_TIMESTAMP),
 ('Edatel', CURRENT_TIMESTAMP),
@@ -1512,7 +1513,7 @@ INSERT INTO inspector_db.Crm (strCrmName, dtModificationDate)VALUES
 ('Elite', CURRENT_TIMESTAMP),
 ('DEFAULT', CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.ServiceType (strServiceTypeName, strDescription, dtModificationDate)VALUES
+INSERT INTO inspectordb.ServiceType (strServiceTypeName, strDescription, dtModificationDate)VALUES
 ('Default', 'Generico usado por Inspector nuevos, asignar el tipo correcto', CURRENT_TIMESTAMP),
 ('Interno Tigo', 'Clientes internos de Tigo', CURRENT_TIMESTAMP),
 ('Externo Tigo', 'Clientes externos de Tigo', CURRENT_TIMESTAMP),
@@ -1523,10 +1524,10 @@ INSERT INTO inspector_db.ServiceType (strServiceTypeName, strDescription, dtModi
 ('Autoconsumo', 'Inspector instalados sobre autoconsumos', CURRENT_TIMESTAMP),
 ('Laboratorio', 'Inspector instalados en Laboratorio', CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.InspectorServices (strServiceId, strAddress, intDownSpeed, intUpSpeed, idProduct, idTecnology, idCity, idServiceType, idCmtsOlt, idCrm, dtModificationDate)VALUES
+INSERT INTO inspectordb.InspectorServices (strServiceId, strAddress, intDownSpeed, intUpSpeed, idProduct, idTecnology, idCity, idServiceType, idCmtsOlt, idCrm, dtModificationDate)VALUES
 ('1111', 'DEFAULT', 0, 0, 1, 4, 1, 1, 2, 6, CURRENT_TIMESTAMP);
 
-INSERT INTO inspector_db.InventoryInspectorStatus (strInventoryStatus, strDescriptionStatus, dtModificationDate)VALUES
+INSERT INTO inspectordb.InventoryInspectorStatus (strInventoryStatus, strDescriptionStatus, dtModificationDate)VALUES
 ('Ocupado', 'Inspector instalados', CURRENT_TIMESTAMP),
 ('Libre', 'Inspector libres', CURRENT_TIMESTAMP),
 ('Falla Hardware', 'Inspector con problemas en harware', CURRENT_TIMESTAMP),
@@ -1538,7 +1539,7 @@ INSERT INTO inspector_db.InventoryInspectorStatus (strInventoryStatus, strDescri
 -- ===========================================
 -- INSERT DEFAULT FLEET
 -- ===========================================
-INSERT INTO inspector_db.InspectorFleets
+INSERT INTO inspectordb.InspectorFleets
 (stridInspectorFleet, strSlug, strDeviceType, intDeviceCount, dtCreate, dtModificationDate)VALUES
 ('DEFAULT', 'DEFAULT', 'DEFAULT', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (stridInspectorFleet) DO NOTHING;
@@ -1547,7 +1548,7 @@ ON CONFLICT (stridInspectorFleet) DO NOTHING;
 -- ===========================================
 -- INSERT DEFAULT INSPECTOR
 -- ===========================================
-INSERT INTO inspector_db.Inspector
+INSERT INTO inspectordb.Inspector
 (uuidInspector, idInventoryInspectorStatus, strInspectorServiceId, stridInspectorFleet,
  strInspectorName, boolOnline, boolApiHearbeatState, dtLastConnectivityEvent,
  strSupervisorVersion, strOsVersion, strNote,
@@ -1566,24 +1567,22 @@ INSERT INTO inspector_db.Inspector
  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (uuidInspector) DO NOTHING;
 
-INSERT INTO inspector_db.InspectorDeviceVariables (uuidInspector, strDeviceVarValue, dtCreate, dtModificationDate) VALUES
+INSERT INTO inspectordb.InspectorDeviceVariables (uuidInspector, strDeviceVarValue, dtCreate, dtModificationDate) VALUES
 ('DEFAULT', 'DEFAULT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-ON CONFLICT (idInspectorDeviceVar) DO NOTHING;
 
-INSERT INTO inspector_db.InspectorFleetsVariables (uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
+
+INSERT INTO inspectordb.InspectorFleetsVariables (uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
 intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuTempC, intHistoryCpuUsagePercent, dtValidate)
 VALUES
-('DEFAULT', FALSE, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP)
+('DEFAULT', 'DEFAULT', FALSE, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP)
 ON CONFLICT (idInspectorFleetVar) DO NOTHING;
 
-INSERT INTO inspector_db.StatusInspectorHistory(uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
-intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, insHistoryCpuTempC, dtValidate)
-VALUES
+INSERT INTO inspectordb.StatusInspectorHistory(uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
+intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, insHistoryCpuTempC, dtValidate) VALUES 
 ('DEFAULT', FALSE, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP)
-ON CONFLICT (idInspectorHistory) DO NOTHING;
+ON CONFLICT (idStatusInspectorHistory) DO NOTHING;
 
-
-INSERT INTO inspector_db.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
+INSERT INTO inspectordb.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
 ('Activo', CURRENT_TIMESTAMP),
 ('Suspendido', CURRENT_TIMESTAMP),
 ('En proceso de retiro', CURRENT_TIMESTAMP),
@@ -1591,14 +1590,14 @@ INSERT INTO inspector_db.ServiceStatus (strServiceStatus, dtModificationDate)VAL
 ('Indeterminado', CURRENT_TIMESTAMP);
 
 
-INSERT INTO inspector_db.transactionstatus (strtransactionstatus, dtModificationDate) values
+INSERT INTO inspectordb.transactionstatus (strtransactionstatus, dtModificationDate) values
 ('Sin iniciar', CURRENT_TIMESTAMP),
 ('En progreso', CURRENT_TIMESTAMP),
 ('Fallido', CURRENT_TIMESTAMP),
 ('Completo', CURRENT_TIMESTAMP),
 ('Cancelado', CURRENT_TIMESTAMP);
 
-insert into inspector_db.ScriptTransaction (strscriptid, strscriptdescription, dtlastexecutionstart, dtlastexecutionfinish, idtransactionstatus) values
+insert into inspectordb.ScriptTransaction (strscriptid, strscriptdescription, dtlastexecutionstart, dtlastexecutionfinish, idtransactionstatus) values
 ('AUTOMATIC_RESTART_INSPECTOR', 'Reinicio automatico de los servicios  de los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_RESTART_INSPECTOR', 'Reinicio manual de los servicios (contenedores) de los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_SHUTDOWN_INSPECTOR', 'Apagado total del inspector.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),

@@ -1,6 +1,9 @@
 fastapi
-uvicorn
+uvicorn[standard]
 sqlalchemy
+asyncpg
 psycopg2-binary
 pydantic
+pydantic-settings
 python-dotenv
+redis

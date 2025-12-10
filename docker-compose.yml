@@ -1,51 +1,51 @@
 services:
-### ==========================================
-### 1. APLICACIÓN PRINCIPAL
-### ==========================================
+  ### ==========================================
+  ### 1. APLICACIÓN PRINCIPAL
+  ### ==========================================
   open_balena_apis:
     build:
-      context: ./backend        # Coincide con tu carpeta 'backend'
-      dockerfile: Dockerfile    # Busca el archivo renombrado
+      context: ./backend # Coincide con tu carpeta 'backend'
+      dockerfile: Dockerfile # Busca el archivo renombrado
     container_name: open_balena_apis
     restart: unless-stopped
     ports:
       - "5000:5000"
     env_file:
-      - ./backend/.env          # Variables internas de Python
+      - ./backend/.env # Variables internas de Python
     networks:
       InspecNet:
-        ipv4_address: 172.10.0.2
+        ipv4_address: 172.16.0.2
     depends_on:
       - redis
       - postgres_principal
 
   frontend:
     build:
-      context: ./frontend       # Coincide con tu carpeta 'frontend'
+      context: ./frontend # Coincide con tu carpeta 'frontend'
       dockerfile: Dockerfile
-    container_name: frontend
+    container_name: frontend_inspector
     restart: unless-stopped
     ports:
-      - "3001:80"              # Frontend expone 80 internamente (Nginx), 3001 fuera
+      - "3001:80" # Frontend expone 80 internamente (Nginx), 3001 fuera
     depends_on:
       - redis
       - postgres_principal
     networks:
       InspecNet:
-        ipv4_address: 172.10.0.4
+        ipv4_address: 172.16.0.4
 
-### ==========================================
-### 2. BASE DE DATOS Y CACHÉ
-### ==========================================
+  ### ==========================================
+  ### 2. BASE DE DATOS Y CACHÉ
+  ### ==========================================
   redis:
     image: redis:latest
-    container_name: redis
+    container_name: redis_inspector
     restart: unless-stopped
     # Redis usa variables del .env RAÍZ directamente
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}" ]
     networks:
       InspecNet:
-        ipv4_address: 172.10.0.6
+        ipv4_address: 172.16.0.6
     ports:
       - "6380:6379"
     volumes:
@@ -53,9 +53,9 @@ services:
 
   postgres_principal:
     build:
-      context: ./database       # Coincide con tu carpeta 'database'
+      context: ./database # Coincide con tu carpeta 'database'
       dockerfile: Dockerfile
-    container_name: postgres_principal
+    container_name: postgres_inspector
     # Usamos variables del .env RAÍZ para la infraestructura
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -73,26 +73,26 @@ services:
     command: postgres -c config_file=/etc/postgresql/postgresql.conf
     networks:
       InspecNet:
-        ipv4_address: 172.10.0.8
+        ipv4_address: 172.16.0.8
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
-### ==========================================
-### 3. SEGURIDAD
-### ==========================================
+  ### ==========================================
+  ### 3. SEGURIDAD
+  ### ==========================================
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
-    container_name: keycloak
+    container_name: keycloak_inspector
     restart: unless-stopped
     command: start-dev --import-realm
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD}
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://172.10.0.8:5432/keycloak_db
+      KC_DB_URL: jdbc:postgresql://172.16.0.8:5432/keycloak_db
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       KC_HOSTNAME_STRICT: "false"
@@ -104,13 +104,13 @@ services:
         condition: service_healthy
     networks:
       InspecNet:
-        ipv4_address: 172.10.0.10
+        ipv4_address: 172.16.0.10
 
   krakend:
     build:
-      context: ./gateway        # Coincide con tu carpeta 'gateway'
+      context: ./gateway # Coincide con tu carpeta 'gateway'
       dockerfile: Dockerfile
-    container_name: krakend
+    container_name: krakend_inspector
     restart: unless-stopped
     ports:
       - "8081:8080"
@@ -119,14 +119,14 @@ services:
       - open_balena_apis
     networks:
       InspecNet:
-        ipv4_address: 172.10.0.11
+        ipv4_address: 172.16.0.11
 
-### ==========================================
-### 4. VPN
-### ==========================================
+  ### ==========================================
+  ### 4. VPN
+  ### ==========================================
   wg-easy:
     image: weejewel/wg-easy:latest
-    container_name: wg-easy
+    container_name: wg-easy_inspector
     restart: always
     ports:
       - "${WG_PORT:-51820}:51820/udp"
@@ -153,13 +153,13 @@ services:
       - net.ipv4.conf.all.src_valid_mark=1
     networks:
       InspecNet:
-        ipv4_address: 172.10.0.12
+        ipv4_address: 172.16.0.12
 
   wg-fastapi:
-    build: 
-      context: ./vpn      # Coincide con tu carpeta 'vpn'
+    build:
+      context: ./vpn # Coincide con tu carpeta 'vpn'
       dockerfile: Dockerfile
-    container_name: wg-fastapi-api
+    container_name: wg-fastapi_inspector
     restart: always
     expose:
       - "5000"
@@ -167,19 +167,19 @@ services:
       - ./wireguard_data/data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     env_file:
-      - ./vpn/.env        # Usa su propio archivo .env
+      - ./vpn/.env # Usa su propio archivo .env
     depends_on:
       - wg-easy
     networks:
       InspecNet:
-        ipv4_address: 172.10.0.13
+        ipv4_address: 172.16.0.13
 
 networks:
   InspecNet:
     ipam:
       driver: default
       config:
-        - subnet: 172.10.0.0/28
+        - subnet: 172.16.0.0/28
 
 volumes:
   redis_data:
