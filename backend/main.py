@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from databases.postgres_connector import PostgresConnector
 from src.core.config import settings
+from src.api.v1.api import api_router
 
 # --- EVENTOS DE INICIO/APAGADO ---
 @asynccontextmanager
@@ -20,10 +21,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Incluimos el router de la API
+app.include_router(api_router, prefix=settings.API_V1_STR)
+
 @app.get("/")
 def root():
     return {"message": "API Operativa 🟢"}
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}

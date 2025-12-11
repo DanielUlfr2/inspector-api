@@ -1576,9 +1576,7 @@ INSERT INTO inspector.InspectorDeviceVariables (uuidInspector, strDeviceVarValue
 INSERT INTO inspector.InspectorFleetsVariables (stridInspectorFleet, strFleetVarName, strFleetVarValue, dtCreate, dtModificationDate) VALUES
 ('DEFAULT', 'DEFAULT', 'DEFAULT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO inspector.StatusInspectorHistory(uuidInspector, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
-intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, insHistoryCpuTempC, dtValidate) VALUES 
-('DEFAULT', FALSE, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP);
+
 
 INSERT INTO inspector.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
 ('Activo', CURRENT_TIMESTAMP),
@@ -1588,14 +1586,15 @@ INSERT INTO inspector.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
 ('Indeterminado', CURRENT_TIMESTAMP);
 
 
-INSERT INTO inspector.transactionstatus (strtransactionstatus, dtModificationDate) values
+INSERT INTO inspector.transactionstatus (strtransactionstatus, dtModificationDate) VALUES
 ('Sin iniciar', CURRENT_TIMESTAMP),
 ('En progreso', CURRENT_TIMESTAMP),
 ('Fallido', CURRENT_TIMESTAMP),
 ('Completo', CURRENT_TIMESTAMP),
 ('Cancelado', CURRENT_TIMESTAMP);
 
-insert into inspector.ScriptTransaction (strscriptid, strscriptdescription, dtlastexecutionstart, dtlastexecutionfinish, idtransactionstatus) values
+insert into inspector.ScriptTransaction (strscriptid, strscriptdescription, dtlastexecutionstart, dtlastexecutionfinish, idtransactionstatus) VALUES
+('DEFAULT', 'Script por defecto', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('AUTOMATIC_RESTART_INSPECTOR', 'Reinicio automatico de los servicios  de los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_RESTART_INSPECTOR', 'Reinicio manual de los servicios (contenedores) de los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_SHUTDOWN_INSPECTOR', 'Apagado total del inspector.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
@@ -1604,4 +1603,8 @@ insert into inspector.ScriptTransaction (strscriptid, strscriptdescription, dtla
 ('MANUAL_COLLECTION_DATA_INSPECTOR', 'Script de colecta informacion relacionada a el inspector de manera manual.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_RENAME_INSPECTOR', 'Cambia el nombre del inspector siguiento ciertos parametros o cricterios.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_MOVE_FLEET_INSPECTOR', 'Mueve de manera manual el inspector a su flota correspondiente.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
-('MANUAL_SET_VAR_INSPECTOR', 'Setea las variables tanto de las flotas como los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+('MANUAL_SET_VAR_INSPECTOR', 'Setea las variables tanto de las flotas como los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+
+INSERT INTO inspector.StatusInspectorHistory(uuidInspector, idtransactionstatus, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
+intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, intHistoryCpuTempC, strScriptId, dtValidate) VALUES 
+('DEFAULT', 1, FALSE, 0, 0, 0, 0, 0, 0, 'DEFAULT', CURRENT_TIMESTAMP);

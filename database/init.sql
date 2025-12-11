@@ -101,6 +101,12 @@ CREATE TABLE ServiceType (
   dtModificationDate timestamp NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE ServiceStatus (
+  idServiceStatus SERIAL PRIMARY KEY,
+  strServiceStatus varchar(20) NOT NULL,
+  dtModificationDate timestamp NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE Product (
   idProduct SERIAL PRIMARY KEY,
   strProductName varchar(50) NOT NULL,
