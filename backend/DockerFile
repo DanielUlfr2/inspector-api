@@ -1,25 +1,60 @@
-# backend/Dockerfile
-FROM python:3.11-slim
+# 1. Usamos una base sólida: Python 3.11 sobre Debian Bookworm
+FROM python:3.11-slim-bookworm
 
-# Evita archivos .pyc y buffers
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# --- VARIABLES DE ENTORNO ---
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    # Rutas para tus certificados privados
+    CERTS_PATH="/usr/local/share/ca-certificates/openbalena-ca.crt" \
+    NODE_EXTRA_CA_CERTS="/usr/local/share/ca-certificates/openbalena-ca.crt"
 
 WORKDIR /app
 
-# Dependencias del sistema (gcc y libpq para compilar drivers de DB)
+# --- 2. INSTALACIÓN DE DEPENDENCIAS DEL SISTEMA ---
+# Agregamos 'build-essential' y 'python3-dev' que NPM necesita para compilar cosas
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
+    curl \
+    gnupg2 \
+    ca-certificates \
+    lsb-release \
     gcc \
+    g++ \
+    make \
+    libpq-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# 1. Copiamos requirements primero (Caché de Docker)
+# --- 3. INSTALACIÓN DE NODE.JS (Versión 22 LTS) ---
+# Descargamos el script de instalación oficial de NodeSource
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest
+
+# --- 4. INSTALACIÓN DE BALENA CLI (VÍA NPM) ---
+# Usamos --unsafe-perm para evitar errores de permisos siendo root
+# Usamos --production para no instalar dependencias de desarrollo innecesarias
+RUN npm install -g balena-cli --production --unsafe-perm
+
+# Verificar que balena funcione
+RUN balena version
+
+# --- 5. CONFIGURACIÓN DE CERTIFICADOS (Tu archivo ca.pem) ---
+COPY ca.pem $CERTS_PATH
+RUN update-ca-certificates
+
+# --- 6. CONFIGURACIÓN DE OPENBALENA ---
+# Apuntamos la CLI a tu dominio privado
+RUN echo "balenaUrl: 'inspectordm.tigo.com.co'" > /root/.balenarc.yml
+
+# --- 7. DEPENDENCIAS PYTHON (TU API) ---
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 2. Copiamos TODO el contenido de la carpeta backend (src, databases, main.py, .env)
+# --- 8. CÓDIGO FUENTE ---
 COPY . .
 
+# Exponemos el puerto de FastAPI
+EXPOSE 5000
+
 # Comando de inicio
-# Nota: Como main.py está en la raíz, se llama "main:app", no "src.main:app"
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]

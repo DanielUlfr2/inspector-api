@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     # La hacemos opcional (= None) por si en algún entorno no la defines
     KEYCLOAK_SERVER: Optional[str] = None  # <--- FALTABA ESTA
 
+    # --- OPEN BALENA ---
+    BALENA_EMAIL: str
+    BALENA_PASSWORD: str
+    BALENA_URL: str
+    
     class Config:
         case_sensitive = True
         env_file = ".env"
