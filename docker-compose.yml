@@ -101,6 +101,9 @@ services:
       KC_HTTP_ENABLED: "true"
     ports:
       - "8080:8080"
+    volumes:
+      # quitar despues
+      - ./keycloak_config:/opt/keycloak/data/import
     depends_on:
       postgres_principal:
         condition: service_healthy
