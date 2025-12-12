@@ -1,32 +1,45 @@
-from typing import List, Optional
+import logging
 from databases.postgres_connector import PostgresConnector
-from pydantic import BaseModel
+from src.core.security import SecurityValidator
+from typing import List, Dict, Any
 
-# Modelo interno rápido para el repo
-class FleetModel(BaseModel):
-    stridInspectorFleet: str
-    strSlug: str
-    strDeviceType: str
-    intDeviceCount: int = 0
+logger = logging.getLogger(__name__)
 
 class FleetRepository:
+    
     @staticmethod
-    async def upsert_fleet(fleet: FleetModel):
-        """
-        Inserta la flota si no existe, o actualiza si ya existe (Upsert)
-        """
+    async def upsert_batch(fleets_data: List[Dict[str, Any]]):
+        if not fleets_data:
+            logger.info("📭 No hay flotas para sincronizar.")
+            return
+
+        # 1. Validación de Seguridad
+        safe_fleets = [SecurityValidator.sanitize_input(f) for f in fleets_data]
+
         query = """
-            INSERT INTO inspector."InspectorFleets" 
-            ("stridInspectorFleet", "strSlug", "strDeviceType", "intDeviceCount", "dtCreate", "dtModificationDate")
-            VALUES ($1, $2, $3, $4, NOW(), NOW())
+            INSERT INTO inspector."InspectorFleets" (
+                "stridInspectorFleet", "strSlug", "strDeviceType", 
+                "intDeviceCount", "dtCreate", "dtModificationDate"
+            ) VALUES ($1, $2, $3, $4, NOW(), NOW())
             ON CONFLICT ("stridInspectorFleet") 
             DO UPDATE SET 
                 "strSlug" = EXCLUDED."strSlug",
+                "strDeviceType" = EXCLUDED."strDeviceType",
                 "intDeviceCount" = EXCLUDED."intDeviceCount",
                 "dtModificationDate" = NOW();
         """
+        
+        values = [
+            (f["id"], f["slug"], f["device_type"], f.get("device_count", 0)) 
+            for f in safe_fleets
+        ]
+
         conn = await PostgresConnector.get_connection()
         try:
-            await conn.execute(query, fleet.stridInspectorFleet, fleet.strSlug, fleet.strDeviceType, fleet.intDeviceCount)
+            await conn.executemany(query, values)
+            logger.info(f"✅ {len(values)} flotas sincronizadas en DB.")
+        except Exception as e:
+            logger.error(f"❌ Error crítico insertando flotas: {e}")
+            raise e # Relanzar para que el servicio superior se entere
         finally:
             await PostgresConnector.release_connection(conn)

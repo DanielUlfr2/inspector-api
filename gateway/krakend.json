@@ -43,18 +43,18 @@
             ]
         },
         {
-            "endpoint": "/v1/inspector",
+            "endpoint": "/v1/infodevices",
             "method": "GET",
             "output_encoding": "json",
             "backend": [
                 {
-                    "url_pattern": "/api/v1/inspector/",
+                    "url_pattern": "/api/v1/infodevices",
                     "host": [
                         "http://open_balena_apis:5000"
                     ],
                     "is_collection": true,
                     "mapping": {
-                        "collection": "inspectores"
+                        "collection": "devices"
                     }
                 }
             ],
@@ -68,7 +68,8 @@
                     "roles": [
                         "admin",
                         "ing_red",
-                        "Inspector_admin"
+                        "Inspector_admin",
+                        "Inspector_lectura"
                     ],
                     "audience": [
                         "inspector_client"
