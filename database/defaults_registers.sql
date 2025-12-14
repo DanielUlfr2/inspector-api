@@ -1569,8 +1569,8 @@ INSERT INTO inspector.Inspector
  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (uuidInspector) DO NOTHING;
 
-INSERT INTO inspector.InspectorDeviceVariables (uuidInspector, strDeviceVarValue, dtCreate, dtModificationDate) VALUES
-('DEFAULT', 'DEFAULT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO inspector.InspectorDeviceVariables (uuidInspector, strDeviceVarName, strDeviceVarValue, dtCreate, dtModificationDate) VALUES
+('DEFAULT', 'DEFAULT', 'DEFAULT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 
 INSERT INTO inspector.InspectorFleetsVariables (stridInspectorFleet, strFleetVarName, strFleetVarValue, dtCreate, dtModificationDate) VALUES
@@ -1603,7 +1603,9 @@ insert into inspector.ScriptTransaction (strscriptid, strscriptdescription, dtla
 ('MANUAL_COLLECTION_DATA_INSPECTOR', 'Script de colecta informacion relacionada a el inspector de manera manual.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_RENAME_INSPECTOR', 'Cambia el nombre del inspector siguiento ciertos parametros o cricterios.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_MOVE_FLEET_INSPECTOR', 'Mueve de manera manual el inspector a su flota correspondiente.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
-('MANUAL_SET_VAR_INSPECTOR', 'Setea las variables tanto de las flotas como los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+('MANUAL_SET_VAR_INSPECTOR', 'Setea las variables tanto de las flotas como los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+('AUTOMATIC_COLLECTION_VARS_INSPECTOR', 'Script de colecta variables relacionada a el inspector de manera automatica.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+('MANUAL_COLLECTION_VARS_INSPECTOR', 'Script de colecta variables relacionada a el inspector de manera manual.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
 
 INSERT INTO inspector.StatusInspectorHistory(uuidInspector, idtransactionstatus, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
 intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, intHistoryCpuTempC, strScriptId, dtValidate) VALUES 

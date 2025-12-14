@@ -1,5 +1,7 @@
 import logging
-from datetime import datetime
+import asyncio 
+from datetime import datetime, timezone
+import json
 from src.services.balena_service import BalenaService
 from src.repositories.fleet_repo import FleetRepository
 from src.repositories.info_devices_repo import InfoDevicesRepository
@@ -8,124 +10,137 @@ logger = logging.getLogger(__name__)
 
 class InventorySyncService:
     
+    MAX_CONCURRENT_TASKS = 5 
+
     @classmethod
     async def sync_all(cls):
-        logger.info("🚀 INICIANDO SINCRONIZACIÓN INTELIGENTE (Datos Reales)")
+        logger.info(f"🚀 INICIANDO SINCRONIZACIÓN DE INVENTARIO (Max {cls.MAX_CONCURRENT_TASKS} hilos)...")
         
-        # 1. Login
         if not BalenaService.login():
             logger.error("🛑 Abortado: Fallo login Balena.")
-            return
+            return False
 
-        # 2. Obtener y Guardar Flotas
+        # --- PASO 1: FLOTAS ---
         raw_fleets = BalenaService.get_fleets()
         fleets_to_save = []
         
-        # Mapa para buscar ID de flota por Slug rápidamente
-        fleet_slug_map = {} 
-
         for f in raw_fleets:
-            # En tu JSON de dispositivo, la flota se referencia por slug o nombre.
-            # Aseguramos guardar el slug como ID si así lo usas, o el ID numérico.
-            # Basado en tu comentario: "app seria la flota slug"
-            fleet_id = f.get("slug") # Ej: admin/andina_2
-            
             fleets_to_save.append({
-                "id": fleet_id,
+                "id": f.get("slug"), 
                 "slug": f.get("slug"),
                 "device_type": f.get("device_type"),
-                "device_count": len(f.get("owns__device", []))
+                "device_count": f.get("device_count", 0) 
             })
-            fleet_slug_map[f.get("slug")] = fleet_id
-
+        
         await FleetRepository.upsert_batch(fleets_to_save)
         logger.info(f"✅ {len(fleets_to_save)} flotas actualizadas.")
 
-        # 3. Sincronizar Dispositivos
-        total_devices = 0
-        
-        # Iteramos sobre las flotas que acabamos de guardar
+        # --- PASO 2: DISPOSITIVOS (PARALELO) ---
+        total_devices_processed = 0
+        semaphore = asyncio.Semaphore(cls.MAX_CONCURRENT_TASKS)
+
         for fleet in fleets_to_save:
             fleet_slug = fleet["slug"]
             
-            # Traemos el JSON crudo que me mostraste
-            raw_devices = BalenaService.get_devices_by_fleet(fleet_slug)
+            # 1. Obtener lista rápida de UUIDs
+            summary_devices = BalenaService.get_devices_by_fleet(fleet_slug)
             
-            if not raw_devices:
+            if not summary_devices:
                 continue
             
-            devices_to_save = []
-            for d in raw_devices:
-                
-                # --- LÓGICA DE MAPEO EXACTA (Tu JSON -> BD) ---
-                
-                # 1. Determinar la Flota (FK)
-                # El JSON tiene: "belongs_to__application": [{"slug": "admin/andina_2"}]
-                apps = d.get("belongs_to__application", [])
-                fleet_fk = apps[0].get("slug") if apps else fleet_slug
-                
-                # 2. Determinar Heartbeat
-                api_hb = d.get("api_heartbeat_state") == "online"
-                
-                # 3. Datos de Observaciones (Metemos MAC y otros extras aquí)
-                observaciones = {
-                    "mac_address": d.get("mac_address"),
-                    "public_address": d.get("public_address"),
-                    "dashboard_url": d.get("dashboard_url"),
-                    "cpu_id": d.get("cpu_id")
-                }
+            logger.info(f"⚡ Procesando {len(summary_devices)} equipos en '{fleet_slug}'...")
 
-                devices_to_save.append({
-                    # Identificadores
-                    "uuid": d.get("uuid"),
-                    
-                    # --- CAMPOS POR DEFECTO (NEGOCIO) ---
-                    "status_id": 1,         # Default: Ocupado/Activo
-                    "service_id": "1111",   # Default: Dummy Service
-                    
-                    # --- CAMPOS TÉCNICOS (REALES DE BALENA) ---
-                    "device_name": d.get("device_name"),
-                    "is_online": d.get("is_online", False),
-                    "api_heartbeat": api_hb,
-                    "last_connectivity": cls._parse_date(d.get("last_connectivity_event")),
-                    
-                    "fleet_id": fleet_fk,   # FK Real
-                    
-                    "supervisor_version": d.get("supervisor_version"),
-                    "os_version": d.get("os_version"),
-                    
-                    # Nota: El JSON trae "4C:12:..." en note. Lo guardamos.
-                    "note": d.get("note"), 
-                    
-                    # Recursos
-                    "memory_usage": d.get("memory_usage_mb", 0),
-                    "memory_total": d.get("memory_total_mb", 0),
-                    "storage_usage": d.get("storage_usage_mb", 0),
-                    "storage_total": d.get("storage_total_mb", 0),
-                    "cpu_temp": d.get("cpu_temp_c", 0),
-                    "cpu_usage": d.get("cpu_usage_percent", 0),
-                    
-                    "last_metric_update": datetime.now(), # Balena no trae fecha de métrica exacta, usamos NOW
-                    
-                    "ip_address": d.get("ip_address"), # Ej: "192.168.1.6 2800:..."
-                    "vpn_connected": d.get("is_connected_to_vpn", False),
-                    "last_vpn_event": cls._parse_date(d.get("last_vpn_event")),
-                    
-                    # Extras
-                    "observaciones": observaciones
-                })
+            # 2. Crear tareas paralelas
+            tasks = []
+            for item in summary_devices:
+                uuid = item.get("uuid")
+                if uuid:
+                    tasks.append(cls._fetch_device_detail_concurrent(uuid, fleet_slug, semaphore))
             
-            await InfoDevicesRepository.upsert_batch(devices_to_save)
-            total_devices += len(devices_to_save)
+            # 3. Ejecutar y esperar
+            results = await asyncio.gather(*tasks)
+            
+            # 4. Filtrar errores (None)
+            devices_full_data = [r for r in results if r is not None]
 
-        logger.info(f"🏁 SINCRONIZACIÓN FINALIZADA. {total_devices} dispositivos procesados.")
+            # 5. Guardar lote
+            if devices_full_data:
+                await InfoDevicesRepository.upsert_batch(devices_full_data)
+                total_devices_processed += len(devices_full_data)
+                logger.info(f"   💾 Guardados {len(devices_full_data)} dispositivos de {fleet_slug}")
+
+        logger.info(f"🏁 SINCRONIZACIÓN FINALIZADA. {total_devices_processed} dispositivos procesados.")
+        return True
+
+    @classmethod
+    async def _fetch_device_detail_concurrent(cls, uuid, fleet_slug, semaphore):
+        """
+        Método auxiliar que se ejecuta en paralelo.
+        """
+        async with semaphore:
+            try:
+                # Usamos to_thread para no bloquear el loop principal
+                d = await asyncio.to_thread(BalenaService.get_device_detail, uuid)
+                
+                if not d:
+                    return None
+
+                return cls._map_device_data(d, fleet_slug)
+            except Exception as e:
+                logger.error(f"⚠️ Error en hilo procesando {uuid}: {e}")
+                return None
+
+    @classmethod
+    def _map_device_data(cls, d, fleet_slug):
+        api_hb = d.get("api_heartbeat_state") == "online"
+        
+        # Helper seguro para ints
+        def s_int(v): return int(float(v)) if v else 0
+
+        mem_mb = d.get("memory_usage_mb") or d.get("memory_usage")
+        mem_total = d.get("memory_total_mb") or d.get("memory_total")
+        storage_mb = d.get("storage_usage_mb") or d.get("storage_usage")
+        storage_total = d.get("storage_total_mb") or d.get("storage_total")
+        cpu_temp = d.get("cpu_temp_c") or d.get("cpu_temp")
+        cpu_usage = d.get("cpu_usage_percent") or d.get("cpu_usage")
+
+        observaciones = {
+            "mac_address": d.get("mac_address"),
+            "public_address": d.get("public_address"),
+            "dashboard_url": d.get("dashboard_url"),
+            "cpu_id": d.get("cpu_id")
+        }
+
+        return {
+            "uuid": d.get("uuid"),
+            "status_id": 1, 
+            "service_id": "1111", 
+            "device_name": d.get("device_name"),
+            "is_online": d.get("is_online", False),
+            "api_heartbeat": api_hb,
+            "last_connectivity": cls._parse_date(d.get("last_connectivity_event")),
+            "fleet_id": fleet_slug,
+            "supervisor_version": d.get("supervisor_version"),
+            "os_version": d.get("os_version"),
+            "note": d.get("note"), 
+            "memory_usage": s_int(mem_mb),
+            "memory_total": s_int(mem_total),
+            "storage_usage": s_int(storage_mb),
+            "storage_total": s_int(storage_total),
+            "cpu_temp": s_int(cpu_temp),
+            "cpu_usage": s_int(cpu_usage),
+            "last_metric_update": datetime.now(timezone.utc),
+            "ip_address": d.get("ip_address"),
+            "vpn_connected": d.get("is_connected_to_vpn", False),
+            "last_vpn_event": cls._parse_date(d.get("last_vpn_event")),
+            "observaciones": observaciones
+        }
 
     @staticmethod
     def _parse_date(date_str):
         if not date_str:
-            return datetime.now()
+            return datetime.now(timezone.utc)
         try:
-            # Maneja formato "2025-12-12T02:17:38.441Z"
             return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         except:
-            return datetime.now()
+            return datetime.now(timezone.utc)

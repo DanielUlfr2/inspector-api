@@ -16,17 +16,18 @@ class FleetRepository:
         # 1. Validación de Seguridad
         safe_fleets = [SecurityValidator.sanitize_input(f) for f in fleets_data]
 
+        # CAMBIO: Todo en minúsculas y sin comillas dobles en nombres de tablas/columnas
         query = """
-            INSERT INTO inspector."InspectorFleets" (
-                "stridInspectorFleet", "strSlug", "strDeviceType", 
-                "intDeviceCount", "dtCreate", "dtModificationDate"
+            INSERT INTO inspector.inspectorfleets (
+                stridinspectorfleet, strslug, strdevicetype, 
+                intdevicecount, dtcreate, dtmodificationdate
             ) VALUES ($1, $2, $3, $4, NOW(), NOW())
-            ON CONFLICT ("stridInspectorFleet") 
+            ON CONFLICT (stridinspectorfleet) 
             DO UPDATE SET 
-                "strSlug" = EXCLUDED."strSlug",
-                "strDeviceType" = EXCLUDED."strDeviceType",
-                "intDeviceCount" = EXCLUDED."intDeviceCount",
-                "dtModificationDate" = NOW();
+                strslug = EXCLUDED.strslug,
+                strdevicetype = EXCLUDED.strdevicetype,
+                intdevicecount = EXCLUDED.intdevicecount,
+                dtmodificationdate = NOW();
         """
         
         values = [
@@ -40,6 +41,6 @@ class FleetRepository:
             logger.info(f"✅ {len(values)} flotas sincronizadas en DB.")
         except Exception as e:
             logger.error(f"❌ Error crítico insertando flotas: {e}")
-            raise e # Relanzar para que el servicio superior se entere
+            raise e 
         finally:
             await PostgresConnector.release_connection(conn)

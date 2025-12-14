@@ -8,3 +8,5 @@ pydantic-settings
 python-dotenv
 redis
 httpx
+celery
+asgiref

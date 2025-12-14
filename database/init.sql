@@ -200,6 +200,7 @@ CREATE TABLE Inspector (
 CREATE TABLE InspectorDeviceVariables (
   idInspectorDeviceVar SERIAL PRIMARY KEY,
   uuidInspector varchar(200) NOT NULL,
+  strDeviceVarName varchar(80) NOT NULL,
   strDeviceVarValue text NOT NULL,
   dtCreate timestamp NOT NULL DEFAULT NOW(),
   dtModificationDate timestamp NOT NULL DEFAULT NOW(),

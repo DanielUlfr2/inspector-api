@@ -2,3 +2,7 @@
 node_modules/
 __pycache__/
 wireguard_data/
+backend_logs/
+logs/
+log/
+celerybeat-schedule

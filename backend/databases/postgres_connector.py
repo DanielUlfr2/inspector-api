@@ -1,55 +1,73 @@
 import asyncpg
+import os
+import asyncio
 import logging
-from src.core.config import settings
 
-# Configuración de logs para ver qué pasa en la consola
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("postgres_connector")
+logger = logging.getLogger(__name__)
 
 class PostgresConnector:
     _pool = None
+    
+    @classmethod
+    async def get_connection(cls):
+        """
+        Obtiene conexión, recreando el pool si el Loop ha cambiado (Celery friendly).
+        """
+        try:
+            current_loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # Si no hay loop corriendo, no podemos hacer nada
+            return None
+
+        # 1. Si el pool existe pero pertenece a otro loop (o uno cerrado), mátalo.
+        if cls._pool:
+            if cls._pool._loop.is_closed() or cls._pool._loop is not current_loop:
+                logger.warning("⚠️ Pool desincronizado del Loop actual. Reiniciando...")
+                cls._pool = None # Lo descartamos brutalmente
+
+        # 2. Crear Pool si no existe
+        if cls._pool is None:
+            await cls.init_pool()
+
+        return await cls._pool.acquire()
 
     @classmethod
     async def init_pool(cls):
         """
-        Inicializa el pool de conexiones al arrancar la aplicación.
-        Lee las credenciales desde src.core.config.settings
+        Inicializa el pool de conexiones.
         """
         if cls._pool is None:
-            try:
-                logger.info(f"🔌 Conectando a Postgres en {settings.POSTGRES_SERVER}...")
-                cls._pool = await asyncpg.create_pool(
-                    user=settings.POSTGRES_USER,
-                    password=settings.POSTGRES_PASSWORD,
-                    database=settings.POSTGRES_DB,
-                    host=settings.POSTGRES_SERVER,
-                    port=settings.POSTGRES_PORT,
-                    min_size=2,   # Mínimo de conexiones abiertas
-                    max_size=20,  # Máximo de conexiones (ajustar según carga)
-                )
-                logger.info("✅ Pool de conexiones PostgreSQL creado exitosamente.")
-            except Exception as e:
-                logger.error(f"❌ Error CRÍTICO al conectar a la Base de Datos: {e}")
-                # Re-lanzamos el error para que la app falle si no hay DB
-                raise e
+            logger.info("🔌 Creando nuevo Pool de conexiones...")
+            cls._pool = await asyncpg.create_pool(
+                user=os.getenv("POSTGRES_USER"),
+                password=os.getenv("POSTGRES_PASSWORD"),
+                database=os.getenv("POSTGRES_DB"),
+                host="postgres_inspector", # Asegúrate que este sea el nombre en docker-compose
+                port=os.getenv("POSTGRES_PORT", "5432"),
+                min_size=1,
+                max_size=5 # Manténlo bajo para workers
+            )
+            logger.info("✅ Pool de conexiones PostgreSQL creado exitosamente.")
 
     @classmethod
-    async def get_connection(cls):
-        """Solicita una conexión del pool para usarla"""
-        if cls._pool is None:
-            await cls.init_pool()
-        return await cls._pool.acquire()
+    async def release_connection(cls, connection):
+        """
+        Libera la conexión de forma segura. Si el loop está cerrado, no hace nada.
+        """
+        if not connection:
+            return
 
-    @classmethod
-    async def release_connection(cls, conn):
-        """Devuelve la conexión al pool (IMPORTANTE LLAMAR SIEMPRE)"""
-        if cls._pool and conn:
-            await cls._pool.release(conn)
+        try:
+            # Si el pool ya no existe o el loop se cerró, no intentamos liberar
+            # porque eso lanza el RuntimeError. Simplemente dejamos morir la conexión.
+            if cls._pool and not cls._pool._loop.is_closed():
+                await cls._pool.release(connection)
+        except Exception as e:
+            # Ignoramos errores al liberar, lo importante es que la query se haya ejecutado
+            logger.warning(f"⚠️ Warning al liberar conexión: {e}")
 
     @classmethod
     async def close_pool(cls):
-        """Cierra todas las conexiones al apagar la app"""
-        if cls._pool:
+        if cls._pool and not cls._pool._loop.is_closed():
             await cls._pool.close()
-            cls._pool = None
-            logger.info("🔒 Pool de PostgreSQL cerrado.")
+            logger.info("🔌 Pool cerrado.")
