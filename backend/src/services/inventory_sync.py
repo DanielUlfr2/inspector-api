@@ -26,7 +26,7 @@ class InventorySyncService:
         
         for f in raw_fleets:
             fleets_to_save.append({
-                "id": f.get("slug"), 
+                "id": f.get("app_name"), 
                 "slug": f.get("slug"),
                 "device_type": f.get("device_type"),
                 "device_count": f.get("device_count", 0) 
@@ -41,6 +41,7 @@ class InventorySyncService:
 
         for fleet in fleets_to_save:
             fleet_slug = fleet["slug"]
+            fleet_db_id = fleet["id"]
             
             # 1. Obtener lista rápida de UUIDs
             summary_devices = BalenaService.get_devices_by_fleet(fleet_slug)
@@ -55,7 +56,7 @@ class InventorySyncService:
             for item in summary_devices:
                 uuid = item.get("uuid")
                 if uuid:
-                    tasks.append(cls._fetch_device_detail_concurrent(uuid, fleet_slug, semaphore))
+                    tasks.append(cls._fetch_device_detail_concurrent(uuid, fleet_db_id, semaphore))
             
             # 3. Ejecutar y esperar
             results = await asyncio.gather(*tasks)

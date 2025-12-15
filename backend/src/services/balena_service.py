@@ -75,3 +75,38 @@ class BalenaService:
             return json.loads(result.stdout)
         except Exception:
             return []
+    
+    @staticmethod
+    def set_fleet_variable(fleet_slug: str, key: str, value: str):
+        """
+        Ejecuta: balena env add <KEY> <VALUE> --fleet <SLUG>
+        Limpia el slug si viene con formato 'admin/slug'
+        """
+        try:
+            # Tu lógica original: limpiar el slug (ej: admin/andina_1 -> andina_1)
+            clean_slug = fleet_slug.split('/')[-1] if '/' in fleet_slug else fleet_slug
+            
+            # Ejecutamos el comando. Check=True lanzará error si Balena falla.
+            subprocess.run(
+                ["balena", "env", "add", key, value, "--fleet", clean_slug],
+                check=True, capture_output=True, text=True
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            # logger.error(f"❌ Error Balena Set Fleet Var: {e.stderr}")
+            return False
+
+    @staticmethod
+    def set_device_variable(uuid: str, key: str, value: str):
+        """
+        Ejecuta: balena env add <KEY> <VALUE> --device <UUID>
+        """
+        try:
+            subprocess.run(
+                ["balena", "env", "add", key, value, "--device", uuid],
+                check=True, capture_output=True, text=True
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            # logger.error(f"❌ Error Balena Set Device Var: {e.stderr}")
+            return False
