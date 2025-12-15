@@ -173,3 +173,57 @@ class ConfigurationSyncService:
         
         logger.info(f"✅ Variable {key} guardada en BD localmente para {uuid}.")
         return True
+    
+    @classmethod
+    async def sync_fleet_variables(cls, fleet_slug: str):
+        """
+        Sincroniza variables de UNA sola flota (Auto-Onboarding).
+        """
+        logger.info(f"🔧 Auto-Onboarding variables de flota: {fleet_slug}")
+        if not BalenaService.login(): return False
+
+        # Buscamos el nombre real
+        raw_fleets = BalenaService.get_fleets()
+        real_name = next((f.get("app_name") for f in raw_fleets if f.get("slug") == fleet_slug), None)
+        
+        if not real_name: return False
+
+        vars_list = BalenaService.get_fleet_vars(fleet_slug)
+        
+        formatted_vars = []
+        for v in vars_list:
+            formatted_vars.append({
+                "fleet_slug": real_name, 
+                "name": v.get("name"),
+                "value": v.get("value")
+            })
+
+        if formatted_vars:
+            await FleetVarsRepository.upsert_batch(formatted_vars)
+            logger.info(f"✅ Variables de {real_name} actualizadas.")
+            
+        return True
+
+    @classmethod
+    async def sync_device_variables(cls, uuid: str):
+        """
+        Sincroniza variables de UN solo dispositivo (Auto-Onboarding).
+        """
+        logger.info(f"🔧 Auto-Onboarding variables de dispositivo: {uuid}")
+        if not BalenaService.login(): return False
+
+        vars_list = BalenaService.get_device_vars(uuid)
+        
+        formatted_vars = []
+        for v in vars_list:
+            formatted_vars.append({
+                "uuid": uuid,
+                "name": v.get("name"),
+                "value": v.get("value")
+            })
+
+        if formatted_vars:
+            await DeviceVarsRepository.upsert_batch(formatted_vars)
+            logger.info(f"✅ Variables de {uuid} actualizadas.")
+
+        return True

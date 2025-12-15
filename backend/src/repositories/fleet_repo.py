@@ -44,3 +44,21 @@ class FleetRepository:
             raise e 
         finally:
             await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def get_all_ids():
+        """
+        Retorna un SET con los IDs de flotas existentes.
+        SEGURIDAD: Retorna None si falla para evitar loops.
+        """
+        query = 'SELECT stridinspectorfleet FROM inspector.inspectorfleets;'
+        
+        conn = await PostgresConnector.get_connection()
+        try:
+            records = await conn.fetch(query)
+            return {r["stridinspectorfleet"] for r in records}
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo IDs de flotas: {e}")
+            return None # Importante: None, no set()
+        finally:
+            await PostgresConnector.release_connection(conn)

@@ -125,3 +125,21 @@ class InfoDevicesRepository:
             raise e
         finally:
             await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def get_all_uuids():
+        """
+        Retorna un SET con todos los UUIDs.
+        SEGURIDAD: Retorna None si falla.
+        """
+        query = 'SELECT uuidinspector FROM inspector.inspector;'
+        
+        conn = await PostgresConnector.get_connection()
+        try:
+            records = await conn.fetch(query)
+            return {r["uuidinspector"] for r in records}
+        except Exception as e:
+            logger.error(f"❌ Error CRÍTICO obteniendo UUIDs: {e}")
+            return None # <--- CAMBIO: Retornar None en vez de set()
+        finally:
+            await PostgresConnector.release_connection(conn)

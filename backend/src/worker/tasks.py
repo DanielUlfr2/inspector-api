@@ -73,3 +73,15 @@ def task_run_configuration_sync(is_manual=False):
 
     async_to_sync(_process)()
     return f"Config Sync {script_id} done"
+
+@celery_app.task(name="tasks.sync_single_fleet_vars")
+def task_sync_single_fleet_vars(fleet_slug: str):
+    logger.info(f"📨 TAREA PUNTUAL: Variables Flota {fleet_slug}")
+    async_to_sync(ConfigurationSyncService.sync_fleet_variables)(fleet_slug)
+    return f"Fleet Vars {fleet_slug} synced"
+
+@celery_app.task(name="tasks.sync_single_device_vars")
+def task_sync_single_device_vars(uuid: str):
+    logger.info(f"📨 TAREA PUNTUAL: Variables Dispositivo {uuid}")
+    async_to_sync(ConfigurationSyncService.sync_device_variables)(uuid)
+    return f"Device Vars {uuid} synced"
