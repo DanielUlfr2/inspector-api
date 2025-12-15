@@ -4,7 +4,7 @@ from src.utils.transaction_manager import TransactionManager, TransactionStatus,
 from src.services.inventory_sync import InventorySyncService
 from asgiref.sync import async_to_sync
 from src.core.logger import logger
-
+from src.services.configuration_sync import ConfigurationSyncService
 # Tarea 1: Sincronización Automática
 @celery_app.task(name="tasks.run_automatic_sync")
 def task_run_automatic_sync(is_manual=False):
@@ -46,3 +46,30 @@ def task_sync_single_fleet(fleet_slug: str):
     logger.info(f"📨 TAREA PUNTUAL: Sync Fleet {fleet_slug}")
     async_to_sync(InventorySyncService.sync_fleet_by_slug)(fleet_slug)
     return f"Fleet {fleet_slug} synced"
+
+@celery_app.task(name="tasks.run_configuration_sync")
+def task_run_configuration_sync(is_manual=False):
+    
+    # Usamos los IDs que definimos para Variables
+    script_id = ScriptIds.MANUAL_VARS_SYNC if is_manual else ScriptIds.AUTO_VARS_SYNC
+    logger.info(f"📨 WORKER TAREA CONFIG: {script_id}")
+    
+    async def _process():
+        await TransactionManager.start_transaction(script_id)
+        try:
+            # Llamamos al servicio DE CONFIGURACIÓN
+            result = await ConfigurationSyncService.sync_all_variables()
+            
+            if result is False: raise Exception("Fallo en sync de variables")
+
+            await TransactionManager.finish_transaction(
+                script_id, TransactionStatus.COMPLETO, "Configuración actualizada."
+            )
+        except Exception as e:
+            logger.error(f"❌ Error Config: {e}")
+            await TransactionManager.finish_transaction(
+                script_id, TransactionStatus.FALLIDO, f"Error: {str(e)}"
+            )
+
+    async_to_sync(_process)()
+    return f"Config Sync {script_id} done"

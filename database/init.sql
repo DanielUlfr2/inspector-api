@@ -326,3 +326,11 @@ UPDATE partman.part_config
 SET retention = '1 month', 
     infinite_time_partitions = TRUE
 WHERE parent_table IN ('inspector.statusinspectorhistory', 'inspector.historicscripttransaction');
+
+ALTER TABLE inspector.InspectorFleetsVariables
+ADD CONSTRAINT unq_fleet_var_name 
+UNIQUE (stridInspectorFleet, strFleetVarName);
+
+ALTER TABLE inspector.InspectorDeviceVariables
+ADD CONSTRAINT unq_device_var_name 
+UNIQUE (uuidInspector, strDeviceVarName);
