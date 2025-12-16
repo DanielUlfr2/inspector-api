@@ -5,13 +5,15 @@ from datetime import datetime
 from pathlib import Path
 
 # Configuraciones básicas
+# Configuraciones básicas
 APP_ENV = os.getenv("APP_ENV", "development").lower()
-LOG_BASE_DIR = "logs"
+# Usar ruta absoluta basada en la ubicación de este archivo
+BASE_DIR = Path(__file__).resolve().parent.parent.parent # backend/
+LOG_BASE_DIR = BASE_DIR / "logs"
 
-def setup_logger(name: str = "inspector_app"):
+def setup_logger():
     """
-    Configura un logger que escribe en consola y en archivo
-    organizado por Año/Mes/Dia.
+    Configura el logger ROOT para que capture logs de toda la app.
     """
     
     # 1. Definir Nivel de Log según el entorno
@@ -22,7 +24,8 @@ def setup_logger(name: str = "inspector_app"):
     else:
         log_level = logging.DEBUG # Default development
 
-    logger = logging.getLogger(name)
+    # Configurar el ROOT logger
+    logger = logging.getLogger()
     logger.setLevel(log_level)
     
     # Evitar duplicar handlers si ya existen (hot-reload issue)
@@ -31,7 +34,7 @@ def setup_logger(name: str = "inspector_app"):
 
     # 2. Formato del Log
     formatter = logging.Formatter(
-        "%(asctime)s | %(levelname)-8s | %(module)s:%(funcName)s:%(lineno)d - %(message)s",
+        "%(asctime)s | %(levelname)-8s | %(name)s | %(module)s:%(funcName)s:%(lineno)d - %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
@@ -44,19 +47,14 @@ def setup_logger(name: str = "inspector_app"):
     try:
         # Estructura: logs/2025/12/13/
         now = datetime.now()
-        dir_path = os.path.join(
-            LOG_BASE_DIR, 
-            str(now.year), 
-            f"{now.month:02d}", 
-            f"{now.day:02d}"
-        )
+        dir_path = LOG_BASE_DIR / str(now.year) / f"{now.month:02d}" / f"{now.day:02d}"
         
         # Crear directorios si no existen
-        Path(dir_path).mkdir(parents=True, exist_ok=True)
+        dir_path.mkdir(parents=True, exist_ok=True)
         
-        file_path = os.path.join(dir_path, "system.log")
+        file_path = dir_path / "system.log"
         
-        file_handler = logging.FileHandler(file_path, encoding='utf-8')
+        file_handler = logging.FileHandler(str(file_path), encoding='utf-8')
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
         

@@ -1508,7 +1508,7 @@ INSERT INTO inspector.Product (strProductName, dtModificationDate)VALUES
 ('TV', CURRENT_TIMESTAMP);
 
 INSERT INTO inspector.Crm (strCrmName, dtModificationDate)VALUES
-('Siebel', CURRENT_TIMESTAMP),
+('Sibel', CURRENT_TIMESTAMP),
 ('Fenix', CURRENT_TIMESTAMP),
 ('Edatel', CURRENT_TIMESTAMP),
 ('Etp', CURRENT_TIMESTAMP),

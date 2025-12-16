@@ -110,3 +110,28 @@ class BalenaService:
         except subprocess.CalledProcessError as e:
             # logger.error(f"❌ Error Balena Set Device Var: {e.stderr}")
             return False
+    
+    @staticmethod
+    def rename_device(uuid: str, new_name: str) -> bool:
+        """
+        Renombra un dispositivo usando Balena CLI.
+        """
+        try:
+            logger.info(f"⚡ Ejecutando rename para {uuid} -> {new_name}")
+            
+            # Ejecuta: balena device rename <uuid> <new_name>
+            subprocess.run(
+                ["balena", "device", "rename", uuid, new_name],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            logger.info(f"✅ Balena rename exitoso.")
+            return True
+        except subprocess.CalledProcessError as e:
+            err_msg = e.stderr.strip()
+            logger.error(f"❌ Error Balena CLI rename: {err_msg}")
+            return False
+        except Exception as e:
+            logger.error(f"❌ Error inesperado en rename: {e}")
+            return False

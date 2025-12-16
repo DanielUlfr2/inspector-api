@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from databases.postgres_connector import PostgresConnector
 from src.core.config import settings
 from src.api.v1.api import api_router
+from src.core.logger import logger # Importar para inicializar logs
 
 # --- EVENTOS DE INICIO/APAGADO ---
 @asynccontextmanager
