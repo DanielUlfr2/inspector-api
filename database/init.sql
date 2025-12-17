@@ -226,13 +226,16 @@ CREATE TABLE InspectorFleetsVariables (
   CONSTRAINT fk_fleetvariables_fleet FOREIGN KEY (stridInspectorFleet) REFERENCES InspectorFleets (stridInspectorFleet)
 );
 
-CREATE TABLE InspectorDeviceHistory (
-  idInspectorDeviceHistory SERIAL PRIMARY KEY,
-  uuidInspector varchar(200) NOT NULL,
-  strLastValue varchar(200) NOT NULL,
-  strNewValue varchar(200) NOT NULL,
-  dtdateModification timestamp NOT NULL DEFAULT NOW(),
-  CONSTRAINT fk_devicehistory_inspector FOREIGN KEY (uuidInspector) REFERENCES Inspector (uuidInspector)
+CREATE TABLE InspectorHistoryVariables (
+  idHistory SERIAL PRIMARY KEY,
+  strElementType VARCHAR(20) NOT NULL
+    CHECK (strElementType IN ('DEVICE', 'FLEET')),
+  idVariableId INTEGER NOT NULL,
+  jsonChangeData JSONB NOT NULL,
+  strChangedBy VARCHAR(100),
+  strChangedByRole VARCHAR(50),
+  strSource VARCHAR(50),
+  dtChangeDate TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE BlackList (
@@ -262,16 +265,16 @@ CREATE TABLE ScriptTransaction(
 );
 
 CREATE TABLE HistoricScriptTransaction(
-	idHistoricScript BIGSERIAL,
-	strDescriptionFinish VARCHAR(3000) NOT NULL,
-	dtExecutionStart TIMESTAMP NOT NULL,
-	dtExecutionFinish TIMESTAMP NOT NULL,
-	idTransactionStatus INT NOT NULL,
-	strScriptId varchar(50) NOT NULL,
-	CONSTRAINT fk_historicscript_transactionstatus FOREIGN KEY (idTransactionStatus) REFERENCES TransactionStatus (idTransactionStatus),
-	CONSTRAINT fk_historicscript_scripttransaction FOREIGN KEY (strScriptId) REFERENCES ScriptTransaction (strScriptId),
-	PRIMARY KEY (idHistoricScript, dtExecutionStart)
-)PARTITION BY RANGE (dtExecutionStart);
+  idHistoricScript BIGSERIAL,
+  strDescriptionFinish VARCHAR(3000) NOT NULL,
+  dtExecutionStart TIMESTAMP NOT NULL,
+  dtExecutionFinish TIMESTAMP NOT NULL,
+  idTransactionStatus INT NOT NULL,
+  strScriptId varchar(50) NOT NULL,
+  CONSTRAINT fk_historicscript_transactionstatus FOREIGN KEY (idTransactionStatus) REFERENCES TransactionStatus (idTransactionStatus),
+  CONSTRAINT fk_historicscript_scripttransaction FOREIGN KEY (strScriptId) REFERENCES ScriptTransaction (strScriptId),
+  PRIMARY KEY (idHistoricScript, dtExecutionStart)
+) PARTITION BY RANGE (dtExecutionStart);
 
 CREATE TABLE StatusInspectorHistory (
   idInspectorHistory SERIAL, 
@@ -284,53 +287,29 @@ CREATE TABLE StatusInspectorHistory (
   intHistoryStorageTotalMB INT NOT NULL,
   intHistoryCpuTempC INT NOT NULL,
   intHistoryCpuUsagePercent INT NOT NULL,
-  strScriptId varchar(50) NOT NULL,
+  idHistoricScript BIGINT NOT NULL,
   dtValidate timestamp NOT NULL,
   CONSTRAINT fk_statushistory_inspector FOREIGN KEY (uuidInspector) REFERENCES Inspector (uuidInspector),
   CONSTRAINT fk_statushistory_transactionstatus FOREIGN KEY (idTransactionStatus) REFERENCES TransactionStatus (idTransactionStatus),
-  CONSTRAINT fk_statushistory_scripttransaction FOREIGN KEY (strScriptId) REFERENCES ScriptTransaction (strScriptId),
   CONSTRAINT pk_constraint_statusinsphist PRIMARY KEY (idInspectorHistory, dtValidate) 
 ) PARTITION BY RANGE (dtValidate);
 
--- Crea las particiones usando pg_partman
--- Nota: p_jobmon se establece en FALSE si no has instalado la extensión pg_jobmon (que es diferente a pg_partman)
--- Tabla 1: StatusInspectorHistory
-SELECT partman.create_parent(
-    -- IMPORTANTE: Apuntamos al esquema 'inspector'
-    -- Postgres convierte nombres sin comillas a minúsculas, así que aquí referenciamos en minúsculas
-    p_parent_table := 'inspector.statusinspectorhistory', 
-    p_control := 'dtvalidate',           
-    p_interval := '1 day',
-    p_type := 'range',
-    p_epoch := 'none',
-    p_premake := 7,
-    p_start_partition := (CURRENT_DATE - interval '7 days')::text, 
-    p_default_table := true,
-    p_automatic_maintenance := 'on'::text,
-    p_constraint_cols := NULL,
-    p_template_table := NULL,
-    p_jobmon := false,
-    p_date_trunc_interval := NULL
-);
-
--- Tabla 2: HistoricScriptTransaction
 SELECT partman.create_parent(
     p_parent_table := 'inspector.historicscripttransaction',
     p_control := 'dtexecutionstart',   
     p_interval := '1 day',
     p_type := 'range',
-    p_epoch := 'none',
-    p_premake := 7,
-    p_start_partition := (CURRENT_DATE - interval '7 days')::text,
-    p_default_table := true,
-    p_automatic_maintenance := 'on'::text,
-    p_constraint_cols := NULL,
-    p_template_table := NULL,
-    p_jobmon := false,                  
-    p_date_trunc_interval := NULL
+    p_premake := 7
 );
 
--- Actualizar configuración (todo en minúsculas porque así se guardan internamente)
+SELECT partman.create_parent(
+    p_parent_table := 'inspector.statusinspectorhistory',
+    p_control := 'dtvalidate',   
+    p_interval := '1 day',
+    p_type := 'range',
+    p_premake := 7
+);
+
 UPDATE partman.part_config
 SET retention = '1 month', 
     infinite_time_partitions = TRUE

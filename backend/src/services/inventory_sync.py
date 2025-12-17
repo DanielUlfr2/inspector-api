@@ -5,6 +5,8 @@ import json
 from src.services.balena_service import BalenaService
 from src.repositories.fleet_repo import FleetRepository
 from src.repositories.info_devices_repo import InfoDevicesRepository
+from src.repositories.history_repo import HistoryRepository
+from src.utils.transaction_manager import TransactionManager, ScriptIds, TransactionStatus
 from src.core.celery_app import celery_app 
 
 logger = logging.getLogger(__name__)
@@ -21,103 +23,138 @@ class InventorySyncService:
             logger.error("🛑 Abortado: Fallo login Balena.")
             return False
 
-        # --- MEMORIA DEL SISTEMA ---
-        existing_fleet_ids = await FleetRepository.get_all_ids()       
-        existing_device_uuids = await InfoDevicesRepository.get_all_uuids()
-
-        auto_onboarding_enabled = True
-        if existing_fleet_ids is None or existing_device_uuids is None:
-            logger.warning("⚠️ No se pudo leer la memoria (BD). Se DESACTIVA Auto-Onboarding.")
-            auto_onboarding_enabled = False
-            if existing_fleet_ids is None: existing_fleet_ids = set()
-            if existing_device_uuids is None: existing_device_uuids = set()
-
-        # --- PASO 1: FLOTAS ---
-        raw_fleets = BalenaService.get_fleets()
+        # --- 1. INICIAR TRANSACCIÓN DE AUDITORÍA (Padre) ---
+        # Registramos que arrancó el proceso automático
+        script_id = ScriptIds.AUTO_SYNC
+        historic_id = await TransactionManager.start_transaction(script_id)
         
-        # ### [NUEVO] 1. TRAEMOS EL MAPA DE TRADUCCIÓN (Slug -> ID)
-        # Esto convierte "raspberrypi4-64" -> 3
-        type_map = await FleetRepository.get_device_type_map()
-        # Si llega un tipo raro que no tenemos, le ponemos el ID 1 (DEFAULT)
-        default_type_id = type_map.get('DEFAULT', 1) 
+        try:
+            # --- MEMORIA DEL SISTEMA ---
+            existing_fleet_ids = await FleetRepository.get_all_ids()       
+            existing_device_uuids = await InfoDevicesRepository.get_all_uuids()
 
-        fleets_to_save = []
-        new_fleets_slugs_to_sync = [] 
-        
-        for f in raw_fleets:
-            app_name = f.get("app_name") 
-            slug = f.get("slug")
+            auto_onboarding_enabled = True
+            if existing_fleet_ids is None or existing_device_uuids is None:
+                logger.warning("⚠️ No se pudo leer la memoria (BD). Se DESACTIVA Auto-Onboarding.")
+                auto_onboarding_enabled = False
+                if existing_fleet_ids is None: existing_fleet_ids = set()
+                if existing_device_uuids is None: existing_device_uuids = set()
+
+            # --- PASO 1: FLOTAS ---
+            raw_fleets = BalenaService.get_fleets()
             
-            # ### [NUEVO] 2. TRADUCIMOS EL TIPO DE DISPOSITIVO
-            remote_type_slug = f.get("device_type", "DEFAULT")
-            mapped_id = type_map.get(remote_type_slug, default_type_id)
+            # Traemos mapa de traducción (Slug -> ID)
+            type_map = await FleetRepository.get_device_type_map()
+            default_type_id = type_map.get('DEFAULT', 1) 
 
-            # Detección (Sin disparar todavía)
-            if auto_onboarding_enabled and app_name and app_name not in existing_fleet_ids:
-                new_fleets_slugs_to_sync.append(slug) 
-                existing_fleet_ids.add(app_name)
-
-            fleets_to_save.append({
-                "id": app_name, 
-                "slug": slug,
-                # ### [CAMBIO] Usamos la llave 'device_type_id' con el valor numérico
-                "device_type_id": mapped_id, 
-                "device_count": f.get("device_count", 0) 
-            })
-        
-        # 1. GUARDAMOS FLOTAS EN BD
-        if fleets_to_save:
-            await FleetRepository.upsert_batch(fleets_to_save)
-            logger.info(f"✅ {len(fleets_to_save)} flotas actualizadas.")
-
-        # 2. DISPARAR TAREAS
-        for slug in new_fleets_slugs_to_sync:
-            logger.info(f"🆕 Nueva Flota detectada. Pidiendo variables para: {slug}")
-            celery_app.send_task("tasks.sync_single_fleet_vars", args=[slug])
-
-
-        # --- PASO 2: DISPOSITIVOS (PARALELO) ---
-        total_devices_processed = 0
-        semaphore = asyncio.Semaphore(cls.MAX_CONCURRENT_TASKS)
-
-        for fleet in fleets_to_save:
-            fleet_slug = fleet["slug"]
-            fleet_db_id = fleet["id"]
+            fleets_to_save = []
+            new_fleets_slugs_to_sync = [] 
             
-            summary_devices = BalenaService.get_devices_by_fleet(fleet_slug)
+            for f in raw_fleets:
+                app_name = f.get("app_name") 
+                slug = f.get("slug")
+                
+                # Traducimos tipo
+                remote_type_slug = f.get("device_type", "DEFAULT")
+                mapped_id = type_map.get(remote_type_slug, default_type_id)
+
+                if auto_onboarding_enabled and app_name and app_name not in existing_fleet_ids:
+                    new_fleets_slugs_to_sync.append(slug) 
+                    existing_fleet_ids.add(app_name)
+
+                fleets_to_save.append({
+                    "id": app_name, 
+                    "slug": slug,
+                    "device_type_id": mapped_id, 
+                    "device_count": f.get("device_count", 0) 
+                })
             
-            if not summary_devices: continue
+            # Guardamos Flotas
+            if fleets_to_save:
+                await FleetRepository.upsert_batch(fleets_to_save)
+                logger.info(f"✅ {len(fleets_to_save)} flotas actualizadas.")
+
+            # Disparamos tareas de variables
+            for slug in new_fleets_slugs_to_sync:
+                logger.info(f"🆕 Nueva Flota detectada. Pidiendo variables para: {slug}")
+                celery_app.send_task("tasks.sync_single_fleet_vars", args=[slug])
+
+
+            # --- PASO 2: DISPOSITIVOS (PARALELO) ---
+            total_devices_processed = 0
+            semaphore = asyncio.Semaphore(cls.MAX_CONCURRENT_TASKS)
+
+            for fleet in fleets_to_save:
+                fleet_slug = fleet["slug"]
+                fleet_db_id = fleet["id"]
+                
+                summary_devices = BalenaService.get_devices_by_fleet(fleet_slug)
+                
+                if not summary_devices: continue
+                
+                logger.info(f"⚡ Procesando {len(summary_devices)} equipos en '{fleet_slug}'...")
+
+                tasks = []
+                new_devices_uuids_to_sync = []
+
+                for item in summary_devices:
+                    uuid = item.get("uuid")
+                    if uuid:
+                        if auto_onboarding_enabled and uuid not in existing_device_uuids:
+                            new_devices_uuids_to_sync.append(uuid)
+                            existing_device_uuids.add(uuid)
+
+                        tasks.append(cls._fetch_device_detail_concurrent(uuid, fleet_db_id, semaphore))
+                
+                results = await asyncio.gather(*tasks)
+                devices_full_data = [r for r in results if r is not None]
+
+                if devices_full_data:
+                    # A. Guardar estado actual en BD (Inspector)
+                    await InfoDevicesRepository.upsert_batch(devices_full_data)
+                    
+                    # B. Guardar Historial (Snapshot)
+                    # Si la transacción histórica se abrió correctamente, guardamos la foto de cada equipo
+                    if historic_id:
+                        for device_data in devices_full_data:
+                            await HistoryRepository.log_device_snapshot(
+                                historic_id, 
+                                device_data['uuid'], 
+                                TransactionStatus.COMPLETO, # Estado del snapshot: "Dato recolectado OK"
+                                device_data # Pasamos el dict completo, el repo extraerá cpu, ram, etc.
+                            )
+
+                    total_devices_processed += len(devices_full_data)
+                    logger.info(f"   💾 Guardados {len(devices_full_data)} dispositivos de {fleet_slug}")
+
+                    # C. Disparar variables para nuevos
+                    for new_uuid in new_devices_uuids_to_sync:
+                        logger.info(f"🆕 Nuevo Equipo guardado. Pidiendo variables para: {new_uuid}")
+                        celery_app.send_task("tasks.sync_single_device_vars", args=[new_uuid])
+
+            # --- CIERRE EXITOSO DE TRANSACCIÓN ---
+            if historic_id:
+                await TransactionManager.finish_transaction(
+                    historic_id, 
+                    script_id, 
+                    TransactionStatus.COMPLETO, 
+                    f"Sincronización finalizada. Equipos procesados: {total_devices_processed}"
+                )
             
-            logger.info(f"⚡ Procesando {len(summary_devices)} equipos en '{fleet_slug}'...")
+            logger.info(f"🏁 SINCRONIZACIÓN FINALIZADA. {total_devices_processed} dispositivos procesados.")
+            return True
 
-            tasks = []
-            new_devices_uuids_to_sync = []
-
-            for item in summary_devices:
-                uuid = item.get("uuid")
-                if uuid:
-                    if auto_onboarding_enabled and uuid not in existing_device_uuids:
-                        new_devices_uuids_to_sync.append(uuid)
-                        existing_device_uuids.add(uuid)
-
-                    tasks.append(cls._fetch_device_detail_concurrent(uuid, fleet_db_id, semaphore))
-            
-            results = await asyncio.gather(*tasks)
-            devices_full_data = [r for r in results if r is not None]
-
-            if devices_full_data:
-                # 3. GUARDAMOS DISPOSITIVOS
-                await InfoDevicesRepository.upsert_batch(devices_full_data)
-                total_devices_processed += len(devices_full_data)
-                logger.info(f"   💾 Guardados {len(devices_full_data)} dispositivos de {fleet_slug}")
-
-                # 4. DISPARAMOS VARIABLES
-                for new_uuid in new_devices_uuids_to_sync:
-                    logger.info(f"🆕 Nuevo Equipo guardado. Pidiendo variables para: {new_uuid}")
-                    celery_app.send_task("tasks.sync_single_device_vars", args=[new_uuid])
-
-        logger.info(f"🏁 SINCRONIZACIÓN FINALIZADA. {total_devices_processed} dispositivos procesados.")
-        return True
+        except Exception as e:
+            logger.error(f"❌ Error crítico durante sincronización: {e}")
+            # Si falló algo gordo, cerramos la transacción como FALLIDA
+            if historic_id:
+                await TransactionManager.finish_transaction(
+                    historic_id, 
+                    script_id, 
+                    TransactionStatus.FALLIDO, 
+                    f"Error de ejecución: {str(e)[:200]}"
+                )
+            return False
 
     @classmethod
     async def _fetch_device_detail_concurrent(cls, uuid, fleet_slug, semaphore):

@@ -51,58 +51,77 @@ class TransactionManager:
             await PostgresConnector.release_connection(conn)
             
     @staticmethod
-    async def start_transaction(script_id: str):
-        """Marca un script como 'En Progreso' y actualiza su fecha de inicio"""
-        query = """
-            UPDATE inspector.scripttransaction
-            SET dtLastExecutionStart = NOW(),
-                idTransactionStatus = $1
-            WHERE strscriptid = $2
+    async def start_transaction(script_id: str) -> int:
+        """
+        1. Actualiza ScriptTransaction (Tabla de estado actual).
+        2. Crea registro en HistoricScriptTransaction (Tabla de auditoría) con estado 'En Progreso'.
+        3. Retorna el ID del histórico para vincular detalles hijos.
         """
         conn = await PostgresConnector.get_connection()
         try:
-            await conn.execute(query, TransactionStatus.EN_PROGRESO, script_id)
-            logger.info(f"🟢 Transacción iniciada: {script_id}")
+            # 1. Actualizar Maestro (Estado actual)
+            update_query = """
+                UPDATE inspector.scripttransaction
+                SET dtLastExecutionStart = NOW(),
+                    idTransactionStatus = $1
+                WHERE strscriptid = $2
+            """
+            await conn.execute(update_query, TransactionStatus.EN_PROGRESO, script_id)
+
+            # 2. Insertar Histórico (Inicio)
+            history_query = """
+                INSERT INTO inspector.historicscripttransaction
+                (strDescriptionFinish, dtExecutionStart, dtExecutionFinish, idTransactionStatus, strScriptId)
+                VALUES ($1, NOW(), NOW(), $2, $3)
+                RETURNING idHistoricScript
+            """
+            historic_id = await conn.fetchval(history_query, "Iniciando...", TransactionStatus.EN_PROGRESO, script_id)
+            
+            logger.info(f"🟢 Transacción iniciada: {script_id} (HistID: {historic_id})")
+            return historic_id
+
         except Exception as e:
             logger.error(f"❌ Error iniciando transacción {script_id}: {e}")
+            return None
         finally:
             await PostgresConnector.release_connection(conn)
 
     @staticmethod
-    async def finish_transaction(script_id: str, status_id: int, description: str):
+    async def finish_transaction(historic_id: int, script_id: str, status_id: int, description: str):
         """
-        1. Actualiza la tabla maestra ScriptTransaction (Fin y Estado).
-        2. Inserta el log en el histórico (HistoricScriptTransaction).
+        1. Actualiza el histórico (pone fecha fin y resultado).
+        2. Actualiza el maestro ScriptTransaction (pone estado final).
         """
+        if not historic_id: return
+
+        clean_desc = description[:3000]
+
         conn = await PostgresConnector.get_connection()
         try:
-            # 1. Actualizar estado actual
-            update_query = """
-                UPDATE inspector.scripttransaction
-                SET dtLastExecutionFinish = NOW(),
-                    idTransactionStatus = $1
-                WHERE strscriptid = $2
-                RETURNING dtLastExecutionStart
-            """
-            start_time = await conn.fetchval(update_query, status_id, script_id)
-            
-            if not start_time:
-                start_time = datetime.now() # Fallback por si acaso
+            async with conn.transaction():
+                # 1. Cerrar Histórico
+                hist_query = """
+                    UPDATE inspector.historicscripttransaction
+                    SET dtExecutionFinish = NOW(),
+                        idTransactionStatus = $1,
+                        strDescriptionFinish = $2
+                    WHERE idHistoricScript = $3
+                """
+                await conn.execute(hist_query, status_id, clean_desc, historic_id)
 
-            # 2. Insertar en Histórico (Auditoría)
-            # Nota: Sanitizamos la descripción por seguridad
-            clean_desc = description[:3000] # Truncar para evitar error de VARCHAR(3000)
-            
-            history_query = """
-                INSERT INTO inspector.historicscripttransaction
-                (strDescriptionFinish, dtExecutionStart, dtExecutionFinish, idTransactionStatus, strScriptId)
-                VALUES ($1, $2, NOW(), $3, $4)
-            """
-            await conn.execute(history_query, clean_desc, start_time, status_id, script_id)
-            
+                # 2. Actualizar Maestro
+                master_query = """
+                    UPDATE inspector.scripttransaction
+                    SET dtLastExecutionFinish = NOW(),
+                        idTransactionStatus = $1
+                    WHERE strscriptid = $2
+                """
+                await conn.execute(master_query, status_id, script_id)
+
             logger.info(f"🏁 Transacción finalizada: {script_id} - Estado: {status_id}")
-            
+
         except Exception as e:
             logger.error(f"❌ Error finalizando transacción {script_id}: {e}")
         finally:
             await PostgresConnector.release_connection(conn)
+

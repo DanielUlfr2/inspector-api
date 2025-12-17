@@ -143,3 +143,118 @@ class InfoDevicesRepository:
             return None # <--- CAMBIO: Retornar None en vez de set()
         finally:
             await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def update_device_note(uuid: str, note: str):
+        """
+        Actualiza solo el campo de nota en la BD local.
+        """
+        query = "UPDATE inspector.inspector SET strnote = $1, dtmodificationdate = NOW() WHERE uuidinspector = $2"
+        conn = await PostgresConnector.get_connection()
+        try:
+            await conn.execute(query, note, uuid)
+            logger.info(f"✅ DB: Nota actualizada para {uuid}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error DB update note: {e}")
+            raise e
+        finally:
+            await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def get_device_by_uuid(uuid: str) -> Dict[str, Any]:
+        """
+        Retorna el estado actual registrado en BD de un equipo.
+        Usado para generar el snapshot en el historial antes de una acción.
+        """
+        query = """
+            SELECT 
+                boolonline as is_online,
+                intmemoryusagemb as memory_usage,
+                intmemorytotalmb as memory_total,
+                intstorageusagemb as storage_usage,
+                intstoragetotalmb as storage_total,
+                intcputempc as cpu_temp,
+                intcpuusagepercent as cpu_usage
+            FROM inspector.inspector 
+            WHERE uuidinspector = $1
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            record = await conn.fetchrow(query, uuid)
+            return dict(record) if record else {}
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo snapshot de dispositivo {uuid}: {e}")
+            return {}
+        finally:
+            await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def get_device_history_range(uuid: str, start_date: datetime, end_date: datetime):
+        """
+        Obtiene el historial de métricas (CPU, RAM, Temp) para gráficas.
+        """
+        query = """
+            SELECT 
+                dtValidate as timestamp,
+                boolOnline as is_online,
+                intHistoryMemoryUsageMB as memory_usage,
+                intHistoryCpuUsagePercent as cpu_usage,
+                intHistoryCpuTempC as cpu_temp,
+                intHistoryStorageUsageMB as storage_usage
+            FROM inspector.StatusInspectorHistory
+            WHERE uuidInspector = $1
+              AND dtValidate BETWEEN $2 AND $3
+            ORDER BY dtValidate ASC
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            records = await conn.fetch(query, uuid, start_date, end_date)
+            # Convertimos a lista de diccionarios limpia para el JSON
+            return [dict(r) for r in records]
+        except Exception as e:
+            logger.error(f"❌ Error fetching history for {uuid}: {e}")
+            return []
+        finally:
+            await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def get_device_detail_full(uuid: str):
+        """
+        Obtiene la ficha técnica COMPLETA haciendo JOIN con Status y Service.
+        """
+        # AJUSTE: Usamos las columnas reales de tus tablas
+        query = """
+            SELECT 
+                i.*,
+                st.strInventoryStatus as status_name, 
+                ser.strClientName as service_name
+            FROM inspector.Inspector i
+            LEFT JOIN inspector.InventoryInspectorStatus st 
+                ON i.idInventoryInspectorStatus = st.idInventoryInspectorStatus
+            LEFT JOIN inspector.InspectorService ser 
+                ON i.strInspectorServiceId = ser.strInspectorServiceId
+            WHERE i.uuidInspector = $1
+        """
+        
+        conn = await PostgresConnector.get_connection()
+        try:
+            record = await conn.fetchrow(query, uuid)
+            if record:
+                # Convertimos a dict
+                data = dict(record)
+                
+                # Parsear JSON de observaciones si viene como texto
+                if isinstance(data.get('jsonbobservaciones'), str):
+                     import json
+                     data['jsonbobservaciones'] = json.loads(data['jsonbobservaciones'])
+                
+                # [OPCIONAL] Si algún campo de fecha viene con zona horaria, limpiarlo aquí
+                # (Pydantic suele manejarlo bien, pero por seguridad):
+                if data.get('dtlastconnectivityevent'):
+                    data['dtlastconnectivityevent'] = data['dtlastconnectivityevent'].replace(tzinfo=None)
+                
+                return data
+            return None
+        finally:
+            await PostgresConnector.release_connection(conn)

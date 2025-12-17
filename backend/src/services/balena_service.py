@@ -199,3 +199,56 @@ class BalenaService:
         except subprocess.CalledProcessError as e:
             logger.error(f"❌ Error moviendo dispositivo: {e.stderr.strip()}")
             return False
+    
+    @staticmethod
+    def reboot_device(uuid: str) -> bool:
+        """Reinicia el Sistema Operativo (OS)"""
+        try:
+            logger.info(f"🔄 Rebooting OS device {uuid}...")
+            subprocess.run(["balena", "device", "reboot", uuid], check=True, capture_output=True)
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ Error rebooting {uuid}: {e.stderr.decode().strip()}")
+            return False
+
+    @staticmethod
+    def restart_device(uuid: str) -> bool:
+        """Reinicia el Contenedor (Aplicación)"""
+        try:
+            logger.info(f"🔄 Restarting Application device {uuid}...")
+            subprocess.run(["balena", "device", "restart", uuid], check=True, capture_output=True)
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ Error restarting app {uuid}: {e.stderr.decode().strip()}")
+            return False
+
+    @staticmethod
+    def shutdown_device(uuid: str) -> bool:
+        """Apaga el dispositivo"""
+        try:
+            logger.info(f"🛑 Shutting down device {uuid}...")
+            subprocess.run(["balena", "device", "shutdown", uuid], check=True, capture_output=True)
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ Error shutting down {uuid}: {e.stderr.decode().strip()}")
+            return False
+
+    # ==========================================
+    # 👇 METADATA (Notas)
+    # ==========================================
+
+    @staticmethod
+    def set_device_note(uuid: str, note: str) -> bool:
+        """Pone una nota en Balena Dashboard"""
+        try:
+            # Comando: balena device note <note> --device <uuid>
+            # Nota: Balena CLI requiere que el texto sea el primer argumento a veces, o flag.
+            # Sintaxis segura: balena device note "texto" --device uuid
+            subprocess.run(
+                ["balena", "device", "note", note, "--device", uuid],
+                check=True, capture_output=True, text=True
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ Error setting note {uuid}: {e.stderr.strip()}")
+            return False

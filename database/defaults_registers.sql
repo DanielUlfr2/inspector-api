@@ -1679,8 +1679,6 @@ INSERT INTO inspector.InspectorDeviceVariables (uuidInspector, strDeviceVarName,
 INSERT INTO inspector.InspectorFleetsVariables (stridInspectorFleet, strFleetVarName, strFleetVarValue, dtCreate, dtModificationDate) VALUES
 ('DEFAULT', 'DEFAULT', 'DEFAULT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-
-
 INSERT INTO inspector.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
 ('Activo', CURRENT_TIMESTAMP),
 ('Suspendido', CURRENT_TIMESTAMP),
@@ -1711,5 +1709,5 @@ insert into inspector.ScriptTransaction (strscriptid, strscriptdescription, dtla
 ('MANUAL_COLLECTION_VARS_INSPECTOR', 'Script de colecta variables relacionada a el inspector de manera manual.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
 
 INSERT INTO inspector.StatusInspectorHistory(uuidInspector, idtransactionstatus, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
-intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, intHistoryCpuTempC, strScriptId, dtValidate) VALUES 
-('DEFAULT', 1, FALSE, 0, 0, 0, 0, 0, 0, 'DEFAULT', CURRENT_TIMESTAMP);
+intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, intHistoryCpuTempC, idHistoricScript, dtValidate) VALUES 
+('DEFAULT', 1, FALSE, 0, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP);
