@@ -34,32 +34,43 @@ class InventorySyncService:
 
         # --- PASO 1: FLOTAS ---
         raw_fleets = BalenaService.get_fleets()
-        fleets_to_save = []
         
-        # Lista temporal para disparar tareas DESPUÉS de guardar
+        # ### [NUEVO] 1. TRAEMOS EL MAPA DE TRADUCCIÓN (Slug -> ID)
+        # Esto convierte "raspberrypi4-64" -> 3
+        type_map = await FleetRepository.get_device_type_map()
+        # Si llega un tipo raro que no tenemos, le ponemos el ID 1 (DEFAULT)
+        default_type_id = type_map.get('DEFAULT', 1) 
+
+        fleets_to_save = []
         new_fleets_slugs_to_sync = [] 
         
         for f in raw_fleets:
             app_name = f.get("app_name") 
             slug = f.get("slug")
             
+            # ### [NUEVO] 2. TRADUCIMOS EL TIPO DE DISPOSITIVO
+            remote_type_slug = f.get("device_type", "DEFAULT")
+            mapped_id = type_map.get(remote_type_slug, default_type_id)
+
             # Detección (Sin disparar todavía)
             if auto_onboarding_enabled and app_name and app_name not in existing_fleet_ids:
-                new_fleets_slugs_to_sync.append(slug) # Guardamos para luego
+                new_fleets_slugs_to_sync.append(slug) 
                 existing_fleet_ids.add(app_name)
 
             fleets_to_save.append({
                 "id": app_name, 
                 "slug": slug,
-                "device_type": f.get("device_type"),
+                # ### [CAMBIO] Usamos la llave 'device_type_id' con el valor numérico
+                "device_type_id": mapped_id, 
                 "device_count": f.get("device_count", 0) 
             })
         
         # 1. GUARDAMOS FLOTAS EN BD
-        await FleetRepository.upsert_batch(fleets_to_save)
-        logger.info(f"✅ {len(fleets_to_save)} flotas actualizadas.")
+        if fleets_to_save:
+            await FleetRepository.upsert_batch(fleets_to_save)
+            logger.info(f"✅ {len(fleets_to_save)} flotas actualizadas.")
 
-        # 2. AHORA SÍ ES SEGURO DISPARAR LAS TAREAS DE FLOTAS
+        # 2. DISPARAR TAREAS
         for slug in new_fleets_slugs_to_sync:
             logger.info(f"🆕 Nueva Flota detectada. Pidiendo variables para: {slug}")
             celery_app.send_task("tasks.sync_single_fleet_vars", args=[slug])
@@ -80,29 +91,27 @@ class InventorySyncService:
             logger.info(f"⚡ Procesando {len(summary_devices)} equipos en '{fleet_slug}'...")
 
             tasks = []
-            new_devices_uuids_to_sync = [] # [CAMBIO] Lista temporal por flota
+            new_devices_uuids_to_sync = []
 
             for item in summary_devices:
                 uuid = item.get("uuid")
                 if uuid:
-                    # Detección (Sin disparar todavía)
                     if auto_onboarding_enabled and uuid not in existing_device_uuids:
-                        new_devices_uuids_to_sync.append(uuid) # Guardamos en lista
+                        new_devices_uuids_to_sync.append(uuid)
                         existing_device_uuids.add(uuid)
 
                     tasks.append(cls._fetch_device_detail_concurrent(uuid, fleet_db_id, semaphore))
             
-            # Ejecutar hilos
             results = await asyncio.gather(*tasks)
             devices_full_data = [r for r in results if r is not None]
 
             if devices_full_data:
-                # 3. GUARDAMOS DISPOSITIVOS EN BD (CRÍTICO: ESTO DEBE PASAR PRIMERO)
+                # 3. GUARDAMOS DISPOSITIVOS
                 await InfoDevicesRepository.upsert_batch(devices_full_data)
                 total_devices_processed += len(devices_full_data)
                 logger.info(f"   💾 Guardados {len(devices_full_data)} dispositivos de {fleet_slug}")
 
-                # 4. AHORA SÍ DISPARAMOS LAS TAREAS (Ya no dará error de FK)
+                # 4. DISPARAMOS VARIABLES
                 for new_uuid in new_devices_uuids_to_sync:
                     logger.info(f"🆕 Nuevo Equipo guardado. Pidiendo variables para: {new_uuid}")
                     celery_app.send_task("tasks.sync_single_device_vars", args=[new_uuid])

@@ -157,13 +157,22 @@ CREATE TABLE InventoryInspectorStatus (
   dtModificationDate timestamp NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE DeviceType (
+  idDeviceType SERIAL PRIMARY KEY,
+  strDeviceNameType varchar(100) NOT NULL,
+  strCpuArchitecture varchar(100) NOT NULL,
+  strDeviceSlug varchar(100) NOT NULL UNIQUE,
+  dtModificationDate timestamp NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE InspectorFleets (
   stridInspectorFleet varchar(50) PRIMARY KEY,
   strSlug varchar(50) NOT NULL,
-  strDeviceType varchar(80) NOT NULL,
+  idDeviceType int NOT NULL,
   intDeviceCount INT NOT NULL DEFAULT 0,
   dtCreate timestamp NOT NULL DEFAULT NOW(),
-  dtModificationDate timestamp NOT NULL DEFAULT NOW()
+  dtModificationDate timestamp NOT NULL DEFAULT NOW(),
+  CONSTRAINT fk_inspectorfleet_devicetype FOREIGN KEY (idDeviceType) REFERENCES DeviceType (idDeviceType)
 );
 
 CREATE TABLE Inspector (
