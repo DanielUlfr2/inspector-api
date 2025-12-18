@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 from databases.postgres_connector import PostgresConnector
-from src.core.security import SecurityValidator
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +12,6 @@ class TransactionStatus:
     CANCELADO = 5
 
 class ScriptIds:
-    # IDs quemados de scripts en base de datos.
     AUTO_RESTART = 'AUTOMATIC_RESTART_INSPECTOR'
     MANUAL_RESTART = 'MANUAL_RESTART_INSPECTOR'
     MANUAL_SHUTDOWN = 'MANUAL_SHUTDOWN_INSPECTOR'
@@ -25,16 +23,12 @@ class ScriptIds:
     MANUAL_SET_VAR = 'MANUAL_SET_VAR_INSPECTOR'
     AUTO_VARS_SYNC = 'AUTOMATIC_COLLECTION_VARS_INSPECTOR'
     MANUAL_VARS_SYNC = 'MANUAL_COLLECTION_VARS_INSPECTOR'
+    MANUAL_SET_NOTE = 'MANUAL_SET_NOTE_INSPECTOR'
     
 class TransactionManager:
 
     @staticmethod
     async def get_current_status(script_id: str) -> int:
-        """
-        Consulta el estado actual de un script en la base de datos.
-        Retorna el ID del estado (ej: 2 = En Progreso).
-        Si no existe, retorna None.
-        """
         query = """
             SELECT idtransactionstatus 
             FROM inspector.scripttransaction 
@@ -51,15 +45,13 @@ class TransactionManager:
             await PostgresConnector.release_connection(conn)
             
     @staticmethod
-    async def start_transaction(script_id: str) -> int:
+    async def start_transaction(script_id: str, user: str = "SYSTEM", role: str = "SYSTEM") -> int:
         """
-        1. Actualiza ScriptTransaction (Tabla de estado actual).
-        2. Crea registro en HistoricScriptTransaction (Tabla de auditoría) con estado 'En Progreso'.
-        3. Retorna el ID del histórico para vincular detalles hijos.
+        Inicia transacción guardando QUIÉN la ejecutó (user/role).
         """
         conn = await PostgresConnector.get_connection()
         try:
-            # 1. Actualizar Maestro (Estado actual)
+            # 1. Actualizar Maestro
             update_query = """
                 UPDATE inspector.scripttransaction
                 SET dtLastExecutionStart = NOW(),
@@ -68,16 +60,17 @@ class TransactionManager:
             """
             await conn.execute(update_query, TransactionStatus.EN_PROGRESO, script_id)
 
-            # 2. Insertar Histórico (Inicio)
+            # 2. Insertar Histórico (CON USUARIO Y ROL)
             history_query = """
                 INSERT INTO inspector.historicscripttransaction
-                (strDescriptionFinish, dtExecutionStart, dtExecutionFinish, idTransactionStatus, strScriptId)
-                VALUES ($1, NOW(), NOW(), $2, $3)
+                (strDescriptionFinish, dtExecutionStart, dtExecutionFinish, idTransactionStatus, strScriptId, strExecuterUser, strExecuterRole)
+                VALUES ($1, NOW(), NOW(), $2, $3, $4, $5)
                 RETURNING idHistoricScript
             """
-            historic_id = await conn.fetchval(history_query, "Iniciando...", TransactionStatus.EN_PROGRESO, script_id)
+            # Pasamos las 5 variables:
+            historic_id = await conn.fetchval(history_query, "Iniciando...", TransactionStatus.EN_PROGRESO, script_id, user, role)
             
-            logger.info(f"🟢 Transacción iniciada: {script_id} (HistID: {historic_id})")
+            logger.info(f"🟢 Transacción iniciada: {script_id} por {user} (HistID: {historic_id})")
             return historic_id
 
         except Exception as e:
@@ -88,10 +81,6 @@ class TransactionManager:
 
     @staticmethod
     async def finish_transaction(historic_id: int, script_id: str, status_id: int, description: str):
-        """
-        1. Actualiza el histórico (pone fecha fin y resultado).
-        2. Actualiza el maestro ScriptTransaction (pone estado final).
-        """
         if not historic_id: return
 
         clean_desc = description[:3000]
@@ -124,4 +113,3 @@ class TransactionManager:
             logger.error(f"❌ Error finalizando transacción {script_id}: {e}")
         finally:
             await PostgresConnector.release_connection(conn)
-

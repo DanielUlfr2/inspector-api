@@ -258,3 +258,25 @@ class InfoDevicesRepository:
             return None
         finally:
             await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def update_device_fleet(uuid: str, new_fleet_slug: str):
+        """
+        Actualiza la flota del dispositivo en la BD local.
+        """
+        query = """
+            UPDATE inspector.Inspector 
+            SET stridInspectorFleet = $1, 
+                dtModificationDate = NOW() 
+            WHERE uuidInspector = $2
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            await conn.execute(query, new_fleet_slug, uuid)
+            logger.info(f"✅ DB: Dispositivo {uuid} movido a flota {new_fleet_slug}")
+            return True
+        except Exception as e:
+            logger.error(f"❌ Error DB update fleet: {e}")
+            raise e
+        finally:
+            await PostgresConnector.release_connection(conn)

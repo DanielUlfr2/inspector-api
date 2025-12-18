@@ -226,17 +226,18 @@ CREATE TABLE InspectorFleetsVariables (
   CONSTRAINT fk_fleetvariables_fleet FOREIGN KEY (stridInspectorFleet) REFERENCES InspectorFleets (stridInspectorFleet)
 );
 
-CREATE TABLE InspectorHistoryVariables (
-  idHistory SERIAL PRIMARY KEY,
-  strElementType VARCHAR(20) NOT NULL
-    CHECK (strElementType IN ('DEVICE', 'FLEET')),
-  idVariableId INTEGER NOT NULL,
-  jsonChangeData JSONB NOT NULL,
-  strChangedBy VARCHAR(100),
-  strChangedByRole VARCHAR(50),
-  strSource VARCHAR(50),
-  dtChangeDate TIMESTAMP NOT NULL DEFAULT NOW()
-);
+CREATE TABLE InspectorAuditVariables (
+  idAuditVar BIGSERIAL,
+  strScope VARCHAR(20) NOT NULL CHECK (strScope IN ('DEVICE', 'FLEET')),
+  strEntityId VARCHAR(200) NOT NULL, 
+  strVarName VARCHAR(100) NOT NULL,
+  strValueOld TEXT NOT NULL, 
+  strValueNew TEXT NOT NULL, 
+  strAction VARCHAR(20) NOT NULL CHECK (strAction IN ('CREATE', 'UPDATE', 'DELETE')),
+  idHistoricScript BIGINT NOT NULL, 
+  dtCreatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (idAuditVar, dtCreatedAt)
+) PARTITION BY RANGE (dtCreatedAt);
 
 CREATE TABLE BlackList (
   idBlackList SERIAL PRIMARY KEY,
@@ -267,10 +268,12 @@ CREATE TABLE ScriptTransaction(
 CREATE TABLE HistoricScriptTransaction(
   idHistoricScript BIGSERIAL,
   strDescriptionFinish VARCHAR(3000) NOT NULL,
-  dtExecutionStart TIMESTAMP NOT NULL,
+  strExecuterUser VARCHAR(150) DEFAULT 'SYSTEM',
+  strExecuterRole VARCHAR(50) DEFAULT 'SYSTEM',
   dtExecutionFinish TIMESTAMP NOT NULL,
   idTransactionStatus INT NOT NULL,
   strScriptId varchar(50) NOT NULL,
+  dtExecutionStart TIMESTAMP NOT NULL,
   CONSTRAINT fk_historicscript_transactionstatus FOREIGN KEY (idTransactionStatus) REFERENCES TransactionStatus (idTransactionStatus),
   CONSTRAINT fk_historicscript_scripttransaction FOREIGN KEY (strScriptId) REFERENCES ScriptTransaction (strScriptId),
   PRIMARY KEY (idHistoricScript, dtExecutionStart)
@@ -310,6 +313,20 @@ SELECT partman.create_parent(
     p_premake := 7
 );
 
+SELECT partman.create_parent(
+    p_parent_table := 'inspector.inspectorauditvariables',
+    p_control := 'dtcreatedat',   
+    p_interval := '1 month',
+    p_type := 'range',
+    p_premake := 3
+);
+
+-- Configurar retención (ej: borrar logs de variables más viejos de 6 meses)
+UPDATE partman.part_config
+SET retention = '6 months', 
+    infinite_time_partitions = TRUE
+WHERE parent_table = 'inspector.inspectorauditvariables';
+
 UPDATE partman.part_config
 SET retention = '1 month', 
     infinite_time_partitions = TRUE
@@ -322,3 +339,7 @@ UNIQUE (stridInspectorFleet, strFleetVarName);
 ALTER TABLE inspector.InspectorDeviceVariables
 ADD CONSTRAINT unq_device_var_name 
 UNIQUE (uuidInspector, strDeviceVarName);
+
+
+CREATE INDEX idx_audit_entity ON InspectorAuditVariables (strEntityId, strScope);
+CREATE INDEX idx_audit_varname ON InspectorAuditVariables (strVarName);
