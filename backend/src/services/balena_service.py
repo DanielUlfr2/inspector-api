@@ -96,6 +96,56 @@ class BalenaService:
             return False
     
     @staticmethod
+    def remove_fleet_variable(fleet_slug: str, key: str) -> bool:
+        """
+        1. Busca el ID de la variable por su nombre.
+        2. La elimina usando ese ID.
+        """
+        try:
+            # 1. Obtenemos todas para buscar el ID
+            vars_list = BalenaService.get_fleet_vars(fleet_slug)
+            target_var = next((v for v in vars_list if v['name'] == key), None)
+            
+            if not target_var:
+                return True # Ya no existe, consideramos éxito
+            
+            var_id = str(target_var['id'])
+            
+            # 2. Eliminamos por ID
+            subprocess.run(
+                ["balena", "env", "rm", var_id, "--yes"],
+                check=True, capture_output=True, text=True
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ Error borrando var flota {key}: {e.stderr}")
+            return False
+
+    @staticmethod
+    def remove_device_variable(uuid: str, key: str) -> bool:
+        """
+        1. Busca el ID de la variable por su nombre.
+        2. La elimina usando ese ID.
+        """
+        try:
+            vars_list = BalenaService.get_device_vars(uuid)
+            target_var = next((v for v in vars_list if v['name'] == key), None)
+            
+            if not target_var:
+                return True
+            
+            var_id = str(target_var['id'])
+            
+            subprocess.run(
+                ["balena", "env", "rm", var_id, "--yes"],
+                check=True, capture_output=True, text=True
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error(f"❌ Error borrando var device {key}: {e.stderr}")
+            return False
+    
+    @staticmethod
     def rename_device(uuid: str, new_name: str) -> bool:
         try:
             logger.info(f"⚡ Ejecutando rename para {uuid} -> {new_name}")

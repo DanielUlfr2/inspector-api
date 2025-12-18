@@ -280,3 +280,57 @@ class InfoDevicesRepository:
             raise e
         finally:
             await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def get_variables_dict(uuid: str) -> dict:
+        """
+        Retorna un diccionario { 'NOMBRE_VAR': 'VALOR' } de la BD local.
+        """
+        query = """
+            SELECT strDeviceVarName, strDeviceVarValue 
+            FROM inspector.InspectorDeviceVariables
+            WHERE uuidInspector = $1
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            records = await conn.fetch(query, uuid)
+            return {r['strdevicevarname']: r['strdevicevarvalue'] for r in records}
+        finally:
+            await PostgresConnector.release_connection(conn)
+
+    @staticmethod
+    async def upsert_variable(uuid: str, name: str, value: str):
+        """
+        Inserta o Actualiza una variable de dispositivo.
+        """
+        # Intentamos Update primero
+        query_update = """
+            UPDATE inspector.InspectorDeviceVariables 
+            SET strDeviceVarValue = $3, dtModificationDate = NOW()
+            WHERE uuidInspector = $1 AND strDeviceVarName = $2
+        """
+        # Si no existe, Insert
+        query_insert = """
+            INSERT INTO inspector.InspectorDeviceVariables (uuidInspector, strDeviceVarName, strDeviceVarValue)
+            VALUES ($1, $2, $3)
+        """
+        
+        conn = await PostgresConnector.get_connection()
+        try:
+            result = await conn.execute(query_update, uuid, name, value)
+            if result == "UPDATE 0": # No actualizó nada, entonces insertamos
+                await conn.execute(query_insert, uuid, name, value)
+        finally:
+            await PostgresConnector.release_connection(conn)
+
+    @staticmethod
+    async def delete_variable(uuid: str, name: str):
+        """
+        Elimina una variable de la BD local.
+        """
+        query = "DELETE FROM inspector.InspectorDeviceVariables WHERE uuidInspector = $1 AND strDeviceVarName = $2"
+        conn = await PostgresConnector.get_connection()
+        try:
+            await conn.execute(query, uuid, name)
+        finally:
+            await PostgresConnector.release_connection(conn)

@@ -47,3 +47,23 @@ class HistoryRepository:
             logger.error(f"❌ Error guardando snapshot de historial: {e}")
         finally:
             await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def log_variable_audit(historic_id: int, scope: str, entity_id: str, var_name: str, 
+                                 action: str, old_val: str = None, new_val: str = None):
+        """
+        Registra un cambio de variable en la tabla de auditoría.
+        scope: 'DEVICE' o 'FLEET'
+        """
+        query = """
+            INSERT INTO inspector.InspectorAuditVariables
+            (strScope, strEntityId, strVarName, strAction, strValueOld, strValueNew, idHistoricScript)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            await conn.execute(query, scope, entity_id, var_name, action, old_val, new_val, historic_id)
+        except Exception as e:
+            logger.error(f"⚠️ Error auditando variable {var_name}: {e}")
+        finally:
+            await PostgresConnector.release_connection(conn)

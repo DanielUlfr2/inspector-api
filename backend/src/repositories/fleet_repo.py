@@ -168,3 +168,57 @@ class FleetRepository:
             return await conn.fetchval(query, device_type_id)
         finally:
             await PostgresConnector.release_connection(conn)
+    
+    @staticmethod
+    async def get_variables_dict(fleet_slug: str) -> dict:
+        """
+        Retorna un diccionario { 'NOMBRE_VAR': 'VALOR' } de la BD local.
+        """
+        query = """
+            SELECT strFleetVarName, strFleetVarValue 
+            FROM inspector.InspectorFleetsVariables
+            WHERE stridInspectorFleet = $1
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            records = await conn.fetch(query, fleet_slug)
+            return {r['strfleetvarname']: r['strfleetvarvalue'] for r in records}
+        finally:
+            await PostgresConnector.release_connection(conn)
+
+    @staticmethod
+    async def upsert_variable(fleet_slug: str, name: str, value: str):
+        """
+        Inserta o Actualiza una variable de flota.
+        """
+        # Intentamos Update primero
+        query_update = """
+            UPDATE inspector.InspectorFleetsVariables 
+            SET strFleetVarValue = $3, dtModificationDate = NOW()
+            WHERE stridInspectorFleet = $1 AND strFleetVarName = $2
+        """
+        # Si no existe, Insert
+        query_insert = """
+            INSERT INTO inspector.InspectorFleetsVariables (stridInspectorFleet, strFleetVarName, strFleetVarValue)
+            VALUES ($1, $2, $3)
+        """
+        
+        conn = await PostgresConnector.get_connection()
+        try:
+            result = await conn.execute(query_update, fleet_slug, name, value)
+            if result == "UPDATE 0": # Si no actualizó nada, insertamos
+                await conn.execute(query_insert, fleet_slug, name, value)
+        finally:
+            await PostgresConnector.release_connection(conn)
+
+    @staticmethod
+    async def delete_variable(fleet_slug: str, name: str):
+        """
+        Elimina una variable de la BD local.
+        """
+        query = "DELETE FROM inspector.InspectorFleetsVariables WHERE stridInspectorFleet = $1 AND strFleetVarName = $2"
+        conn = await PostgresConnector.get_connection()
+        try:
+            await conn.execute(query, fleet_slug, name)
+        finally:
+            await PostgresConnector.release_connection(conn)
