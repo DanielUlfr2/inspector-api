@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, Header
 from src.services.device_admin_service import DeviceAdminService
+from src.services.balena_service import BalenaService
 from src.api.v1.schemas.provisioning_schema import ProvisioningRequest
 from src.api.v1.schemas.device_action_schema import DeviceNoteRequest, DeviceMoveRequest
+from fastapi.responses import StreamingResponse
 
 router = APIRouter()
 
@@ -90,3 +92,15 @@ async def provision_device(
         raise HTTPException(status_code=400, detail=result["message"])
         
     return result
+
+@router.get("/{uuid}/logs")
+async def get_device_logs_stream(uuid: str):
+    """
+    Streaming en tiempo real de los logs del dispositivo.
+    No guarda en BD. Conexión directa Balena CLI -> Cliente.
+    """
+    # Llamamos al generador del servicio
+    log_generator = BalenaService.stream_device_logs(uuid)
+    
+    # Retornamos la respuesta de flujo continuo
+    return StreamingResponse(log_generator, media_type="text/plain")

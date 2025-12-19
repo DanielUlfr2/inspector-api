@@ -1653,6 +1653,18 @@ ON CONFLICT (stridInspectorFleet) DO NOTHING;
 -- ===========================================
 -- INSERT DEFAULT INSPECTOR
 -- ===========================================
+
+INSERT INTO inspector.InventoryInspectorStatus (idInventoryInspectorStatus, strInventoryStatus, strDescription, dtModificationDate)VALUES 
+(1, 'Operational', 'The device is functioning normally and communicating with the cloud within the expected time interval. In the standard configuration, this means both cloudlink and the device heartbeat API are working. If cloudlink is disabled, the device will still appear Operational if the heartbeat API is functional.', CURRENT_TIMESTAMP),
+(2, 'Reduced Functionality', 'The device is connected to the backend but is experiencing limited functionality due to either missing recent Heartbeat API communications or lack of connection to cloudlink.', CURRENT_TIMESTAMP),
+(3, 'Disconnected', 'The device is not connected to cloudlink and has not communicated via the Heartbeat API for a duration exceeding the API polling interval. This status indicates that the device is completely unable to send or receive any data from the balena cloud.', CURRENT_TIMESTAMP),
+(4, 'Free', 'En Stock / Libre (Según Nota)', CURRENT_TIMESTAMP),
+(5, 'Configuring', 'The device is applying OS configuration. For example, an OS upgrade.', CURRENT_TIMESTAMP),
+(6, 'Updating', 'The device is updating to a new App release. In future versions this will also reflect OS updates.', CURRENT_TIMESTAMP),
+(7, 'Post Provisioning', 'The device has been provisioned but has not yet been booted from its internal storage (e.g. eMMC or NVMe).', CURRENT_TIMESTAMP),
+(8, 'Inactive', 'The device has been deactivated or has been preregistered but has not yet connected to the balenaCloud API.', CURRENT_TIMESTAMP),
+(9, 'Frozen', 'The device has been frozen because it is outside the organizations allowance, or is in a paid fleet type on a free tier organization.', CURRENT_TIMESTAMP);
+
 INSERT INTO inspector.Inspector
 (uuidInspector, idInventoryInspectorStatus, strInspectorServiceId, stridInspectorFleet,
  strInspectorName, boolOnline, boolApiHearbeatState, dtLastConnectivityEvent,
@@ -1712,3 +1724,4 @@ insert into inspector.ScriptTransaction (strscriptid, strscriptdescription, dtla
 INSERT INTO inspector.StatusInspectorHistory(uuidInspector, idtransactionstatus, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
 intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, intHistoryCpuTempC, idHistoricScript, dtValidate) VALUES 
 ('DEFAULT', 1, FALSE, 0, 0, 0, 0, 0, 0, 0, CURRENT_TIMESTAMP);
+

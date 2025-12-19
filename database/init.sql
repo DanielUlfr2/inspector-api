@@ -175,6 +175,23 @@ CREATE TABLE InspectorFleets (
   CONSTRAINT fk_inspectorfleet_devicetype FOREIGN KEY (idDeviceType) REFERENCES DeviceType (idDeviceType)
 );
 
+CREATE TABLE IF NOT EXISTS inspector.InspectorGlobalStats (
+    idGlobalStat BIGSERIAL PRIMARY KEY,
+    intCountOnline INTEGER DEFAULT 0,
+    intCountOffline INTEGER DEFAULT 0,
+    intCountReduced INTEGER DEFAULT 0,
+    intCountFree INTEGER DEFAULT 0,
+    intTotalDevices INTEGER DEFAULT 0,
+    dtRegistered TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE InventoryInspectorStatus (
+    idInventoryInspectorStatus SERIAL PRIMARY KEY,
+    strInventoryStatus varchar(30) NOT NULL,
+    strDescriptionStatus TEXT NOT NULL,
+    dtModificationDate timestamp NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE Inspector (
   uuidInspector varchar(200) PRIMARY KEY,
   idInventoryInspectorStatus int NOT NULL,
@@ -184,26 +201,28 @@ CREATE TABLE Inspector (
   boolOnline boolean NOT NULL DEFAULT FALSE,
   boolApiHearbeatState boolean NOT NULL DEFAULT FALSE,
   dtLastConnectivityEvent timestamp NOT NULL,
-  strSupervisorVersion varchar(30),
-  strOsVersion varchar(30),
-  strNote varchar(200),
-  intMemoryUsageMB INT DEFAULT 0,
-  intMemoryTotalMB INT DEFAULT 0,
-  intStorageUsageMB INT DEFAULT 0,
-  intStorageTotalMB INT DEFAULT 0,
-  intCpuTempC INT DEFAULT 0,
-  intCpuUsagePercent INT DEFAULT 0,
-  dtLastMetricUpdate timestamp,
+  strSupervisorVersion varchar(30) NOT NULL,
+  strOsVersion varchar(30) NOT NULL,
+  strNote varchar(200) NOT NULL,
+  intMemoryUsageMB INT DEFAULT 0 NOT NULL,
+  intMemoryTotalMB INT DEFAULT 0 NOT NULL,
+  intStorageUsageMB INT DEFAULT 0 NOT NULL,
+  intStorageTotalMB INT DEFAULT 0 NOT NULL,
+  intCpuTempC INT DEFAULT 0 NOT NULL,
+  intCpuUsagePercent INT DEFAULT 0 NOT NULL,
+  dtLastMetricUpdate timestamp NOT NULL,
   jsonbObservaciones jsonb DEFAULT '{}'::jsonb,
-  strIpAddress varchar(100),
+  strIpAddress varchar(100) NOT NULL,
   boolConnectedToVpn boolean DEFAULT FALSE,
-  dtLastVpnEvent timestamp,
+  strInventoryStatus varchar(30) NOT NULL, --nueva columna
+  dtLastVpnEvent timestamp NOT NULL,
   dtDateCreate timestamp NOT NULL DEFAULT NOW(),
   dtModificationDate timestamp NOT NULL DEFAULT NOW(),
   created_at timestamp DEFAULT NOW(),
   CONSTRAINT fk_inspector_status FOREIGN KEY (idInventoryInspectorStatus) REFERENCES InventoryInspectorStatus (idInventoryInspectorStatus),
   CONSTRAINT fk_inspector_service FOREIGN KEY (strInspectorServiceId) REFERENCES InspectorService (strInspectorServiceId),
-  CONSTRAINT fk_inspector_fleet FOREIGN KEY (stridInspectorFleet) REFERENCES InspectorFleets (stridInspectorFleet)
+  CONSTRAINT fk_inspector_fleet FOREIGN KEY (stridInspectorFleet) REFERENCES InspectorFleets (stridInspectorFleet),
+  CONSTRAINT fk_inspector_inventorystatus FOREIGN KEY (strInventoryStatus) REFERENCES InventoryInspectorStatus (strInventoryStatus)
 );
 
 CREATE TABLE InspectorDeviceVariables (
