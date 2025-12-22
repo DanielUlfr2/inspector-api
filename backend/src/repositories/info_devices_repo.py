@@ -13,8 +13,6 @@ class InfoDevicesRepository:
     def prepare_date_for_db(dt_val):
         """
         Adapta la fecha para columnas TIMESTAMP (Sin Zona Horaria).
-        1. Si es None, retorna None.
-        2. Si tiene zona horaria (Aware), la convierte a UTC y le QUITA la zona (Naive).
         """
         if dt_val is None:
             return None
@@ -24,7 +22,6 @@ class InfoDevicesRepository:
         
         # Si tiene zona horaria (ej: UTC), se la quitamos para que Postgres no llore
         if dt_val.tzinfo is not None:
-            # Convertimos a UTC puro y luego removemos la info de zona
             return dt_val.astimezone(timezone.utc).replace(tzinfo=None)
         
         return dt_val
@@ -34,25 +31,48 @@ class InfoDevicesRepository:
         if not devices_data:
             return
 
-        # Query ajustada a tu esquema
+        # Query ajustada a tu nuevo esquema SQL
         query = """
             INSERT INTO inspector.inspector (
-                uuidinspector, idinventoryinspectorstatus, strinspectorserviceid,
-                strinspectorname, boolonline, boolapihearbeatstate, 
-                dtlastconnectivityevent, stridinspectorfleet, strsupervisorversion, 
-                strosversion, strnote, intmemoryusagemb, intmemorytotalmb, 
-                intstorageusagemb, intstoragetotalmb, intcputempc, 
-                intcpuusagepercent, dtlastmetricupdate, stripaddress, 
-                boolconnectedtovpn, dtlastvpnevent, jsonbobservaciones,
-                dtdatecreate, dtmodificationdate
+                uuidinspector, 
+                idinventoryinspectorstatus, -- Status original
+                strinspectorserviceid,
+                strinspectorname, 
+                boolonline, 
+                boolapihearbeatstate, 
+                dtlastconnectivityevent, 
+                stridinspectorfleet, 
+                strsupervisorversion, 
+                strosversion, 
+                strnote, 
+                intmemoryusagemb, 
+                intmemorytotalmb, 
+                intstorageusagemb, 
+                intstoragetotalmb, 
+                intcputempc, 
+                intcpuusagepercent, 
+                dtlastmetricupdate, 
+                stripaddress, 
+                boolconnectedtovpn, 
+                dtlastvpnevent, 
+                jsonbobservaciones,
+                idDeviceStatus,             -- 👈 NUEVA COLUMNA (INT)
+                dtdatecreate, 
+                dtmodificationdate
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, NOW(), NOW()
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 
+                $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, 
+                $21, $22, 
+                $23,                        -- 👈 Placeholder para idDeviceStatus
+                NOW(), NOW()
             )
             ON CONFLICT (uuidinspector) DO UPDATE SET
+                idinventoryinspectorstatus = EXCLUDED.idinventoryinspectorstatus,
                 strinspectorname = EXCLUDED.strinspectorname,
                 boolonline = EXCLUDED.boolonline,
                 boolapihearbeatstate = EXCLUDED.boolapihearbeatstate,
                 dtlastconnectivityevent = EXCLUDED.dtlastconnectivityevent,
+                stridinspectorfleet = EXCLUDED.stridinspectorfleet,
                 stripaddress = EXCLUDED.stripaddress,
                 strnote = EXCLUDED.strnote,
                 intmemoryusagemb = EXCLUDED.intmemoryusagemb,
@@ -61,7 +81,9 @@ class InfoDevicesRepository:
                 intstoragetotalmb = EXCLUDED.intstoragetotalmb,
                 intcputempc = EXCLUDED.intcputempc,
                 intcpuusagepercent = EXCLUDED.intcpuusagepercent,
+                boolconnectedtovpn = EXCLUDED.boolconnectedtovpn,
                 dtlastmetricupdate = EXCLUDED.dtlastmetricupdate,
+                idDeviceStatus = EXCLUDED.idDeviceStatus,  -- 👈 Actualizamos el estado calculado
                 dtmodificationdate = NOW();
         """
 
@@ -71,102 +93,95 @@ class InfoDevicesRepository:
             
             obs_json = json.dumps(d.get("observaciones", {})) 
 
-            # --- LIMPIEZA DE FECHAS (QUITAR ZONA HORARIA) ---
-            # $7
+            # --- LIMPIEZA DE FECHAS ---
+            # $7 Last Connectivity
             last_conn = InfoDevicesRepository.prepare_date_for_db(d.get("last_connectivity"))
-            # Si last_conn es None (y la BD es NOT NULL), ponemos la hora actual sin zona
-            if last_conn is None:
-                last_conn = datetime.utcnow()
+            if last_conn is None: last_conn = datetime.utcnow()
 
-            # $18
+            # $18 Last Metric
             last_metric = InfoDevicesRepository.prepare_date_for_db(d.get("last_metric_update"))
+            if last_metric is None: last_metric = datetime.utcnow()
             
-            # $21
+            # $21 Last VPN
             last_vpn = InfoDevicesRepository.prepare_date_for_db(d.get("last_vpn_event"))
-            # ------------------------------------------------
+            if last_vpn is None: last_vpn = datetime.utcnow()
+            # --------------------------
 
             values.append((
-                d["uuid"],
-                d.get("status_id", 1),
-                d.get("service_id", "1111"), 
-                d.get("device_name", "Sin Nombre"),
-                d.get("is_online", False),
-                d.get("api_heartbeat", False),
+                d["uuid"],                          # $1
+                d.get("status_id", 1),              # $2 (Este es el idInventoryInspectorStatus viejo)
+                d.get("service_id", "1111"),        # $3
+                d.get("device_name") or "Sin Nombre", # $4
+                d.get("is_online", False),          # $5
+                d.get("api_heartbeat", False),      # $6
                 
-                last_conn, # $7 (Naive Datetime)
+                last_conn,                          # $7
                 
-                d.get("fleet_id"), 
-                d.get("supervisor_version"),
-                d.get("os_version"),
-                d.get("note"),
-                d.get("memory_usage", 0),
-                d.get("memory_total", 0),
-                d.get("storage_usage", 0),
-                d.get("storage_total", 0),
-                d.get("cpu_temp", 0),
-                d.get("cpu_usage", 0),
+                d.get("fleet_id"),                  # $8
+                d.get("supervisor_version") or "",  # $9
+                d.get("os_version") or "",          # $10
+                d.get("note") or "",                # $11
+                d.get("memory_usage", 0),           # $12
+                d.get("memory_total", 0),           # $13
+                d.get("storage_usage", 0),          # $14
+                d.get("storage_total", 0),          # $15
+                d.get("cpu_temp", 0),               # $16
+                d.get("cpu_usage", 0),              # $17
                 
-                last_metric, # $18 (Naive Datetime)
+                last_metric,                        # $18
                 
-                d.get("ip_address"),
-                d.get("vpn_connected", False),
+                d.get("ip_address"),                # $19
+                d.get("vpn_connected", False),      # $20
                 
-                last_vpn, # $21 (Naive Datetime)
+                last_vpn,                           # $21
                 
-                obs_json 
+                obs_json,                           # $22
+                
+                d.get("device_status_id", 2)        # $23 👈 idDeviceStatus (1=On, 2=Off, 3=Red, 4=Free)
+                                                    # Ponemos 2 (Offline) como default seguro
             ))
 
         conn = await PostgresConnector.get_connection()
         try:
             await conn.executemany(query, values)
-            logger.info(f"✅ {len(values)} inspectores (dispositivos) sincronizados.")
+            logger.info(f"✅ {len(values)} inspectores sincronizados.")
         except Exception as e:
             logger.error(f"❌ Error insertando inspectores: {e}")
             raise e
         finally:
             await PostgresConnector.release_connection(conn)
+
+    # ... (El resto de métodos de la clase se mantienen IGUALES) ...
+    # get_all_uuids, update_device_note, get_device_by_uuid, etc.
     
     @staticmethod
     async def get_all_uuids():
-        """
-        Retorna un SET con todos los UUIDs.
-        SEGURIDAD: Retorna None si falla.
-        """
         query = 'SELECT uuidinspector FROM inspector.inspector;'
-        
         conn = await PostgresConnector.get_connection()
         try:
             records = await conn.fetch(query)
             return {r["uuidinspector"] for r in records}
         except Exception as e:
             logger.error(f"❌ Error CRÍTICO obteniendo UUIDs: {e}")
-            return None # <--- CAMBIO: Retornar None en vez de set()
+            return None 
         finally:
             await PostgresConnector.release_connection(conn)
-    
+
     @staticmethod
     async def update_device_note(uuid: str, note: str):
-        """
-        Actualiza solo el campo de nota en la BD local.
-        """
         query = "UPDATE inspector.inspector SET strnote = $1, dtmodificationdate = NOW() WHERE uuidinspector = $2"
         conn = await PostgresConnector.get_connection()
         try:
             await conn.execute(query, note, uuid)
-            logger.info(f"✅ DB: Nota actualizada para {uuid}")
             return True
         except Exception as e:
             logger.error(f"❌ Error DB update note: {e}")
             raise e
         finally:
             await PostgresConnector.release_connection(conn)
-    
+
     @staticmethod
     async def get_device_by_uuid(uuid: str) -> Dict[str, Any]:
-        """
-        Retorna el estado actual registrado en BD de un equipo.
-        Usado para generar el snapshot en el historial antes de una acción.
-        """
         query = """
             SELECT 
                 boolonline as is_online,
@@ -188,12 +203,9 @@ class InfoDevicesRepository:
             return {}
         finally:
             await PostgresConnector.release_connection(conn)
-    
+
     @staticmethod
     async def get_device_history_range(uuid: str, start_date: datetime, end_date: datetime):
-        """
-        Obtiene el historial de métricas (CPU, RAM, Temp) para gráficas.
-        """
         query = """
             SELECT 
                 dtValidate as timestamp,
@@ -210,20 +222,16 @@ class InfoDevicesRepository:
         conn = await PostgresConnector.get_connection()
         try:
             records = await conn.fetch(query, uuid, start_date, end_date)
-            # Convertimos a lista de diccionarios limpia para el JSON
             return [dict(r) for r in records]
         except Exception as e:
             logger.error(f"❌ Error fetching history for {uuid}: {e}")
             return []
         finally:
             await PostgresConnector.release_connection(conn)
-    
+
     @staticmethod
     async def get_device_detail_full(uuid: str):
-        """
-        Obtiene la ficha técnica COMPLETA haciendo JOIN con Status y Service.
-        """
-        # AJUSTE: Usamos las columnas reales de tus tablas
+        # NOTA: Aquí deberías agregar el LEFT JOIN a DeviceStatus si quieres ver el nombre del estado nuevo
         query = """
             SELECT 
                 i.*,
@@ -236,21 +244,15 @@ class InfoDevicesRepository:
                 ON i.strInspectorServiceId = ser.strInspectorServiceId
             WHERE i.uuidInspector = $1
         """
-        
         conn = await PostgresConnector.get_connection()
         try:
             record = await conn.fetchrow(query, uuid)
             if record:
-                # Convertimos a dict
                 data = dict(record)
-                
-                # Parsear JSON de observaciones si viene como texto
                 if isinstance(data.get('jsonbobservaciones'), str):
                      import json
                      data['jsonbobservaciones'] = json.loads(data['jsonbobservaciones'])
                 
-                # [OPCIONAL] Si algún campo de fecha viene con zona horaria, limpiarlo aquí
-                # (Pydantic suele manejarlo bien, pero por seguridad):
                 if data.get('dtlastconnectivityevent'):
                     data['dtlastconnectivityevent'] = data['dtlastconnectivityevent'].replace(tzinfo=None)
                 
@@ -258,12 +260,9 @@ class InfoDevicesRepository:
             return None
         finally:
             await PostgresConnector.release_connection(conn)
-    
+
     @staticmethod
     async def update_device_fleet(uuid: str, new_fleet_slug: str):
-        """
-        Actualiza la flota del dispositivo en la BD local.
-        """
         query = """
             UPDATE inspector.Inspector 
             SET stridInspectorFleet = $1, 
@@ -273,19 +272,15 @@ class InfoDevicesRepository:
         conn = await PostgresConnector.get_connection()
         try:
             await conn.execute(query, new_fleet_slug, uuid)
-            logger.info(f"✅ DB: Dispositivo {uuid} movido a flota {new_fleet_slug}")
             return True
         except Exception as e:
             logger.error(f"❌ Error DB update fleet: {e}")
             raise e
         finally:
             await PostgresConnector.release_connection(conn)
-    
+
     @staticmethod
     async def get_variables_dict(uuid: str) -> dict:
-        """
-        Retorna un diccionario { 'NOMBRE_VAR': 'VALOR' } de la BD local.
-        """
         query = """
             SELECT strDeviceVarName, strDeviceVarValue 
             FROM inspector.InspectorDeviceVariables
@@ -300,34 +295,25 @@ class InfoDevicesRepository:
 
     @staticmethod
     async def upsert_variable(uuid: str, name: str, value: str):
-        """
-        Inserta o Actualiza una variable de dispositivo.
-        """
-        # Intentamos Update primero
         query_update = """
             UPDATE inspector.InspectorDeviceVariables 
             SET strDeviceVarValue = $3, dtModificationDate = NOW()
             WHERE uuidInspector = $1 AND strDeviceVarName = $2
         """
-        # Si no existe, Insert
         query_insert = """
             INSERT INTO inspector.InspectorDeviceVariables (uuidInspector, strDeviceVarName, strDeviceVarValue)
             VALUES ($1, $2, $3)
         """
-        
         conn = await PostgresConnector.get_connection()
         try:
             result = await conn.execute(query_update, uuid, name, value)
-            if result == "UPDATE 0": # No actualizó nada, entonces insertamos
+            if result == "UPDATE 0": 
                 await conn.execute(query_insert, uuid, name, value)
         finally:
             await PostgresConnector.release_connection(conn)
 
     @staticmethod
     async def delete_variable(uuid: str, name: str):
-        """
-        Elimina una variable de la BD local.
-        """
         query = "DELETE FROM inspector.InspectorDeviceVariables WHERE uuidInspector = $1 AND strDeviceVarName = $2"
         conn = await PostgresConnector.get_connection()
         try:

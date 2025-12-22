@@ -185,10 +185,10 @@ CREATE TABLE IF NOT EXISTS inspector.InspectorGlobalStats (
     dtRegistered TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE InventoryInspectorStatus (
-    idInventoryInspectorStatus SERIAL PRIMARY KEY,
-    strInventoryStatus varchar(30) NOT NULL,
-    strDescriptionStatus TEXT NOT NULL,
+CREATE TABLE DeviceStatus (
+    idDeviceStatus SERIAL PRIMARY KEY,
+    strDeviceStatus varchar(30) NOT NULL,
+    strDescriptionDeviceStatus TEXT NOT NULL,
     dtModificationDate timestamp NOT NULL DEFAULT NOW()
 );
 
@@ -214,7 +214,7 @@ CREATE TABLE Inspector (
   jsonbObservaciones jsonb DEFAULT '{}'::jsonb,
   strIpAddress varchar(100) NOT NULL,
   boolConnectedToVpn boolean DEFAULT FALSE,
-  strInventoryStatus varchar(30) NOT NULL, --nueva columna
+  idDeviceStatus int NOT NULL,
   dtLastVpnEvent timestamp NOT NULL,
   dtDateCreate timestamp NOT NULL DEFAULT NOW(),
   dtModificationDate timestamp NOT NULL DEFAULT NOW(),
@@ -222,7 +222,7 @@ CREATE TABLE Inspector (
   CONSTRAINT fk_inspector_status FOREIGN KEY (idInventoryInspectorStatus) REFERENCES InventoryInspectorStatus (idInventoryInspectorStatus),
   CONSTRAINT fk_inspector_service FOREIGN KEY (strInspectorServiceId) REFERENCES InspectorService (strInspectorServiceId),
   CONSTRAINT fk_inspector_fleet FOREIGN KEY (stridInspectorFleet) REFERENCES InspectorFleets (stridInspectorFleet),
-  CONSTRAINT fk_inspector_inventorystatus FOREIGN KEY (strInventoryStatus) REFERENCES InventoryInspectorStatus (strInventoryStatus)
+  CONSTRAINT fk_inspector_devicestatus FOREIGN KEY (idDeviceStatus) REFERENCES DeviceStatus (idDeviceStatus)
 );
 
 CREATE TABLE InspectorDeviceVariables (
@@ -317,6 +317,14 @@ CREATE TABLE StatusInspectorHistory (
 ) PARTITION BY RANGE (dtValidate);
 
 SELECT partman.create_parent(
+    p_parent_table := 'inspector.inspectorglobalstats',
+    p_control := 'dtregistered',   
+    p_interval := '1 month',
+    p_type := 'range',
+    p_premake := 3
+);
+
+SELECT partman.create_parent(
     p_parent_table := 'inspector.historicscripttransaction',
     p_control := 'dtexecutionstart',   
     p_interval := '1 day',
@@ -340,7 +348,11 @@ SELECT partman.create_parent(
     p_premake := 3
 );
 
--- Configurar retención (ej: borrar logs de variables más viejos de 6 meses)
+UPDATE partman.part_config
+SET retention = '1 year', 
+    infinite_time_partitions = TRUE
+WHERE parent_table = 'inspector.inspectorglobalstats';
+
 UPDATE partman.part_config
 SET retention = '6 months', 
     infinite_time_partitions = TRUE
@@ -362,3 +374,5 @@ UNIQUE (uuidInspector, strDeviceVarName);
 
 CREATE INDEX idx_audit_entity ON InspectorAuditVariables (strEntityId, strScope);
 CREATE INDEX idx_audit_varname ON InspectorAuditVariables (strVarName);
+
+SELECT partman.run_maintenance();

@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.api.v1.endpoints import health, info_devices, sync, configuration, catalogs, device_admin, fleets
+from src.api.v1.endpoints import health, info_devices, sync, configuration, catalogs, device_admin, fleets, history
 
 api_router = APIRouter()
 
@@ -10,3 +10,4 @@ api_router.include_router(info_devices.router, prefix="/infodevices", tags=["Inf
 api_router.include_router(catalogs.router, prefix="/catalogs", tags=["Catalogs"])
 api_router.include_router(device_admin.router, prefix="/admin", tags=["Admin"]) 
 api_router.include_router(fleets.router, prefix="/fleets", tags=["Fleet Management"])
+api_router.include_router(history.router, prefix="/history", tags=["History & Reports"])

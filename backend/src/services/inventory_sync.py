@@ -23,8 +23,7 @@ class InventorySyncService:
             logger.error("🛑 Abortado: Fallo login Balena.")
             return False
 
-        # --- 1. INICIAR TRANSACCIÓN DE AUDITORÍA (Padre) ---
-        # Registramos que arrancó el proceso automático
+        # --- 1. INICIAR TRANSACCIÓN DE AUDITORÍA ---
         script_id = ScriptIds.AUTO_SYNC
         historic_id = await TransactionManager.start_transaction(script_id)
         
@@ -42,8 +41,6 @@ class InventorySyncService:
 
             # --- PASO 1: FLOTAS ---
             raw_fleets = BalenaService.get_fleets()
-            
-            # Traemos mapa de traducción (Slug -> ID)
             type_map = await FleetRepository.get_device_type_map()
             default_type_id = type_map.get('DEFAULT', 1) 
 
@@ -53,8 +50,6 @@ class InventorySyncService:
             for f in raw_fleets:
                 app_name = f.get("app_name") 
                 slug = f.get("slug")
-                
-                # Traducimos tipo
                 remote_type_slug = f.get("device_type", "DEFAULT")
                 mapped_id = type_map.get(remote_type_slug, default_type_id)
 
@@ -69,19 +64,22 @@ class InventorySyncService:
                     "device_count": f.get("device_count", 0) 
                 })
             
-            # Guardamos Flotas
             if fleets_to_save:
                 await FleetRepository.upsert_batch(fleets_to_save)
-                logger.info(f"✅ {len(fleets_to_save)} flotas actualizadas.")
 
-            # Disparamos tareas de variables
             for slug in new_fleets_slugs_to_sync:
-                logger.info(f"🆕 Nueva Flota detectada. Pidiendo variables para: {slug}")
                 celery_app.send_task("tasks.sync_single_fleet_vars", args=[slug])
 
 
             # --- PASO 2: DISPOSITIVOS (PARALELO) ---
             total_devices_processed = 0
+            
+            # 👇 CONTADORES GLOBALES (Agrupados)
+            global_count_online = 0
+            global_count_offline = 0
+            global_count_reduced = 0
+            global_count_free = 0
+
             semaphore = asyncio.Semaphore(cls.MAX_CONCURRENT_TASKS)
 
             for fleet in fleets_to_save:
@@ -89,7 +87,6 @@ class InventorySyncService:
                 fleet_db_id = fleet["id"]
                 
                 summary_devices = BalenaService.get_devices_by_fleet(fleet_slug)
-                
                 if not summary_devices: continue
                 
                 logger.info(f"⚡ Procesando {len(summary_devices)} equipos en '{fleet_slug}'...")
@@ -103,57 +100,73 @@ class InventorySyncService:
                         if auto_onboarding_enabled and uuid not in existing_device_uuids:
                             new_devices_uuids_to_sync.append(uuid)
                             existing_device_uuids.add(uuid)
-
                         tasks.append(cls._fetch_device_detail_concurrent(uuid, fleet_db_id, semaphore))
                 
                 results = await asyncio.gather(*tasks)
                 devices_full_data = [r for r in results if r is not None]
 
                 if devices_full_data:
-                    # A. Guardar estado actual en BD (Inspector)
+                    # A. Guardar en BD (El repo ya espera 'device_status_id')
                     await InfoDevicesRepository.upsert_batch(devices_full_data)
                     
-                    # B. Guardar Historial (Snapshot)
-                    # Si la transacción histórica se abrió correctamente, guardamos la foto de cada equipo
+                    # B. Sumar a los contadores globales (Agrupación Lógica)
+                    for d in devices_full_data:
+                        # Obtenemos el ID Específico (1-9)
+                        sid = d.get("device_status_id", 3)
+                        
+                        # Mapeamos a las 4 Categorías Globales
+                        if sid == 4: # Free
+                            global_count_free += 1
+                        elif sid in [3, 8]: # Disconnected, Inactive -> OFFLINE
+                            global_count_offline += 1
+                        elif sid in [2, 9]: # Reduced, Frozen -> REDUCED
+                            global_count_reduced += 1
+                        elif sid in [1, 5, 6, 7]: # Operational, Configuring, Updating, PostProv -> ONLINE
+                            global_count_online += 1
+                        else:
+                            # Default a Offline si llega algo raro
+                            global_count_offline += 1
+
+                    # C. Guardar Snapshot Individual
                     if historic_id:
                         for device_data in devices_full_data:
                             await HistoryRepository.log_device_snapshot(
                                 historic_id, 
                                 device_data['uuid'], 
-                                TransactionStatus.COMPLETO, # Estado del snapshot: "Dato recolectado OK"
-                                device_data # Pasamos el dict completo, el repo extraerá cpu, ram, etc.
+                                TransactionStatus.COMPLETO, 
+                                device_data 
                             )
 
                     total_devices_processed += len(devices_full_data)
-                    logger.info(f"   💾 Guardados {len(devices_full_data)} dispositivos de {fleet_slug}")
-
-                    # C. Disparar variables para nuevos
+                    
+                    # D. Disparar variables para nuevos
                     for new_uuid in new_devices_uuids_to_sync:
-                        logger.info(f"🆕 Nuevo Equipo guardado. Pidiendo variables para: {new_uuid}")
                         celery_app.send_task("tasks.sync_single_device_vars", args=[new_uuid])
 
-            # --- CIERRE EXITOSO DE TRANSACCIÓN ---
+            # --- PASO 3: GUARDAR FOTO HISTÓRICA GLOBAL 📸 ---
+            await HistoryRepository.log_global_stats(
+                global_count_online,
+                global_count_offline,
+                global_count_reduced,
+                global_count_free
+            )
+            logger.info(f"📊 Stats Globales: Free={global_count_free}, Off={global_count_offline}, On={global_count_online}, Red={global_count_reduced}")
+
+            # --- CIERRE EXITOSO ---
             if historic_id:
                 await TransactionManager.finish_transaction(
                     historic_id, 
                     script_id, 
                     TransactionStatus.COMPLETO, 
-                    f"Sincronización finalizada. Equipos procesados: {total_devices_processed}"
+                    f"Sincronización finalizada. Equipos: {total_devices_processed}"
                 )
             
-            logger.info(f"🏁 SINCRONIZACIÓN FINALIZADA. {total_devices_processed} dispositivos procesados.")
             return True
 
         except Exception as e:
-            logger.error(f"❌ Error crítico durante sincronización: {e}")
-            # Si falló algo gordo, cerramos la transacción como FALLIDA
+            logger.error(f"❌ Error crítico sync: {e}")
             if historic_id:
-                await TransactionManager.finish_transaction(
-                    historic_id, 
-                    script_id, 
-                    TransactionStatus.FALLIDO, 
-                    f"Error de ejecución: {str(e)[:200]}"
-                )
+                await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.FALLIDO, f"Error: {str(e)[:200]}")
             return False
 
     @classmethod
@@ -169,35 +182,89 @@ class InventorySyncService:
 
     @classmethod
     def _map_device_data(cls, d, fleet_slug):
-        api_hb = d.get("api_heartbeat_state") == "online"
         def s_int(v): return int(float(v)) if v else 0
 
+        # Datos Base
+        api_hb = d.get("api_heartbeat_state") == "online"
         mem_mb = d.get("memory_usage_mb") or d.get("memory_usage")
         mem_total = d.get("memory_total_mb") or d.get("memory_total")
         storage_mb = d.get("storage_usage_mb") or d.get("storage_usage")
         storage_total = d.get("storage_total_mb") or d.get("storage_total")
         cpu_temp = d.get("cpu_temp_c") or d.get("cpu_temp")
         cpu_usage = d.get("cpu_usage_percent") or d.get("cpu_usage")
+        
+        # --- 👇 LÓGICA DE CLASIFICACIÓN EXACTA (IDs 1-9) 👇 ---
+        # 1. Recuperamos la nota de manera explicita y segura
+        note_val = d.get("note")
+        if note_val is None:
+            raw_note = ""
+        else:
+            raw_note = str(note_val)
+        overall_status = str(d.get("overall_status") or d.get("status") or "").strip().lower()
+        is_online = d.get("is_online", False)
+
+        # Default a Disconnected (3) si todo falla
+        device_status_id = 3 
+
+        # 1. FREE (Prioridad Absoluta) -> ID 4
+        if "libre" in raw_note.lower():
+            device_status_id = 4
+        
+        # 2. OFFLINE y REDUCED (Basado en overall_status)
+        elif overall_status == 'inactive':
+            device_status_id = 8
+        elif overall_status == 'disconnected':
+            device_status_id = 3
+        elif overall_status == 'reduced functionality': # Ojo: Balena usa espacios a veces
+            device_status_id = 2
+        elif overall_status == 'frozen':
+            device_status_id = 9
+        
+        # 3. ONLINE (Specific States)
+        elif overall_status == 'operational':
+            device_status_id = 1
+        elif overall_status == 'configuring':
+            device_status_id = 5
+        elif overall_status == 'updating':
+            device_status_id = 6
+        elif overall_status == 'post provisioning':
+            device_status_id = 7
+        
+        # 4. Fallback si está Online pero con status desconocido -> Operational (1)
+        elif is_online:
+            device_status_id = 1
+        
+        # 5. Fallback si está Offline -> Disconnected (3)
+        else:
+            device_status_id = 3
+        # -----------------------------------------------------
 
         observaciones = {
             "mac_address": d.get("mac_address"),
             "public_address": d.get("public_address"),
             "dashboard_url": d.get("dashboard_url"),
-            "cpu_id": d.get("cpu_id")
+            "cpu_id": d.get("cpu_id"),
+            "overall_status_raw": overall_status 
         }
 
         return {
             "uuid": d.get("uuid"),
+            
+            # 👇 ESTE ES EL DATO QUE VA A LA BD ($23)
+            "device_status_id": device_status_id, 
+            
+            # Compatibilidad Legacy (Si tu repo aun usa status_id antiguo)
             "status_id": 1, 
+            
             "service_id": "1111", 
             "device_name": d.get("device_name"),
-            "is_online": d.get("is_online", False),
+            "is_online": is_online,
             "api_heartbeat": api_hb,
             "last_connectivity": cls._parse_date(d.get("last_connectivity_event")),
             "fleet_id": fleet_slug,
             "supervisor_version": d.get("supervisor_version"),
             "os_version": d.get("os_version"),
-            "note": d.get("note"), 
+            "note": raw_note, 
             "memory_usage": s_int(mem_mb),
             "memory_total": s_int(mem_total),
             "storage_usage": s_int(storage_mb),
@@ -213,8 +280,7 @@ class InventorySyncService:
 
     @staticmethod
     def _parse_date(date_str):
-        if not date_str:
-            return datetime.now(timezone.utc)
+        if not date_str: return datetime.now(timezone.utc)
         try:
             return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         except:

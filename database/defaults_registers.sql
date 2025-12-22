@@ -1654,7 +1654,7 @@ ON CONFLICT (stridInspectorFleet) DO NOTHING;
 -- INSERT DEFAULT INSPECTOR
 -- ===========================================
 
-INSERT INTO inspector.InventoryInspectorStatus (idInventoryInspectorStatus, strInventoryStatus, strDescription, dtModificationDate)VALUES 
+INSERT INTO inspector.DeviceStatus (idDeviceStatus, strDeviceStatus, strDescriptionDeviceStatus, dtModificationDate)VALUES 
 (1, 'Operational', 'The device is functioning normally and communicating with the cloud within the expected time interval. In the standard configuration, this means both cloudlink and the device heartbeat API are working. If cloudlink is disabled, the device will still appear Operational if the heartbeat API is functional.', CURRENT_TIMESTAMP),
 (2, 'Reduced Functionality', 'The device is connected to the backend but is experiencing limited functionality due to either missing recent Heartbeat API communications or lack of connection to cloudlink.', CURRENT_TIMESTAMP),
 (3, 'Disconnected', 'The device is not connected to cloudlink and has not communicated via the Heartbeat API for a duration exceeding the API polling interval. This status indicates that the device is completely unable to send or receive any data from the balena cloud.', CURRENT_TIMESTAMP),
@@ -1672,7 +1672,7 @@ INSERT INTO inspector.Inspector
  intMemoryUsageMB, intMemoryTotalMB, intStorageUsageMB, intStorageTotalMB,
  intCpuTempC, intCpuUsagePercent,
  dtLastMetricUpdate, jsonbObservaciones,
- strIpAddress, boolConnectedToVpn, dtLastVpnEvent,
+ strIpAddress, boolConnectedToVpn, idDeviceStatus, dtLastVpnEvent,
  dtDateCreate, dtModificationDate, created_at) VALUES
 ('DEFAULT', 1, '1111', 'DEFAULT',
  'DEFAULT', FALSE, FALSE, CURRENT_TIMESTAMP,
@@ -1680,7 +1680,7 @@ INSERT INTO inspector.Inspector
  0, 0, 0, 0,
  0, 0,
  CURRENT_TIMESTAMP, '{}'::jsonb,
- 'DEFAULT', FALSE, CURRENT_TIMESTAMP,
+ 'DEFAULT', FALSE, 8, CURRENT_TIMESTAMP,
  CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (uuidInspector) DO NOTHING;
 
