@@ -176,14 +176,15 @@ CREATE TABLE InspectorFleets (
 );
 
 CREATE TABLE IF NOT EXISTS inspector.InspectorGlobalStats (
-    idGlobalStat BIGSERIAL PRIMARY KEY,
+    idGlobalStat BIGSERIAL,
     intCountOnline INTEGER DEFAULT 0,
     intCountOffline INTEGER DEFAULT 0,
     intCountReduced INTEGER DEFAULT 0,
     intCountFree INTEGER DEFAULT 0,
     intTotalDevices INTEGER DEFAULT 0,
-    dtRegistered TIMESTAMP DEFAULT NOW()
-);
+    dtRegistered TIMESTAMP NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (idGlobalStat, dtRegistered)
+) PARTITION BY RANGE (dtRegistered);
 
 CREATE TABLE DeviceStatus (
     idDeviceStatus SERIAL PRIMARY KEY,
@@ -374,5 +375,3 @@ UNIQUE (uuidInspector, strDeviceVarName);
 
 CREATE INDEX idx_audit_entity ON InspectorAuditVariables (strEntityId, strScope);
 CREATE INDEX idx_audit_varname ON InspectorAuditVariables (strVarName);
-
-SELECT partman.run_maintenance();
