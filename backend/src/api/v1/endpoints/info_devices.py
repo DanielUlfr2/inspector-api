@@ -29,7 +29,7 @@ async def get_device_history(
     """
     # Lógica por defecto: Últimas 24 horas si no especifica
     if not end_date:
-        end_date = datetime.utcnow()
+        end_date = datetime.now()
     if not start_date:
         start_date = end_date - timedelta(hours=24)
 

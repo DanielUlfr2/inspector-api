@@ -155,6 +155,44 @@ class InfoDevicesRepository:
     # get_all_uuids, update_device_note, get_device_by_uuid, etc.
     
     @staticmethod
+    async def get_all_devices() -> List[Dict[str, Any]]:
+        query = """
+            SELECT 
+                uuidinspector, 
+                strinspectorname, 
+                idinventoryinspectorstatus, 
+                boolonline, 
+                stridinspectorfleet, 
+                stripaddress, 
+                dtlastconnectivityevent, 
+                strosversion, 
+                jsonbobservaciones
+            FROM inspector.inspector
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            records = await conn.fetch(query)
+            # Convert record objects to dictionaries and handle JSON/Date parsing if needed
+            result = []
+            for r in records:
+                d = dict(r)
+                if isinstance(d.get('jsonbobservaciones'), str):
+                     import json
+                     d['jsonbobservaciones'] = json.loads(d['jsonbobservaciones'])
+                
+                # Manejo de fechas para evitar problemas de tz
+                if d.get('dtlastconnectivityevent') and d['dtlastconnectivityevent'].tzinfo:
+                     d['dtlastconnectivityevent'] = d['dtlastconnectivityevent'].replace(tzinfo=None)
+
+                result.append(d)
+            return result
+        except Exception as e:
+            logger.error(f"❌ Error fetching all devices: {e}")
+            return []
+        finally:
+            await PostgresConnector.release_connection(conn)
+
+    @staticmethod
     async def get_all_uuids():
         query = 'SELECT uuidinspector FROM inspector.inspector;'
         conn = await PostgresConnector.get_connection()
@@ -208,12 +246,18 @@ class InfoDevicesRepository:
     async def get_device_history_range(uuid: str, start_date: datetime, end_date: datetime):
         query = """
             SELECT 
-                dtValidate as timestamp,
+                idInspectorHistory as id,
+                uuidInspector as uuid,
+                idTransactionStatus as status_id,
                 boolOnline as is_online,
                 intHistoryMemoryUsageMB as memory_usage,
-                intHistoryCpuUsagePercent as cpu_usage,
+                intHistoryMemoryTotalMB as memory_total,
+                intHistoryStorageUsageMB as storage_usage,
+                intHistoryStorageTotalMB as storage_total,
                 intHistoryCpuTempC as cpu_temp,
-                intHistoryStorageUsageMB as storage_usage
+                intHistoryCpuUsagePercent as cpu_usage,
+                idHistoricScript as script_id,
+                dtValidate as timestamp
             FROM inspector.StatusInspectorHistory
             WHERE uuidInspector = $1
               AND dtValidate BETWEEN $2 AND $3

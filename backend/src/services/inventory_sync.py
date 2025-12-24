@@ -193,17 +193,18 @@ class InventorySyncService:
         cpu_temp = d.get("cpu_temp_c") or d.get("cpu_temp")
         cpu_usage = d.get("cpu_usage_percent") or d.get("cpu_usage")
         
-        # --- 👇 LÓGICA DE CLASIFICACIÓN EXACTA (IDs 1-9) 👇 ---
-        # 1. Recuperamos la nota de manera explicita y segura
         note_val = d.get("note")
         if note_val is None:
             raw_note = ""
         else:
             raw_note = str(note_val)
-        overall_status = str(d.get("overall_status") or d.get("status") or "").strip().lower()
+        overall_status = str(d.get("overall_status") or "").strip().lower()
         is_online = d.get("is_online", False)
 
         # Default a Disconnected (3) si todo falla
+        # Normalizamos: 'reduced-functionality' -> 'reduced functionality'
+        status_clean = overall_status.replace('-', ' ')
+        
         device_status_id = 3 
 
         # 1. FREE (Prioridad Absoluta) -> ID 4
@@ -211,23 +212,23 @@ class InventorySyncService:
             device_status_id = 4
         
         # 2. OFFLINE y REDUCED (Basado en overall_status)
-        elif overall_status == 'inactive':
+        elif status_clean == 'inactive':
             device_status_id = 8
-        elif overall_status == 'disconnected':
+        elif status_clean == 'disconnected':
             device_status_id = 3
-        elif overall_status == 'reduced functionality': # Ojo: Balena usa espacios a veces
+        elif status_clean == 'reduced functionality': 
             device_status_id = 2
-        elif overall_status == 'frozen':
+        elif status_clean == 'frozen':
             device_status_id = 9
         
         # 3. ONLINE (Specific States)
-        elif overall_status == 'operational':
+        elif status_clean == 'operational':
             device_status_id = 1
-        elif overall_status == 'configuring':
+        elif status_clean == 'configuring':
             device_status_id = 5
-        elif overall_status == 'updating':
+        elif status_clean == 'updating':
             device_status_id = 6
-        elif overall_status == 'post provisioning':
+        elif status_clean == 'post provisioning':
             device_status_id = 7
         
         # 4. Fallback si está Online pero con status desconocido -> Operational (1)

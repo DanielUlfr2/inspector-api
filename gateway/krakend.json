@@ -31,21 +31,20 @@
         {
             "endpoint": "/health",
             "method": "GET",
-            "output_encoding": "json",
+            "level": "DEBUG",
             "backend": [
                 {
                     "url_pattern": "/api/v1/health",
                     "host": [
                         "http://open_balena_apis:5000"
-                    ],
-                    "disable_host_sanitize": false
+                    ]
                 }
             ]
         },
         {
             "endpoint": "/v1/infodevices",
             "method": "GET",
-            "output_encoding": "json",
+            "level": "DEBUG",
             "backend": [
                 {
                     "url_pattern": "/api/v1/infodevices",
@@ -60,23 +59,721 @@
             ],
             "extra_config": {
                 "auth/validator": {
-                    "alg": "RS256",
-                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": true,
+                    "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
-                        "admin",
-                        "ing_red",
-                        "Inspector_admin",
-                        "Inspector_lectura"
+                        "Inspector_viewer",
+                        "Inspector_operator",
+                        "Inspector_admin"
                     ],
-                    "audience": [
-                        "inspector_client"
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/infodevices/{uuid}",
+            "method": "GET",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/infodevices/{uuid}",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_viewer",
+                        "Inspector_operator",
+                        "Inspector_admin"
                     ],
-                    "operation_debug": true,
-                    "error_headers": true,
-                    "error_log_level": "DEBUG"
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/infodevices/{uuid}/history",
+            "method": "GET",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/infodevices/{uuid}/history",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "history"
+                    }
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_viewer",
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/history/global-stats",
+            "method": "GET",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/history/global-stats",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "stats"
+                    }
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_viewer",
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/catalogs/form-options",
+            "method": "GET",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/catalogs/form-options",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_viewer",
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/fleets/supported-devices",
+            "method": "GET",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/fleets/supported-devices",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "device_types"
+                    }
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_viewer",
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/sync/inventory",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/sync/inventory",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/admin/{uuid}/reboot",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/{uuid}/reboot",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/admin/{uuid}/restart",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/{uuid}/restart",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/admin/{uuid}/shutdown",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/{uuid}/shutdown",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/admin/{uuid}/note",
+            "method": "PUT",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/{uuid}/note",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/admin/{uuid}/move",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/{uuid}/move",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/admin/{uuid}/logs",
+            "method": "GET",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/{uuid}/logs",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "logs"
+                    }
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/configuration/sync",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/configuration/sync",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/configuration/fleet/{slug}/variable",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/configuration/fleet/{slug}/variable",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/configuration/device/{uuid}/variable",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/configuration/device/{uuid}/variable",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/configuration/fleet/{slug}/variable/{key}",
+            "method": "DELETE",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/configuration/fleet/{slug}/variable/{key}",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/admin/provision",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/provision",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/fleets",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/fleets/",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/fleets/{name}",
+            "method": "DELETE",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/fleets/{name}",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
                 }
             }
         }
