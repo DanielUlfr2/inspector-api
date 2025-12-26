@@ -6,6 +6,7 @@ export default defineConfig({
     plugins: [react()],
     server: {
         host: true, // Necesario para Docker
-        port: 3000
+        port: 3000,
+        strictPort: true
     }
 })

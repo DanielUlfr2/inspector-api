@@ -1,0 +1,33 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+:root {
+    /* Modo Claro */
+    --bg-main: #ffffff;
+    --bg-sidebar: #f8f9fa;
+    --bg-hover: #ececec;
+    --text-primary: #1a1a1a;
+    --text-muted: #666666;
+    --accent: #007bff;
+    /* Azul corporativo */
+}
+
+[data-theme='dark'] {
+    /* Modo Oscuro (Basado en tu imagen) */
+    --bg-main: #0a0a0a;
+    --bg-sidebar: #161616;
+    --bg-hover: #252525;
+    --text-primary: #ffffff;
+    --text-muted: #a0a0a0;
+    --accent: #3d5afe;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease;
+}
