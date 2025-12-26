@@ -1,13 +1,14 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Database, History, LogOut, Sun, Moon, Activity, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { LayoutDashboard, MonitorSmartphone, History, LogOut, Sun, Moon, Activity, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+
 import keycloak from '../../features/auth/keycloakService';
 import styles from './Sidebar.module.css';
 import { useState, useEffect } from 'react';
 
 const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', color: '#6366f1' },
-    { icon: Database, label: 'Dispositivos', path: '/devices', color: '#8b5cf6' },
+    { icon: MonitorSmartphone, label: 'Dispositivos', path: '/devices', color: '#8b5cf6' },
     { icon: History, label: 'Historial', path: '/history', color: '#ec4899' },
 ];
 
@@ -64,8 +65,16 @@ export const Sidebar = () => {
     return (
         <motion.aside
             className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''}`}
-            animate={{ width: isCollapsed ? 80 : 280 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            animate={{
+                width: isCollapsed ? 80 : 280,
+                paddingLeft: isCollapsed ? 10 : 20,
+                paddingRight: isCollapsed ? 10 : 20
+            }}
+            transition={{
+                type: 'tween',
+                duration: 0.3,
+                ease: [0.4, 0, 0.2, 1] // Cubic bezier for smooth easing
+            }}
         >
             {/* Toggle Button */}
             <button className={styles.toggleBtn} onClick={toggleSidebar}>

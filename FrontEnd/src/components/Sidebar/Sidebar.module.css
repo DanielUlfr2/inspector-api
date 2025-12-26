@@ -2,15 +2,15 @@
 .sidebar {
     width: 280px;
     height: 100vh;
-    background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    background: #000000;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     flex-direction: column;
     padding: 24px 20px;
     position: relative;
     overflow: hidden;
     box-sizing: border-box;
-    transition: padding 0.3s ease;
+    /* Removed padding transition - handled by Framer Motion */
 }
 
 .sidebar.collapsed {
@@ -38,10 +38,10 @@
     transform: translateY(-50%);
     width: 24px;
     height: 24px;
-    background-color: #334155;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 50%;
-    color: #cbd5e1;
+    color: #e0e0e0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -57,7 +57,7 @@
 }
 
 .toggleBtn:hover {
-    background-color: #475569;
+    background-color: #2a2a2a;
     color: white;
 }
 
@@ -259,12 +259,12 @@
     right: -4px;
     width: 18px;
     height: 18px;
-    background-color: #0f172a;
+    background-color: #000000;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #1e293b;
+    border: 2px solid #1a1a1a;
     color: #94a3b8;
 }
 
@@ -337,23 +337,23 @@
 
 /* ===== LIGHT THEME ===== */
 [data-theme="light"] .sidebar {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    border-right: 1px solid #e2e8f0;
+    background: #ebe8e3;
+    border-right: 1px solid #d4d0cb;
 }
 
 [data-theme="light"] .sidebar::before {
-    background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.05), transparent);
+    background: radial-gradient(circle at 50% 0%, rgba(255, 107, 53, 0.03), transparent);
 }
 
 [data-theme="light"] .toggleBtn {
-    background-color: #e2e8f0;
-    border-color: #cbd5e1;
-    color: #64748b;
+    background-color: #d4d0cb;
+    border-color: #c4c0bb;
+    color: #4a4a4a;
 }
 
 [data-theme="light"] .toggleBtn:hover {
-    background-color: #cbd5e1;
-    color: #0f172a;
+    background-color: #c4c0bb;
+    color: #1a1a1a;
 }
 
 [data-theme="light"] .logoIcon {
@@ -381,8 +381,8 @@
 }
 
 [data-theme="light"] .navItem:hover {
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="light"] .navItem.active {
@@ -395,12 +395,12 @@
 }
 
 [data-theme="light"] .divider {
-    background-color: #e2e8f0;
+    background-color: #d4d0cb;
 }
 
 [data-theme="light"] .userProfile:hover {
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid #e2e8f0;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid #d4d0cb;
 }
 
 [data-theme="light"] .userName {
@@ -412,21 +412,21 @@
 }
 
 [data-theme="light"] .settingsBadge {
-    background-color: #ffffff;
-    border-color: #e2e8f0;
-    color: #94a3b8;
+    background-color: #f5f3f0;
+    border-color: #d4d0cb;
+    color: #6b6b6b;
 }
 
 [data-theme="light"] .actionBtn,
 [data-theme="light"] .logoutBtn {
-    background: rgba(0, 0, 0, 0.02);
-    border: 1px solid #e2e8f0;
-    color: #475569;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid #d4d0cb;
+    color: #4a4a4a;
 }
 
 [data-theme="light"] .actionBtn:hover,
 [data-theme="light"] .logoutBtn:hover {
-    background: rgba(0, 0, 0, 0.04);
-    border-color: #cbd5e1;
-    color: #0f172a;
+    background: rgba(0, 0, 0, 0.05);
+    border-color: #c4c0bb;
+    color: #1a1a1a;
 }

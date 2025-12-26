@@ -5,21 +5,20 @@
 }
 
 :root {
-    /* Modo Claro */
-    --bg-main: #ffffff;
-    --bg-sidebar: #f8f9fa;
-    --bg-hover: #ececec;
+    /* Modo Claro - Pastel Beige/Cream */
+    --bg-main: #f5f3f0;
+    --bg-sidebar: #ebe8e3;
+    --bg-hover: #e0ddd8;
     --text-primary: #1a1a1a;
-    --text-muted: #666666;
-    --accent: #007bff;
-    /* Azul corporativo */
+    --text-muted: #6b6b6b;
+    --accent: #ff6b35;
 }
 
 [data-theme='dark'] {
-    /* Modo Oscuro (Basado en tu imagen) */
-    --bg-main: #0a0a0a;
-    --bg-sidebar: #161616;
-    --bg-hover: #252525;
+    /* Modo Oscuro (True Black - Basado en imagen de referencia) */
+    --bg-main: #000000;
+    --bg-sidebar: #0a0a0a;
+    --bg-hover: #1a1a1a;
     --text-primary: #ffffff;
     --text-muted: #a0a0a0;
     --accent: #3d5afe;
@@ -29,5 +28,8 @@ body {
     margin: 0;
     background-color: var(--bg-main);
     color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     transition: background-color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
