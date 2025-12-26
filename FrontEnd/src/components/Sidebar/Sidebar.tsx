@@ -1,10 +1,16 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, MonitorSmartphone, History, LogOut, Sun, Moon, Activity, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { LayoutDashboard, MonitorSmartphone, History, LogOut, Sun, Moon, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 
 import keycloak from '../../features/auth/keycloakService';
 import styles from './Sidebar.module.css';
 import { useState, useEffect } from 'react';
+
+// Logo imports
+import LogoInspector from '../../assets/logos/LogoInspector.png';
+import LogoInspectorBlack from '../../assets/logos/LogoInspectorBlack.png';
+import IconoInspector from '../../assets/icons/IconoInspector.png';
+import IconoInspectorBlack from '../../assets/icons/IconoInspectorBlack.png';
 
 const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', color: '#6366f1' },
@@ -83,14 +89,20 @@ export const Sidebar = () => {
 
             {/* Logo Section */}
             <div className={styles.logoSection}>
-                <div className={styles.logoIcon}>
-                    <Activity size={28} strokeWidth={2.5} />
-                </div>
-                {!isCollapsed && (
-                    <div className={styles.logoText}>
-                        <h1>Inspector</h1>
-                        <p>Monitor Regional</p>
-                    </div>
+                {isCollapsed ? (
+                    // Collapsed: Show icon only
+                    <img
+                        src={theme === 'dark' ? IconoInspector : IconoInspectorBlack}
+                        alt="Inspector Icon"
+                        className={styles.logoIconImg}
+                    />
+                ) : (
+                    // Expanded: Show full logo
+                    <img
+                        src={theme === 'dark' ? LogoInspector : LogoInspectorBlack}
+                        alt="Inspector Logo"
+                        className={styles.logoFullImg}
+                    />
                 )}
             </div>
 

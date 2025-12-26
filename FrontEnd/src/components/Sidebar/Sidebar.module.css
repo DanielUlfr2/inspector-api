@@ -65,45 +65,30 @@
 .logoSection {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 40px;
+    justify-content: center;
+    margin-bottom: 20px;
     position: relative;
     z-index: 1;
-    height: 48px;
+    height: 40px;
     overflow: visible;
 }
 
-.logoIcon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
-    flex-shrink: 0;
+/* Logo when collapsed (icon only) */
+.logoIconImg {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    transition: opacity 0.2s ease;
+    margin: -5px;
 }
 
-.logoText {
-    white-space: nowrap;
-    overflow: visible;
-}
-
-.logoText h1 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #f8fafc;
-    letter-spacing: -0.02em;
-}
-
-.logoText p {
-    margin: 0;
-    font-size: 0.75rem;
-    color: #94a3b8;
-    font-weight: 500;
+/* Logo when expanded (full logo) */
+.logoFullImg {
+    max-width: 100%;
+    height: 50px;
+    object-fit: contain;
+    transition: opacity 0.2s ease;
+    margin: -5px 0;
 }
 
 /* ===== NAVIGATION ===== */
