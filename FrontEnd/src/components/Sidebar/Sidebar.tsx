@@ -1,6 +1,19 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, MonitorSmartphone, History, LogOut, Sun, Moon, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import {
+    LayoutDashboard,
+    MonitorSmartphone,
+    Truck,      // Nuevo icono para Flotas
+    Activity,   // Nuevo icono para Monitoreo
+    LogOut,
+    Sun,
+    Moon,
+    ChevronLeft,
+    ChevronRight,
+    Settings
+} from 'lucide-react';
+import defaultAvatar from '../../assets/avatars/avatar-01.png'; // Un avatar por defecto
+import { GiCargoShip } from 'react-icons/gi';
 
 import keycloak from '../../features/auth/keycloakService';
 import styles from './Sidebar.module.css';
@@ -12,10 +25,12 @@ import LogoInspectorBlack from '../../assets/logos/LogoInspectorBlack.png';
 import IconoInspector from '../../assets/icons/IconoInspector.png';
 import IconoInspectorBlack from '../../assets/icons/IconoInspectorBlack.png';
 
+// Estructura de menú actualizada
 const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', color: '#6366f1' },
+    { icon: GiCargoShip, label: 'Flotas', path: '/fleets', color: '#ec4899' },
     { icon: MonitorSmartphone, label: 'Dispositivos', path: '/devices', color: '#8b5cf6' },
-    { icon: History, label: 'Historial', path: '/history', color: '#ec4899' },
+    { icon: Activity, label: 'Monitoreo', path: 'http://186.97.133.242:3000/d/edk1x2oz8gx6oa/estado-de-inspector?orgId=1&refresh=5m', color: '#06b6d4', isExternal: true },
 ];
 
 export const Sidebar = () => {
@@ -24,7 +39,7 @@ export const Sidebar = () => {
         return localStorage.getItem('theme') || 'dark';
     });
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const [userInfo, setUserInfo] = useState({ name: '', role: '' });
+    const [userInfo, setUserInfo] = useState({ name: '', role: '', avatar: '' });
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -34,13 +49,12 @@ export const Sidebar = () => {
     useEffect(() => {
         if (keycloak.tokenParsed) {
             const name = keycloak.tokenParsed.preferred_username || keycloak.tokenParsed.name || 'Usuario';
-
             let role = 'Viewer';
             const realmRoles = keycloak.tokenParsed.realm_access?.roles || [];
             const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT;
             const resourceRoles = keycloak.tokenParsed.resource_access?.[clientId]?.roles || [];
-
             const allRoles = [...realmRoles, ...resourceRoles];
+
             const validRoles = allRoles.filter((r: string) =>
                 !['offline_access', 'uma_authorization', 'default-roles-milicon'].includes(r)
             );
@@ -51,8 +65,23 @@ export const Sidebar = () => {
                     validRoles[0];
             }
 
-            setUserInfo({ name, role });
+            // 1. Extraemos el atributo 'avatar' que configuramos en el Mapper de Keycloak
+            const avatarFile = (keycloak.tokenParsed as any).avatar || '';
+
+            setUserInfo({ name, role, avatar: avatarFile });
         }
+
+        // Listener para actualizar el avatar en tiempo real desde Settings
+        const handleAvatarUpdate = (event: Event) => {
+            const customEvent = event as CustomEvent;
+            setUserInfo(prev => ({ ...prev, avatar: customEvent.detail }));
+        };
+
+        window.addEventListener('avatarUpdated', handleAvatarUpdate);
+
+        return () => {
+            window.removeEventListener('avatarUpdated', handleAvatarUpdate);
+        };
     }, []);
 
     const toggleTheme = (e: React.MouseEvent) => {
@@ -79,82 +108,110 @@ export const Sidebar = () => {
             transition={{
                 type: 'tween',
                 duration: 0.3,
-                ease: [0.4, 0, 0.2, 1] // Cubic bezier for smooth easing
+                ease: [0.4, 0, 0.2, 1]
             }}
         >
-            {/* Toggle Button */}
+            {/* Botón de colapso */}
             <button className={styles.toggleBtn} onClick={toggleSidebar}>
                 {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
 
-            {/* Logo Section */}
+            {/* Sección del Logo */}
             <div className={styles.logoSection}>
                 {isCollapsed ? (
-                    // Collapsed: Show icon only
                     <img
                         src={theme === 'dark' ? IconoInspector : IconoInspectorBlack}
-                        alt="Inspector Icon"
+                        alt="Icono"
                         className={styles.logoIconImg}
                     />
                 ) : (
-                    // Expanded: Show full logo
                     <img
                         src={theme === 'dark' ? LogoInspector : LogoInspectorBlack}
-                        alt="Inspector Logo"
+                        alt="Logo Completo"
                         className={styles.logoFullImg}
                     />
                 )}
             </div>
 
-            {/* Navigation */}
+            {/* Navegación Principal */}
             <nav className={styles.nav}>
-                {menuItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
-                        title={isCollapsed ? item.label : ''}
-                    >
-                        {({ isActive }) => (
-                            <div className={styles.navItemContent}>
-                                <div
-                                    className={styles.iconWrapper}
-                                    style={{
-                                        backgroundColor: isActive ? item.color : `${item.color}15`,
-                                        boxShadow: isActive ? `0 0 20px ${item.color}40` : 'none'
-                                    }}
-                                >
-                                    <item.icon
-                                        size={20}
-                                        strokeWidth={2.5}
-                                        style={{ color: isActive ? '#fff' : item.color }}
-                                    />
-                                </div>
-
-                                {!isCollapsed && (
-                                    <span className={styles.navLabel}>{item.label}</span>
-                                )}
-
-                                {isActive && !isCollapsed && (
-                                    <motion.div
-                                        className={styles.activeIndicator}
-                                        layoutId="activeIndicator"
-                                        style={{ backgroundColor: item.color }}
-                                    />
-                                )}
+                {menuItems.map((item) => {
+                    const content = (isActive: boolean) => (
+                        <div className={styles.navItemContent}>
+                            <div
+                                className={styles.iconWrapper}
+                                style={{
+                                    backgroundColor: isActive ? item.color : `${item.color}15`,
+                                    boxShadow: isActive ? `0 0 20px ${item.color}40` : 'none'
+                                }}
+                            >
+                                <item.icon
+                                    size={20}
+                                    strokeWidth={2.5}
+                                    style={{ color: isActive ? '#fff' : item.color }}
+                                />
                             </div>
-                        )}
-                    </NavLink>
-                ))}
+
+                            {!isCollapsed && (
+                                <span className={styles.navLabel}>{item.label}</span>
+                            )}
+
+                            {isActive && !isCollapsed && (
+                                <motion.div
+                                    className={styles.activeIndicator}
+                                    layoutId="activeIndicator"
+                                    style={{ backgroundColor: item.color }}
+                                />
+                            )}
+                        </div>
+                    );
+
+                    if ((item as any).isExternal) {
+                        return (
+                            <a
+                                key={item.path}
+                                href={item.path}
+                                className={styles.navItem}
+                                title={isCollapsed ? item.label : ''}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {content(false)}
+                            </a>
+                        );
+                    }
+
+                    return (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={({ isActive }) => `${styles.navItem} ${isActive ? styles.active : ''}`}
+                            title={isCollapsed ? item.label : ''}
+                        >
+                            {({ isActive }) => content(isActive)}
+                        </NavLink>
+                    );
+                })}
             </nav>
 
-            {/* Footer Actions */}
+            {/* Acciones del Footer */}
             <div className={styles.footer}>
-                {/* User Profile Section */}
                 <div className={styles.userProfile} onClick={handleProfileClick}>
                     <div className={styles.avatarWrapper}>
                         <div className={styles.userAvatar}>
-                            {userInfo.name.charAt(0).toUpperCase()}
+                            {userInfo.avatar ? (
+                                <img
+                                    src={`/src/assets/avatars/${userInfo.avatar}`}
+                                    alt="Profile"
+                                    className={styles.avatarImage}
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = defaultAvatar;
+                                        (e.target as HTMLImageElement).onerror = null; // Previene loop infinito
+                                    }}
+                                />
+                            ) : (
+                                userInfo.name.charAt(0).toUpperCase()
+                            )}
                         </div>
                         <div className={styles.settingsBadge}>
                             <Settings size={10} />

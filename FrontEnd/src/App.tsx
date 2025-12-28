@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout/MainLayout';
+import Settings from './pages/Settings/Settings';
 
 // Importación de Páginas (Features)
 // Nota: Por ahora crearemos componentes simples para que no te dé error
@@ -57,6 +58,7 @@ function App() {
                     <Route path="dashboard" element={<DashboardPage />} />
                     <Route path="devices" element={<DevicesPage />} />
                     <Route path="history" element={<HistoryPage />} />
+                    <Route path="settings" element={<Settings />} />
 
                     {/* Ruta para manejar errores 404 */}
                     <Route path="*" element={<div>404 - Página no encontrada</div>} />

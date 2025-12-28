@@ -115,12 +115,12 @@
 
 .navItem:hover {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .navItem.active {
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .navItemContent {
@@ -216,7 +216,7 @@
 
 .userProfile:hover {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .avatarWrapper {
@@ -225,10 +225,11 @@
 }
 
 .userAvatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff 0%, #fff 100%);
+    /*background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);*/
     color: white;
     display: flex;
     align-items: center;
@@ -236,6 +237,15 @@
     font-weight: 700;
     font-size: 1.1rem;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    overflow: hidden;
+    /* Importante para que la imagen respete el border-radius */
+    border: 2px solid #3b82f6;
+}
+
+.avatarImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .settingsBadge {
@@ -305,7 +315,7 @@
 .actionBtn:hover,
 .logoutBtn:hover {
     background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
     color: #f8fafc;
 }
 
