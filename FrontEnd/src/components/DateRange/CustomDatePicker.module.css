@@ -1,0 +1,197 @@
+/* src/components/DateRange/CustomDatePicker.module.css */
+
+.container {
+    position: absolute;
+    top: calc(100% + 12px);
+    /* ALINEACIÓN: Derecha para que no se salga de la pantalla */
+    right: 0;
+    left: auto;
+    z-index: 1000;
+
+    /* Aumentamos más el ancho para que los inputs datetime-local quepan bien */
+    width: 520px;
+    max-width: calc(100vw - 32px);
+    /* Evita que se salga en pantallas pequeñas */
+    filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15));
+    animation: slideIn 0.2s ease-out;
+}
+
+/* Flechita alineada a la derecha */
+.container::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 25px;
+    left: auto;
+    width: 12px;
+    height: 12px;
+    background: #ffffff;
+    transform: rotate(45deg);
+    border-left: 1px solid #e5e7eb;
+    border-top: 1px solid #e5e7eb;
+}
+
+.card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-sizing: border-box;
+}
+
+.title {
+    margin: 0 0 1rem 0;
+    color: #111827;
+    font-size: 1.1rem;
+}
+
+/* Estilo para botones rápidos */
+.quickDateButtons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.quickDateBtn {
+    flex: 1;
+    padding: 0.5rem;
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quickDateBtn:hover {
+    background: #e5e7eb;
+    color: #000;
+}
+
+/* Inputs de fecha */
+.dateInputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.inputGroup {
+    /* Asegurar que el contenedor no se desborde */
+    min-width: 0;
+    /* Crucial para que el grid funcione correctamente */
+}
+
+.inputGroup label {
+    display: block;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+}
+
+.dateInput {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.5rem;
+    /* Reducimos un poco el padding horizontal */
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    /* Reducimos ligeramente el tamaño de fuente */
+    font-family: inherit;
+
+    /* CRITICAL: Evita que el input se desborde */
+    max-width: 100%;
+    min-width: 0;
+}
+
+/* Estilos específicos para datetime-local en diferentes navegadores */
+.dateInput::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+}
+
+.dateInput::-webkit-datetime-edit {
+    padding: 0;
+}
+
+.dateInput:focus {
+    outline: none;
+    border-color: #0070f3;
+    box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.1);
+}
+
+/* Botones de acción inferiores */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+.cancelBtn {
+    padding: 0.6rem 1.2rem;
+    background: transparent;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #4b5563;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+    background: #f3f4f6;
+}
+
+.applyBtn {
+    padding: 0.6rem 1.2rem;
+    background: #0070f3;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.applyBtn:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+}
+
+.applyBtn:not(:disabled):hover {
+    background: #005bc5;
+    box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive: en pantallas muy pequeñas, apila los inputs */
+@media (max-width: 600px) {
+    .container {
+        width: calc(100vw - 32px);
+        right: 16px;
+    }
+
+    .dateInputs {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .quickDateButtons {
+        flex-direction: column;
+    }
+}

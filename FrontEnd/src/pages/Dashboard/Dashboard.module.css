@@ -1,0 +1,278 @@
+/* src/pages/Dashboard/Dashboard.module.css */
+
+.container {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    background: transparent;
+    /* Permite que el color del Layout pase */
+    min-height: 100vh;
+}
+
+/* ... header styles ... */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Grilla de KPIs */
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+
+.card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Soporte para Dark Mode */
+:global([data-theme='dark']) .container {
+    background: transparent;
+    /* O color oscuro si se prefiere específico */
+}
+
+:global([data-theme='dark']) .card {
+    background: #0a0a0a;
+    /* True Black / Sidebar bg */
+    border-color: #333;
+    color: #e5e5e5;
+}
+
+/* Eliminated empty ruleset for .cardLabel */
+
+:global([data-theme='dark']) .chartSection {
+    background: #0a0a0a;
+    border-color: #333;
+    color: #e5e5e5;
+}
+
+/* Actualización de textos en Dark Mode */
+:global([data-theme='dark']) h1,
+:global([data-theme='dark']) h2,
+:global([data-theme='dark']) h3,
+:global([data-theme='dark']) span {
+    color: #e5e5e5;
+}
+
+:global([data-theme='dark']) .totalVehicles {
+    color: #a0a0a0;
+}
+
+/* SECCIÓN DE LA GRÁFICA */
+.chartSection {
+    position: relative;
+    /* CRÍTICO para el overlay */
+    background: white;
+    border: 1px solid #e5e7eb;
+    padding: 2rem;
+    border-radius: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.chartContainer {
+    width: 100%;
+    height: 400px;
+    margin-top: 1rem;
+    overflow: hidden;
+    /* Evita que la gráfica se salga */
+}
+
+/* OVERLAY DE CARGA SECCIONAL */
+.chartOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    border-radius: 24px;
+}
+
+.spinnerSmall {
+    background: white;
+    padding: 1rem;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.spin {
+    color: #0070f3;
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* LOADER INICIAL (FULL PAGE) */
+.loaderContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 1rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #0070f3;
+    border-radius: 50%;
+    animation: rotate 1s linear infinite;
+}
+
+@media (max-width: 1024px) {
+    .kpiGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Restored selectorWrapper for proper positioning */
+.selectorWrapper {
+    position: relative;
+    display: flex;
+    /* Cambiar de inline-block a flex ayuda a contener mejor */
+    justify-content: flex-end;
+    z-index: 50;
+}
+
+.chartHeader {
+    display: flex;
+    justify-content: space-between;
+    /* Esto empuja el selector a la derecha */
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+/* src/pages/Dashboard/Dashboard.module.css */
+
+/* BOTÓN REFRESCAR */
+.refreshButton {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1.2rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    color: #475569;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+:global([data-theme='dark']) .refreshButton {
+    background: #0a0a0a;
+    border-color: #333;
+    color: #e5e5e5;
+}
+
+:global([data-theme='dark']) .refreshButton:hover {
+    background: #1a1a1a;
+    color: #3d5afe;
+    border-color: #3d5afe;
+}
+
+.refreshButton:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #0070f3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.refreshButton:active {
+    transform: translateY(0);
+}
+
+.refreshing {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+/* KPIs INTERACTIVOS */
+.card {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+}
+
+/* Cuando una tarjeta está seleccionada para filtrar */
+.cardActive {
+    border-color: var(--accent);
+    background: white;
+    transform: scale(1.02);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Cuando hay un filtro activo, pero esta no es la tarjeta seleccionada */
+.cardInactive {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+    transform: scale(0.98);
+}
+
+.cardLabel {
+    color: var(--accent);
+    /* El título toma el color asignado */
+    font-weight: 700;
+}
+
+.iconWrapper {
+    background: transparent;
+    color: var(--accent);
+    padding: 0;
+    /* Eliminamos padding extra si ya no hay fondo */
+    margin-right: 0.5rem;
+    /* Ajuste de espaciado */
+}
+
+.filterIndicator {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 800;
+    color: var(--accent);
+}
+
+/* Animación de rotación para el icono */
+.spin {
+    animation: rotate 1.5s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

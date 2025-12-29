@@ -1,22 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout/MainLayout';
 import Settings from './pages/Settings/Settings';
+import DashboardPage from './pages/Dashboard/Dashboard';
 
 // Importación de Páginas (Features)
 // Nota: Por ahora crearemos componentes simples para que no te dé error
-const DashboardPage = () => (
-    <div style={{
-        background: 'rgba(255,255,255,0.8)',
-        borderRadius: '16px',
-        padding: '32px',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.06)'
-    }}>
-        <h1 style={{ margin: '0 0 8px 0', fontSize: '2rem', fontWeight: '700', color: '#0f172a' }}>
-            Dashboard
-        </h1>
-        <p style={{ margin: 0, color: '#64748b' }}>Bienvenido a Inspector - Monitor Regional</p>
-    </div>
-);
+// DashboardPage se importa desde ./pages/Dashboard/Dashboard
 
 const DevicesPage = () => (
     <div style={{

@@ -164,6 +164,10 @@
             "endpoint": "/v1/history/global-stats",
             "method": "GET",
             "level": "DEBUG",
+            "input_query_strings": [
+                "start_date",
+                "end_date"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/history/global-stats",
