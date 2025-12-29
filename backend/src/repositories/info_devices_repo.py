@@ -166,7 +166,8 @@ class InfoDevicesRepository:
                 stripaddress, 
                 dtlastconnectivityevent, 
                 strosversion, 
-                jsonbobservaciones
+                jsonbobservaciones,
+                strnote
             FROM inspector.inspector
         """
         conn = await PostgresConnector.get_connection()

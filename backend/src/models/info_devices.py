@@ -13,6 +13,7 @@ class DeviceInfoSchema(BaseModel):
     last_seen: Optional[datetime] = Field(None, alias="dtlastconnectivityevent")
     os_version: Optional[str] = Field(None, alias="strosversion")
     observaciones: Optional[Dict[str, Any]] = Field({}, alias="jsonbobservaciones")
+    note: Optional[str] = Field(None, alias="strnote")
 
     class Config:
         from_attributes = True

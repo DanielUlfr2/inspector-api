@@ -6,3 +6,4 @@ backend_logs/
 logs/
 log/
 celerybeat-schedule
+.vscode
