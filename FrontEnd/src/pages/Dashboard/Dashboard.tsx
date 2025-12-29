@@ -204,13 +204,26 @@ const Dashboard = () => {
                                 <Tooltip
                                     contentStyle={{
                                         borderRadius: '16px',
-                                        border: '1px solid #e5e7eb',
-                                        background: '#ffffff',
+                                        border: document.documentElement.getAttribute('data-theme') === 'dark'
+                                            ? '1px solid #333'
+                                            : '1px solid #e5e7eb',
+                                        background: document.documentElement.getAttribute('data-theme') === 'dark'
+                                            ? '#0a0a0a'
+                                            : '#ffffff',
                                         boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                                         padding: '16px',
-                                        fontWeight: 500
+                                        fontWeight: 500,
+                                        color: document.documentElement.getAttribute('data-theme') === 'dark'
+                                            ? '#e5e5e5'
+                                            : '#111827'
                                     }}
-                                    labelStyle={{ color: '#111827', fontWeight: 600, marginBottom: '8px' }}
+                                    labelStyle={{
+                                        color: document.documentElement.getAttribute('data-theme') === 'dark'
+                                            ? '#e5e5e5'
+                                            : '#111827',
+                                        fontWeight: 600,
+                                        marginBottom: '8px'
+                                    }}
                                 />
                                 <Legend verticalAlign="top" height={40} iconType="circle" />
                                 <Line

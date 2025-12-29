@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, BackgroundTasks
 from src.services.device_admin_service import DeviceAdminService
 from src.services.balena_service import BalenaService
 from src.api.v1.schemas.provisioning_schema import ProvisioningRequest
@@ -19,38 +19,44 @@ async def provision_device_endpoint(
         raise HTTPException(status_code=400, detail=result["message"])
     return result
 
-@router.post("/{uuid}/reboot")
+@router.post("/{uuid}/reboot", status_code=200)
 async def reboot_device_endpoint(
     uuid: str, 
+    background_tasks: BackgroundTasks,
     x_user_id: str = Header("SYSTEM", alias="X-User-Id"), 
     x_role: str = Header("SYSTEM", alias="X-Role")
 ):
-    result = await DeviceAdminService.execute_power_action(uuid, "reboot", user=x_user_id, role=x_role)
-    if not result["success"]:
-        raise HTTPException(status_code=400, detail=result["message"])
-    return result
+    """
+    Reinicia el dispositivo (OS) en segundo plano.
+    """
+    background_tasks.add_task(DeviceAdminService.execute_power_action, uuid, "reboot", user=x_user_id, role=x_role)
+    return {"success": True, "message": "Reinicio de sistema iniciado. Verifique el historial."}
 
-@router.post("/{uuid}/restart")
+@router.post("/{uuid}/restart", status_code=200)
 async def restart_container_endpoint(
     uuid: str, 
+    background_tasks: BackgroundTasks,
     x_user_id: str = Header("SYSTEM", alias="X-User-Id"), 
     x_role: str = Header("SYSTEM", alias="X-Role")
 ):
-    result = await DeviceAdminService.execute_power_action(uuid, "restart", user=x_user_id, role=x_role)
-    if not result["success"]:
-        raise HTTPException(status_code=400, detail=result["message"])
-    return result
+    """
+    Reinicia la aplicación (Contenedor) en segundo plano.
+    """
+    background_tasks.add_task(DeviceAdminService.execute_power_action, uuid, "restart", user=x_user_id, role=x_role)
+    return {"success": True, "message": "Reinicio de aplicación iniciado. Verifique el historial."}
 
-@router.post("/{uuid}/shutdown")
+@router.post("/{uuid}/shutdown", status_code=200)
 async def shutdown_device_endpoint(
     uuid: str, 
+    background_tasks: BackgroundTasks,
     x_user_id: str = Header("SYSTEM", alias="X-User-Id"), 
     x_role: str = Header("SYSTEM", alias="X-Role")
 ):
-    result = await DeviceAdminService.execute_power_action(uuid, "shutdown", user=x_user_id, role=x_role)
-    if not result["success"]:
-        raise HTTPException(status_code=400, detail=result["message"])
-    return result
+    """
+    Apaga el dispositivo en segundo plano.
+    """
+    background_tasks.add_task(DeviceAdminService.execute_power_action, uuid, "shutdown", user=x_user_id, role=x_role)
+    return {"success": True, "message": "Apagado iniciado. Verifique el historial."}
 
 @router.put("/{uuid}/note")
 async def set_device_note_endpoint(

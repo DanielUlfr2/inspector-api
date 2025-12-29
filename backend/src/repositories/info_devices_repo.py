@@ -167,7 +167,8 @@ class InfoDevicesRepository:
                 dtlastconnectivityevent, 
                 strosversion, 
                 jsonbobservaciones,
-                strnote
+                strnote,
+                idDeviceStatus AS iddevicestatus
             FROM inspector.inspector
         """
         conn = await PostgresConnector.get_connection()

@@ -14,6 +14,7 @@ class DeviceInfoSchema(BaseModel):
     os_version: Optional[str] = Field(None, alias="strosversion")
     observaciones: Optional[Dict[str, Any]] = Field({}, alias="jsonbobservaciones")
     note: Optional[str] = Field(None, alias="strnote")
+    device_status_id: Optional[int] = Field(2, alias="iddevicestatus")
 
     class Config:
         from_attributes = True

@@ -1,0 +1,155 @@
+/* Contenedor de fondo que bloquea la interacción con el resto de la página */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.75);
+    /* Fondo oscuro semitransparente */
+    backdrop-filter: blur(8px);
+    /* Efecto de desenfoque profesional */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    /* Por encima de la Sidebar y el ActionBar */
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Caja blanca del modal */
+.modal {
+    background: #ffffff;
+    padding: 2.5rem;
+    border-radius: 24px;
+    max-width: 440px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: scale(1);
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.content h3 {
+    margin: 1.5rem 0 0.5rem;
+    color: #1e293b;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.content p {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+/* Iconos por estado */
+.warningIcon {
+    color: #f59e0b;
+    margin: 0 auto;
+}
+
+.successIcon {
+    color: #10b981;
+    margin: 0 auto;
+}
+
+.errorIcon {
+    color: #ef4444;
+    margin: 0 auto;
+}
+
+/* Spinner de carga personalizado con el morado de Inspector */
+.spin {
+    color: #a855f7;
+    margin: 0 auto;
+    animation: rotate 1s linear infinite;
+}
+
+/* Contenedor de botones de confirmación */
+.actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.cancelBtn,
+.confirmBtn,
+.closeBtn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.cancelBtn {
+    flex: 1;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.cancelBtn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.confirmBtn {
+    flex: 1;
+    background: #1e293b;
+    /* Slate-800 */
+    color: #ffffff;
+}
+
+.confirmBtn:hover {
+    background: #0f172a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+}
+
+.closeBtn {
+    width: 100%;
+    background: #f1f5f9;
+    color: #1e293b;
+    margin-top: 1rem;
+}
+
+.closeBtn:hover {
+    background: #e2e8f0;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

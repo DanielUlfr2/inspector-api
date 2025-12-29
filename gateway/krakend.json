@@ -502,17 +502,16 @@
         {
             "endpoint": "/v1/admin/{uuid}/logs",
             "method": "GET",
+            "output_encoding": "no-op",
             "level": "DEBUG",
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/logs",
+                    "method": "GET",
+                    "encoding": "no-op",
                     "host": [
                         "http://open_balena_apis:5000"
-                    ],
-                    "is_collection": true,
-                    "mapping": {
-                        "collection": "logs"
-                    }
+                    ]
                 }
             ],
             "extra_config": {
@@ -523,6 +522,7 @@
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
+                        "Inspector_viewer",
                         "Inspector_operator",
                         "Inspector_admin"
                     ],

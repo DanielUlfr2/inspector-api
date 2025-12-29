@@ -1,4 +1,5 @@
 import logging
+from fastapi.concurrency import run_in_threadpool
 from src.services.balena_service import BalenaService
 from src.repositories.provisioning_repo import ProvisioningRepository
 from src.repositories.info_devices_repo import InfoDevicesRepository
@@ -59,15 +60,15 @@ class DeviceAdminService:
         if historic_id:
             await HistoryRepository.log_device_snapshot(historic_id, uuid, TransactionStatus.EN_PROGRESO, snapshot)
 
-        if not BalenaService.login():
+        if not await run_in_threadpool(BalenaService.login):
             if historic_id:
                 await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.FALLIDO, "Fallo Login Balena")
             return {"success": False, "message": "Fallo Login Balena CLI"}
 
         success = False
-        if action == "reboot": success = BalenaService.reboot_device(uuid)
-        elif action == "restart": success = BalenaService.restart_device(uuid)
-        elif action == "shutdown": success = BalenaService.shutdown_device(uuid)
+        if action == "reboot": success = await run_in_threadpool(BalenaService.reboot_device, uuid)
+        elif action == "restart": success = await run_in_threadpool(BalenaService.restart_device, uuid)
+        elif action == "shutdown": success = await run_in_threadpool(BalenaService.shutdown_device, uuid)
         
         status = TransactionStatus.COMPLETO if success else TransactionStatus.FALLIDO
         msg = f"Comando {action} ejecutado." if success else f"Error ejecutando {action} en Balena."

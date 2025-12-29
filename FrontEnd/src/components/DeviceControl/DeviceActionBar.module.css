@@ -1,0 +1,137 @@
+.bar {
+    position: sticky;
+    top: 1rem;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e293b;
+    /* Slate-800 */
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.label::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #a855f7;
+    /* Morado Inspector */
+    border-radius: 50%;
+    box-shadow: 0 0 10px #a855f7;
+}
+
+.group {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Botones Base */
+.group button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.6rem 1.2rem;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #334155;
+    /* Slate-700 */
+    color: #e2e8f0;
+}
+
+.group button:hover:not(:disabled) {
+    background: #475569;
+    transform: translateY(-2px);
+    color: white;
+}
+
+/* Estilos específicos por acción */
+.group button:nth-child(1):hover {
+    background: #6366f1;
+}
+
+/* Restart -> Indigo */
+.group button:nth-child(2):hover {
+    background: #f59e0b;
+}
+
+/* Reboot -> Amber */
+
+/* Botón de Shutdown (Peligro) */
+.danger {
+    background: rgba(239, 68, 68, 0.15) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+
+.danger:hover:not(:disabled) {
+    background: #ef4444 !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+/* Estados deshabilitados */
+.group button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
+/* Animación del Loader */
+.spin {
+    animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Optimización para tablets/móvil */
+@media (max-width: 768px) {
+    .bar {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .group {
+        width: 100%;
+        justify-content: center;
+    }
+}
