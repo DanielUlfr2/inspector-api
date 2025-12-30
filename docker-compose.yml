@@ -7,7 +7,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: open_balena_apis
-    environment:                 # CORREGIDO: environment
+    environment:
+      # CORREGIDO: environment
       - TZ=${TZ}
     restart: unless-stopped
     ports:
@@ -24,22 +25,22 @@ services:
       - redis
       - postgres_principal
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend_inspector
-    environment:                 # CORREGIDO: environment
-      - TZ=${TZ}
-    restart: unless-stopped
-    ports:
-      - "3001:80"
-    depends_on:
-      - redis
-      - postgres_principal
-    networks:
-      InspecNet:
-        ipv4_address: 172.16.0.4
+  # frontend:
+  #  build:
+  #    context: ./frontend
+  #    dockerfile: Dockerfile
+  #  container_name: frontend_inspector
+  #  environment:                 # CORREGIDO: environment
+  #    - TZ=${TZ}
+  #  restart: unless-stopped
+  #  ports:
+  #    - "3001:80"
+  #  depends_on:
+  #    - redis
+  #    - postgres_principal
+  #  networks:
+  #    InspecNet:
+  #      ipv4_address: 172.16.0.4
 
   ### ==========================================
   ### 2. BASE DE DATOS Y CACHÉ
@@ -47,7 +48,8 @@ services:
   redis:
     image: redis:latest
     container_name: redis_inspector
-    environment:                 # CORREGIDO: environment
+    environment:
+      # CORREGIDO: environment
       - TZ=${TZ}
     restart: unless-stopped
     command: [ "redis-server", "--requirepass", "${REDIS_PASSWORD}" ]
@@ -119,7 +121,8 @@ services:
       context: ./gateway
       dockerfile: Dockerfile
     container_name: krakend_inspector
-    environment:                 # CORREGIDO: environment
+    environment:
+      # CORREGIDO: environment
       - TZ=${TZ}
     restart: unless-stopped
     ports:
@@ -144,7 +147,7 @@ services:
       - "${WG_PORT:-51820}:51820/udp"
       - "${WG_EASY_PORT:-51821}:51821/tcp"
     environment:
-      - TZ=${TZ}                 # CORREGIDO: Unificado formato lista
+      - TZ=${TZ} # CORREGIDO: Unificado formato lista
       - WG_HOST=${WG_HOST}
       - PASSWORD=${WG_EASY_PASSWORD}
       - WG_PORT=${WG_PORT:-51820}
@@ -172,7 +175,8 @@ services:
       context: ./vpn
       dockerfile: Dockerfile
     container_name: wg-fastapi_inspector
-    environment:                 # CORREGIDO: environment
+    environment:
+      # CORREGIDO: environment
       - TZ=${TZ}
     restart: always
     expose:

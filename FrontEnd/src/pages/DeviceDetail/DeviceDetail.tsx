@@ -39,19 +39,21 @@ const DeviceDetail = () => {
         abortControllerRef.current = new AbortController();
 
         try {
-            // Aseguramos que el token esté fresco antes de iniciar el stream
             await keycloak.updateToken(30);
 
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/v1/admin/${targetUuid}/logs`, {
+            // --- CAMBIO: Usamos VITE_LOGS_DIRECT_URL (Bypass) ---
+            const logsUrl = import.meta.env.VITE_LOGS_DIRECT_URL;
+
+            const response = await fetch(`${logsUrl}/v1/admin/${targetUuid}/logs`, {
                 headers: {
                     'Authorization': `Bearer ${keycloak.token}`,
-                    'Accept': 'text/plain'
+                    'Accept': 'text/event-stream' // <-- Cambiado a event-stream
                 },
                 signal: abortControllerRef.current.signal
             });
 
-            if (response.status === 401) {
-                setLogs("Error 401: El servidor administrativo rechazó el acceso. Verifica los permisos en KrakenD.");
+            if (response.status === 401 || response.status === 403) {
+                setLogs(`Error ${response.status}: Acceso denegado. Revisa tus permisos de Inspector.`);
                 return;
             }
 
@@ -59,30 +61,36 @@ const DeviceDetail = () => {
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder("utf-8");
-            setLogs(""); // Limpiar consola al conectar
+            setLogs("");
+
+            let partialChunk = ""; // Para manejar líneas cortadas entre chunks
 
             while (true) {
                 const { done, value } = await reader.read();
+                if (done) break;
 
-                // SOLUCIÓN AL TEXTO CORTADO:
-                // Si done es true, decodificamos el último fragmento sin {stream: true} para vaciar el buffer
-                if (done) {
-                    const lastChunk = decoder.decode();
-                    if (lastChunk) setLogs(prev => (prev + lastChunk).slice(-50000));
-                    break;
-                }
-
-                // Mientras hay datos, decodificamos con {stream: true} para mantener el estado de caracteres incompletos
                 const chunk = decoder.decode(value, { stream: true });
-                setLogs(prev => (prev + chunk).slice(-50000));
+                const lines = (partialChunk + chunk).split('\n\n');
+
+                // Guardamos la última línea por si quedó incompleta
+                partialChunk = lines.pop() || "";
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const message = line.replace('data: ', '').trim();
+                        if (message) {
+                            setLogs(prev => (prev + message + '\n').slice(-50000));
+                        }
+                    }
+                }
             }
 
         } catch (err: any) {
             if (err.name === 'AbortError') {
-                console.log("Stream detenido por navegación.");
+                console.log("Stream detenido.");
             } else {
-                console.error("Error de Stream:", err);
-                setLogs(prev => prev + "\n[Error de conexión con el flujo de logs]");
+                console.error("Error de Bypass Stream:", err);
+                setLogs(prev => prev + "\n[Error de conexión directa con el backend]");
             }
         }
     }, []);
