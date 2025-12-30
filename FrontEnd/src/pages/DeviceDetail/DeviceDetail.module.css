@@ -240,3 +240,66 @@
     padding: 5rem;
     font-weight: 600;
 }
+
+.container {
+    padding: 2.5rem;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+.topNav {
+    margin-bottom: 1.5rem;
+}
+
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.consoleCard {
+    background: #0f172a;
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.console {
+    background: #1e293b;
+    padding: 1rem;
+    border-radius: 12px;
+    height: 450px;
+    /* Ajusta según necesites */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Evitamos el corte horizontal */
+    border: 1px solid #334155;
+}
+
+.pre {
+    margin: 0;
+    color: #38bdf8;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+    /* SOLUCIÓN AL CORTE: */
+    white-space: pre-wrap;
+    /* Mantiene saltos pero ajusta al ancho */
+    word-wrap: break-word;
+    /* Rompe palabras si son muy largas */
+    overflow-wrap: break-word;
+    text-align: left;
+}
+
+.loadingState {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+    color: #a855f7;
+}

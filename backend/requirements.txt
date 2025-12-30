@@ -10,3 +10,5 @@ redis
 httpx
 celery
 asgiref
+python-jose[cryptography]
+requests

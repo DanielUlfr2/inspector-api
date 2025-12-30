@@ -286,19 +286,14 @@ class BalenaService:
 
     @staticmethod
     def stream_device_logs(uuid: str) -> Generator[str, None, None]:
-        """
-        Streaming logs en vivo.
-        Usamos --tail 50 para ver un poco de contexto antes de lo nuevo.
-        """
-        # Aseguramos login antes de iniciar el stream
         if not BalenaService.login():
-            yield "❌ Error: Could not log in to Balena CLI.\n"
+            # Formato SSE: siempre empezar con 'data: '
+            yield "data: ❌ Error: Could not log in to Balena CLI.\n\n"
             return
 
         try:
-            # ✅ CORRECCIÓN: Agregamos '--live' y '--tail'
-            # --live: Mantiene el proceso abierto escuchando nuevos logs.
-            # --tail 20: Muestra las últimas 20 líneas y luego sigue en vivo.
+            # ✅ Agregamos el comando con --tail y podrías considerar --live 
+            # si el CLI de balena lo soporta para no cerrar la conexión.
             cmd = ["balena", "device", "logs", uuid, "--tail"]
             
             process = subprocess.Popen(
@@ -306,27 +301,26 @@ class BalenaService:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 text=True,
-                bufsize=1, # Buffer de línea para que salga fluido
+                bufsize=1,
                 universal_newlines=True
             )
             
-            # Leemos línea a línea mientras el proceso siga vivo
             while True:
                 line = process.stdout.readline()
                 
-                # Si no hay línea y el proceso terminó, salimos
                 if not line and process.poll() is not None:
                     break
                 
-                # Si hay línea, la enviamos al navegador/postman
                 if line:
-                    yield line
+                    # ✨ CRUCIAL: Formato SSE para que el Frontend lo lea línea a línea
+                    # Eliminamos el salto de línea sobrante con .strip() y mandamos el data:
+                    yield f"data: {line.strip()}\n\n"
             
             process.stdout.close()
             process.wait()
 
         except Exception as e:
-            yield f"❌ Internal Error streaming logs: {str(e)}\n"
+            yield f"data: ❌ Internal Error streaming logs: {str(e)}\n\n"
 
     # ==========================================
     # 👇 METADATA (Notas)

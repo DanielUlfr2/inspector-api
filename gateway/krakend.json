@@ -2,7 +2,7 @@
     "version": 3,
     "name": "Inspector AI Gateway",
     "port": 8080,
-    "cache_ttl": "5s",
+    "cache_ttl": "60s",
     "timeout": "5000ms",
     "extra_config": {
         "github_com/devopsfaith/krakend-gologging": {
@@ -503,7 +503,16 @@
             "endpoint": "/v1/admin/{uuid}/logs",
             "method": "GET",
             "output_encoding": "no-op",
-            "level": "DEBUG",
+            "input_headers": [
+                "Authorization",
+                "Accept",
+                "Content-Type"
+            ],
+            "output_headers": [
+                "X-Accel-Buffering",
+                "Cache-Control",
+                "Connection"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/logs",
@@ -511,9 +520,16 @@
                     "encoding": "no-op",
                     "host": [
                         "http://open_balena_apis:5000"
-                    ]
+                    ],
+                    "extra_config": {
+                        "backend/http": {
+                            "is_no_op": true,
+                            "return_error_details": "backend_alias"
+                        }
+                    }
                 }
             ],
+            "timeout": "1400s",
             "extra_config": {
                 "auth/validator": {
                     "issuer": "http://localhost:8080/realms/inspector_realm",

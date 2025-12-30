@@ -5,6 +5,7 @@ from databases.postgres_connector import PostgresConnector
 from src.core.config import settings
 from src.api.v1.api import api_router
 from src.core.logger import logger # Importar para inicializar logs
+from fastapi.middleware.cors import CORSMiddleware
 
 # --- EVENTOS DE INICIO/APAGADO ---
 @asynccontextmanager
@@ -24,6 +25,13 @@ app = FastAPI(
 
 # Incluimos el router de la API
 app.include_router(api_router, prefix=settings.API_V1_STR)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # En producción pon la URL de tu front
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():

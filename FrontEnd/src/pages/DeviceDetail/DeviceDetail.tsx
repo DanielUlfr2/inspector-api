@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 import { deviceService } from '../../features/devices/deviceService';
+import keycloak from '../../features/auth/keycloakService';
 import { Device } from '../../types/device';
 import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
 import styles from './DeviceDetail.module.css';
@@ -22,53 +23,70 @@ const DeviceDetail = () => {
     const [isEditingNote, setIsEditingNote] = useState(false);
     const [tempNote, setTempNote] = useState('');
 
-    // Referencia para el scroll automático de logs
     const logEndRef = useRef<HTMLDivElement>(null);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
-    // 1. Función para manejar el STREAM de logs (Evita el timeout de 20s)
-    // src/pages/DeviceDetail/DeviceDetail.tsx
+    // Auto-scroll automático cuando llegan logs
+    useEffect(() => {
+        if (logEndRef.current) {
+            logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [logs]);
 
     const startLogsStream = useCallback(async (targetUuid: string) => {
-        setLogs("Conectando al stream de administración...");
+        // Cerramos conexión previa si existe
+        if (abortControllerRef.current) abortControllerRef.current.abort();
+        abortControllerRef.current = new AbortController();
+
         try {
-            // Obtenemos el token del almacenamiento local (ajusta la llave según tu app)
-            const token = localStorage.getItem('access_token');
+            // Aseguramos que el token esté fresco antes de iniciar el stream
+            await keycloak.updateToken(30);
 
             const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/v1/admin/${targetUuid}/logs`, {
-                method: 'GET',
                 headers: {
-                    // AGREGAR ESTA LÍNEA:
-                    'Authorization': `Bearer ${token}`,
-                    'Accept': 'text/plain' // O el tipo de contenido que devuelva tu API
-                }
+                    'Authorization': `Bearer ${keycloak.token}`,
+                    'Accept': 'text/plain'
+                },
+                signal: abortControllerRef.current.signal
             });
 
-            // Si el stream devuelve 401 antes de empezar, lanzamos error
             if (response.status === 401) {
-                setLogs("Error 401: Sesión expirada o sin permisos para ver logs.");
+                setLogs("Error 401: El servidor administrativo rechazó el acceso. Verifica los permisos en KrakenD.");
                 return;
             }
 
-            if (!response.body) throw new Error("Stream no soportado");
+            if (!response.body) return;
 
             const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let accumulatedLogs = "";
+            const decoder = new TextDecoder("utf-8");
+            setLogs(""); // Limpiar consola al conectar
 
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
+
+                // SOLUCIÓN AL TEXTO CORTADO:
+                // Si done es true, decodificamos el último fragmento sin {stream: true} para vaciar el buffer
+                if (done) {
+                    const lastChunk = decoder.decode();
+                    if (lastChunk) setLogs(prev => (prev + lastChunk).slice(-50000));
+                    break;
+                }
+
+                // Mientras hay datos, decodificamos con {stream: true} para mantener el estado de caracteres incompletos
                 const chunk = decoder.decode(value, { stream: true });
-                accumulatedLogs += chunk;
-                setLogs(accumulatedLogs);
+                setLogs(prev => (prev + chunk).slice(-50000));
             }
-        } catch (err) {
-            console.error("Stream Error:", err);
-            setLogs("Error: No se pudo establecer conexión con el flujo de logs.");
+
+        } catch (err: any) {
+            if (err.name === 'AbortError') {
+                console.log("Stream detenido por navegación.");
+            } else {
+                console.error("Error de Stream:", err);
+                setLogs(prev => prev + "\n[Error de conexión con el flujo de logs]");
+            }
         }
     }, []);
 
-    // 2. Carga de datos iniciales del dispositivo
     const loadData = useCallback(async () => {
         if (!uuid) return;
         setLoading(true);
@@ -76,8 +94,6 @@ const DeviceDetail = () => {
             const deviceData = await deviceService.getDeviceByUuid(uuid);
             setDevice(deviceData);
             setTempNote(deviceData.strnote || '');
-
-            // Iniciamos el stream de logs una vez cargado el dispositivo
             startLogsStream(uuid);
         } catch (error) {
             console.error("Error crítico:", error);
@@ -112,7 +128,7 @@ const DeviceDetail = () => {
 
     return (
         <div className={styles.container}>
-            {/* LÍNEA 1: Navegación */}
+            {/* LÍNEA 1: Navegación Superior */}
             <nav className={styles.topNav}>
                 <button onClick={() => navigate('/dispositivos')} className={styles.backBtn}>
                     <ChevronLeft size={20} /> Volver a lista de equipos
@@ -140,7 +156,7 @@ const DeviceDetail = () => {
             </div>
 
             <div className={styles.layout}>
-                {/* Panel Izquierdo */}
+                {/* Panel Izquierdo: Red e Inventario */}
                 <div className={styles.leftPanel}>
                     <section className={styles.card}>
                         <div className={styles.cardHeader}>
@@ -178,7 +194,7 @@ const DeviceDetail = () => {
                     </section>
                 </div>
 
-                {/* Panel Derecho */}
+                {/* Panel Derecho: Telemetría y Logs */}
                 <div className={styles.rightPanel}>
                     <section className={styles.statsGrid}>
                         <MetricCard title="CPU" value={`${device.intcpuusagepercent}%`} icon={<Activity size={18} />} percent={device.intcpuusagepercent} />
@@ -201,6 +217,8 @@ const DeviceDetail = () => {
         </div>
     );
 };
+
+// --- Sub-componentes ---
 
 const InfoField = ({ label, value, copyable, onCopy, isCopied, icon, isStatus, online }: any) => (
     <div className={styles.infoField}>

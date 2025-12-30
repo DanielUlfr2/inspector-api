@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException, Header, BackgroundTasks
+#device_admin.py
+from fastapi import APIRouter, HTTPException, Header, BackgroundTasks, Depends
 from src.services.device_admin_service import DeviceAdminService
 from src.services.balena_service import BalenaService
 from src.api.v1.schemas.provisioning_schema import ProvisioningRequest
 from src.api.v1.schemas.device_action_schema import DeviceNoteRequest, DeviceMoveRequest
 from fastapi.responses import StreamingResponse
+from src.core.security import require_roles
 
 router = APIRouter()
 
@@ -100,13 +102,21 @@ async def provision_device(
     return result
 
 @router.get("/{uuid}/logs")
-async def get_device_logs_stream(uuid: str):
+async def get_device_logs_stream(
+    uuid: str,
+    # Ahora coincide con el nombre en security.py
+    user_data=Depends(require_roles(["Inspector_admin", "Inspector_operator"]))
+):
     """
     Streaming en tiempo real de los logs del dispositivo.
-    No guarda en BD. Conexión directa Balena CLI -> Cliente.
+    Bypass: Frontend -> Backend (Puerto 5000)
     """
-    # Llamamos al generador del servicio
     log_generator = BalenaService.stream_device_logs(uuid)
     
-    # Retornamos la respuesta de flujo continuo
-    return StreamingResponse(log_generator, media_type="text/plain")
+    headers = {
+        "X-Accel-Buffering": "no",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+    }
+    
+    return StreamingResponse(log_generator, media_type="text/event-stream", headers=headers)

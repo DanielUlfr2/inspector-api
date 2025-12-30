@@ -29,6 +29,10 @@ class Settings(BaseSettings):
     BALENA_EMAIL: str
     BALENA_PASSWORD: str
     BALENA_URL: str
+
+    KEYCLOAK_URL: str
+    KEYCLOAK_REALM: str
+    KEYCLOAK_AUDIENCE: str
     
     class Config:
         case_sensitive = True
@@ -37,3 +41,4 @@ class Settings(BaseSettings):
         extra = "ignore" 
 
 settings = Settings()
+
