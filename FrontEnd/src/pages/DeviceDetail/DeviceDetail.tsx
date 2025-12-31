@@ -23,13 +23,13 @@ const DeviceDetail = () => {
     const [isEditingNote, setIsEditingNote] = useState(false);
     const [tempNote, setTempNote] = useState('');
 
-    const logEndRef = useRef<HTMLDivElement>(null);
+    const consoleRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    // Auto-scroll automático cuando llegan logs
+    // Auto-scroll automático cuando llegan logs (Fixed: solo scrollear el contenedor)
     useEffect(() => {
-        if (logEndRef.current) {
-            logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        if (consoleRef.current) {
+            consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
         }
     }, [logs]);
 
@@ -138,7 +138,7 @@ const DeviceDetail = () => {
         <div className={styles.container}>
             {/* LÍNEA 1: Navegación Superior */}
             <nav className={styles.topNav}>
-                <button onClick={() => navigate('/dispositivos')} className={styles.backBtn}>
+                <button onClick={() => navigate('/devices')} className={styles.backBtn}>
                     <ChevronLeft size={20} /> Volver a lista de equipos
                 </button>
             </nav>
@@ -215,9 +215,8 @@ const DeviceDetail = () => {
                         <div className={styles.cardHeader}>
                             <Terminal size={18} /> <h2>Consola de Logs (Stream)</h2>
                         </div>
-                        <div className={styles.console}>
+                        <div className={styles.console} ref={consoleRef}>
                             <pre><code>{logs}</code></pre>
-                            <div ref={logEndRef} />
                         </div>
                     </section>
                 </div>

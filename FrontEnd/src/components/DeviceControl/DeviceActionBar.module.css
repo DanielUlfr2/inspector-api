@@ -5,14 +5,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #1e293b;
-    /* Slate-800 */
+    background: var(--bg-sidebar);
     padding: 1rem 1.5rem;
     border-radius: 16px;
     margin-bottom: 1.5rem;
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    color: #f8fafc;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border: 1px solid var(--bg-hover);
     animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -22,6 +21,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    color: var(--text-primary);
 }
 
 .label::before {
@@ -29,10 +29,9 @@
     display: inline-block;
     width: 8px;
     height: 8px;
-    background: #a855f7;
-    /* Morado Inspector */
+    background: var(--accent);
     border-radius: 50%;
-    box-shadow: 0 0 10px #a855f7;
+    box-shadow: 0 0 10px var(--accent);
 }
 
 .group {
@@ -52,34 +51,36 @@
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: #334155;
-    /* Slate-700 */
-    color: #e2e8f0;
+    background: var(--bg-hover);
+    color: var(--text-muted);
 }
 
 .group button:hover:not(:disabled) {
-    background: #475569;
+    background: var(--bg-main);
     transform: translateY(-2px);
-    color: white;
+    color: var(--text-primary);
+    border: 1px solid var(--accent);
 }
 
-/* Estilos específicos por acción */
+/* Estilos específicos por acción (Mantenemos los colores semánticos en hover para feedback visual) */
 .group button:nth-child(1):hover {
     background: #6366f1;
-}
-
-/* Restart -> Indigo */
-.group button:nth-child(2):hover {
-    background: #f59e0b;
+    color: white;
+    border-color: #6366f1;
 }
 
 /* Reboot -> Amber */
+.group button:nth-child(2):hover {
+    background: #f59e0b;
+    color: white;
+    border-color: #f59e0b;
+}
 
 /* Botón de Shutdown (Peligro) */
 .danger {
-    background: rgba(239, 68, 68, 0.15) !important;
+    background: rgba(239, 68, 68, 0.1) !important;
     color: #f87171 !important;
-    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
 }
 
 .danger:hover:not(:disabled) {

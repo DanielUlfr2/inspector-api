@@ -5,41 +5,38 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.75);
-    /* Fondo oscuro semitransparente */
+    background: rgba(0, 0, 0, 0.75);
     backdrop-filter: blur(8px);
-    /* Efecto de desenfoque profesional */
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2000;
-    /* Por encima de la Sidebar y el ActionBar */
     animation: fadeIn 0.2s ease-out;
 }
 
-/* Caja blanca del modal */
+/* Caja del modal */
 .modal {
-    background: #ffffff;
+    background: var(--bg-sidebar);
     padding: 2.5rem;
     border-radius: 24px;
     max-width: 440px;
     width: 90%;
     text-align: center;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--bg-hover);
     transform: scale(1);
     animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .content h3 {
     margin: 1.5rem 0 0.5rem;
-    color: #1e293b;
+    color: var(--text-primary);
     font-size: 1.5rem;
     font-weight: 700;
 }
 
 .content p {
-    color: #64748b;
+    color: var(--text-muted);
     line-height: 1.6;
     margin-bottom: 2rem;
 }
@@ -60,9 +57,9 @@
     margin: 0 auto;
 }
 
-/* Spinner de carga personalizado con el morado de Inspector */
+/* Spinner de carga personalizado */
 .spin {
-    color: #a855f7;
+    color: var(--accent);
     margin: 0 auto;
     animation: rotate 1s linear infinite;
 }
@@ -87,38 +84,39 @@
 
 .cancelBtn {
     flex: 1;
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--bg-hover);
 }
 
 .cancelBtn:hover {
-    background: #e2e8f0;
-    color: #1e293b;
+    background: var(--bg-hover);
+    color: var(--text-primary);
 }
 
 .confirmBtn {
     flex: 1;
-    background: #1e293b;
-    /* Slate-800 */
-    color: #ffffff;
+    background: var(--text-primary);
+    /* High contrast */
+    color: var(--bg-main);
 }
 
 .confirmBtn:hover {
-    background: #0f172a;
+    opacity: 0.9;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(30, 41, 59, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .closeBtn {
     width: 100%;
-    background: #f1f5f9;
-    color: #1e293b;
+    background: var(--bg-hover);
+    color: var(--text-primary);
     margin-top: 1rem;
 }
 
 .closeBtn:hover {
-    background: #e2e8f0;
+    background: var(--bg-main);
+    border: 1px solid var(--bg-hover);
 }
 
 /* Animaciones */
