@@ -333,3 +333,10 @@
     padding: 5rem;
     font-weight: 600;
 }
+
+.leftPanel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    /* Esto dará espacio entre la Info Técnica y el Modal de Provisión */
+}

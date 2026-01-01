@@ -696,12 +696,12 @@
             }
         },
         {
-            "endpoint": "/v1/admin/provision",
+            "endpoint": "/v1/admin/{uuid}/provision",
             "method": "POST",
             "level": "DEBUG",
             "backend": [
                 {
-                    "url_pattern": "/api/v1/admin/provision",
+                    "url_pattern": "/api/v1/admin/{uuid}/provision",
                     "host": [
                         "http://open_balena_apis:5000"
                     ]
@@ -715,7 +715,8 @@
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
-                        "Inspector_admin"
+                        "Inspector_admin",
+                        "Inspector_operator"
                     ],
                     "propagate_claims": [
                         [

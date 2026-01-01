@@ -2,8 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
-    Globe, Clock, Clipboard, Check, Pencil,
-    AlertCircle, Save, X, Terminal
+    Globe, Clock, Clipboard, Check, Terminal
 } from 'lucide-react';
 
 import { deviceService } from '../../features/devices/deviceService';
@@ -11,6 +10,7 @@ import keycloak from '../../features/auth/keycloakService';
 import { Device } from '../../types/device';
 import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
 import styles from './DeviceDetail.module.css';
+import ProvisionModal from '../../components/Provision/ProvisionModal';
 
 const DeviceDetail = () => {
     const { uuid } = useParams<{ uuid: string }>();
@@ -20,8 +20,7 @@ const DeviceDetail = () => {
     const [logs, setLogs] = useState<string>('Iniciando flujo de registros...');
     const [loading, setLoading] = useState(true);
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
-    const [isEditingNote, setIsEditingNote] = useState(false);
-    const [tempNote, setTempNote] = useState('');
+
 
     const consoleRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -101,7 +100,7 @@ const DeviceDetail = () => {
         try {
             const deviceData = await deviceService.getDeviceByUuid(uuid);
             setDevice(deviceData);
-            setTempNote(deviceData.strnote || '');
+
             startLogsStream(uuid);
         } catch (error) {
             console.error("Error crítico:", error);
@@ -119,17 +118,7 @@ const DeviceDetail = () => {
         setTimeout(() => setCopiedKey(null), 2000);
     };
 
-    const handleSaveNote = async () => {
-        if (!uuid) return;
-        try {
-            await deviceService.updateNote(uuid, tempNote);
-            setIsEditingNote(false);
-            const updated = await deviceService.getDeviceByUuid(uuid);
-            setDevice(updated);
-        } catch (error) {
-            alert("Error al actualizar la nota.");
-        }
-    };
+
 
     if (loading) return <div className={styles.loadingState}>Sincronizando con Inspector...</div>;
     if (!device) return <div className={styles.errorState}>Dispositivo no encontrado.</div>;
@@ -180,26 +169,12 @@ const DeviceDetail = () => {
                         </div>
                     </section>
 
-                    <section className={styles.card}>
-                        <div className={styles.cardHeader}>
-                            <AlertCircle size={18} /> <h2>Notas e Inventario</h2>
-                            <button className={styles.editBtn} onClick={() => setIsEditingNote(!isEditingNote)}>
-                                {isEditingNote ? <X size={16} /> : <Pencil size={16} />}
-                            </button>
-                        </div>
-                        <div className={styles.noteBody}>
-                            {isEditingNote ? (
-                                <div className={styles.editor}>
-                                    <textarea value={tempNote} onChange={(e) => setTempNote(e.target.value)} />
-                                    <button onClick={handleSaveNote} className={styles.saveNoteBtn}>
-                                        <Save size={16} /> Guardar Cambios
-                                    </button>
-                                </div>
-                            ) : (
-                                <p className={styles.noteText}>{device.strnote || "Sin notas registradas."}</p>
-                            )}
-                        </div>
-                    </section>
+                    {/* 2. NUEVO COMPONENTE DE PROVISIÓN E INVENTARIO */}
+                    {/* Reemplazamos la sección de notas antigua por esta */}
+                    <ProvisionModal
+                        device={device}
+                        onSuccess={loadData}
+                    />
                 </div>
 
                 {/* Panel Derecho: Telemetría y Logs */}

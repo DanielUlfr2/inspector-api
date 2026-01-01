@@ -1,0 +1,133 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.container {
+    background: #111;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 24px;
+    color: #eee;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* Separar título de botón cerrar */
+    margin-bottom: 24px;
+    border-bottom: 1px solid #222;
+    padding-bottom: 12px;
+}
+
+.closeBtn {
+    background: transparent;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.closeBtn:hover {
+    color: white;
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.section h3 {
+    font-size: 0.9rem;
+    color: #888;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.container input,
+.container select {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 10px 14px;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.95rem;
+}
+
+.container input:focus,
+.container select:focus {
+    outline: none;
+    border-color: #a855f7;
+}
+
+.highlightInput {
+    border-left: 4px solid #a855f7 !important;
+    font-weight: bold;
+}
+
+.speedRow {
+    display: flex;
+    gap: 10px;
+    font-size: 0.8rem;
+}
+
+.speedRow input {
+    width: 70px;
+}
+
+.submitBtn {
+    margin-top: 32px;
+    width: 100%;
+    background: #a855f7;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.2s;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: #9333ea;
+}
+
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.loader {
+    padding: 40px;
+    text-align: center;
+    color: #a855f7;
+}
