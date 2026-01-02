@@ -20,7 +20,6 @@ export interface Device {
     boolapihearbeatstate: boolean;
     boolconnectedtovpn: boolean;
     status_name: string;
-    service_name: string;
 
     // Red y Software
     stripaddress: string;
@@ -45,6 +44,21 @@ export interface Device {
     jsonbobservaciones: DeviceObservations;
     idinventoryinspectorstatus: number;
     iddevicestatus: number;
+
+    inspector_service_id?: string;
+    client_name?: string;
+    address?: string;
+    city_id?: number;
+    cmts_olt_id?: number;
+    product_id?: number;
+    technology_id?: number;
+    service_type_id?: number;
+    crm_id?: number;
+    down_speed?: number;
+    up_speed?: number;
+    country_id?: number;
+    region_id?: number;
+    department_id?: number;
 }
 
 // Respuesta del endpoint de lista (/v1/infodevices)

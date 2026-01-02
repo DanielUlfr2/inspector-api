@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
-    Globe, Clock, Clipboard, Check, Terminal
+    Globe, Clock, Clipboard, Check, Terminal,
+    Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X
 } from 'lucide-react';
 
 import { deviceService } from '../../features/devices/deviceService';
@@ -16,16 +17,20 @@ const DeviceDetail = () => {
     const { uuid } = useParams<{ uuid: string }>();
     const navigate = useNavigate();
 
+    // Estados de datos
     const [device, setDevice] = useState<Device | null>(null);
     const [logs, setLogs] = useState<string>('Iniciando flujo de registros...');
     const [loading, setLoading] = useState(true);
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
+    // Estados de UI (Nuevos)
+    const [isInventoryOpen, setIsInventoryOpen] = useState(false);
+    const [showMoreInfo, setShowMoreInfo] = useState(false);
 
     const consoleRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
 
-    // Auto-scroll automático cuando llegan logs (Fixed: solo scrollear el contenedor)
+    // Auto-scroll de logs
     useEffect(() => {
         if (consoleRef.current) {
             consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
@@ -33,45 +38,38 @@ const DeviceDetail = () => {
     }, [logs]);
 
     const startLogsStream = useCallback(async (targetUuid: string) => {
-        // Cerramos conexión previa si existe
         if (abortControllerRef.current) abortControllerRef.current.abort();
         abortControllerRef.current = new AbortController();
 
         try {
             await keycloak.updateToken(30);
-
-            // --- CAMBIO: Usamos VITE_LOGS_DIRECT_URL (Bypass) ---
             const logsUrl = import.meta.env.VITE_LOGS_DIRECT_URL;
 
             const response = await fetch(`${logsUrl}/v1/admin/${targetUuid}/logs`, {
                 headers: {
                     'Authorization': `Bearer ${keycloak.token}`,
-                    'Accept': 'text/event-stream' // <-- Cambiado a event-stream
+                    'Accept': 'text/event-stream'
                 },
                 signal: abortControllerRef.current.signal
             });
 
             if (response.status === 401 || response.status === 403) {
-                setLogs(`Error ${response.status}: Acceso denegado. Revisa tus permisos de Inspector.`);
+                setLogs(`Error ${response.status}: Acceso denegado.`);
                 return;
             }
 
             if (!response.body) return;
-
             const reader = response.body.getReader();
             const decoder = new TextDecoder("utf-8");
             setLogs("");
 
-            let partialChunk = ""; // Para manejar líneas cortadas entre chunks
-
+            let partialChunk = "";
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
                 const chunk = decoder.decode(value, { stream: true });
                 const lines = (partialChunk + chunk).split('\n\n');
-
-                // Guardamos la última línea por si quedó incompleta
                 partialChunk = lines.pop() || "";
 
                 for (const line of lines) {
@@ -83,13 +81,9 @@ const DeviceDetail = () => {
                     }
                 }
             }
-
         } catch (err: any) {
-            if (err.name === 'AbortError') {
-                console.log("Stream detenido.");
-            } else {
-                console.error("Error de Bypass Stream:", err);
-                setLogs(prev => prev + "\n[Error de conexión directa con el backend]");
+            if (err.name !== 'AbortError') {
+                setLogs(prev => prev + "\n[Error de conexión con el backend]");
             }
         }
     }, []);
@@ -100,7 +94,6 @@ const DeviceDetail = () => {
         try {
             const deviceData = await deviceService.getDeviceByUuid(uuid);
             setDevice(deviceData);
-
             startLogsStream(uuid);
         } catch (error) {
             console.error("Error crítico:", error);
@@ -118,33 +111,58 @@ const DeviceDetail = () => {
         setTimeout(() => setCopiedKey(null), 2000);
     };
 
-
-
     if (loading) return <div className={styles.loadingState}>Sincronizando con Inspector...</div>;
     if (!device) return <div className={styles.errorState}>Dispositivo no encontrado.</div>;
 
     return (
         <div className={styles.container}>
-            {/* LÍNEA 1: Navegación Superior */}
+            {/* 1. NAVEGACIÓN */}
             <nav className={styles.topNav}>
                 <button onClick={() => navigate('/devices')} className={styles.backBtn}>
                     <ChevronLeft size={20} /> Volver a lista de equipos
                 </button>
             </nav>
 
-            {/* LÍNEA 2: Título y UUID */}
+            {/* 2. HEADER DINÁMICO */}
             <header className={styles.header}>
-                <div className={styles.headerInfo}>
-                    <h1>{device.strinspectorname}</h1>
-                    <div className={styles.uuidWrapper}>
-                        <code className={styles.uuidCode}>{device.uuidinspector}</code>
-                        <button onClick={() => handleCopy(device.uuidinspector, 'uuid-header')} className={styles.copyBtnInline}>
-                            {copiedKey === 'uuid-header' ? <Check size={14} color="#10b981" /> : <Clipboard size={14} />}
+                <div className={styles.headerMain}>
+                    <div className={styles.titleGroup}>
+                        <h1>{device.strinspectorname}</h1>
+                        <button className={styles.pencilBtn} onClick={() => setIsInventoryOpen(true)} title="Editar Inventario">
+                            <Pencil size={18} />
                         </button>
                     </div>
+
+                    <button className={styles.infoToggleBtn} onClick={() => setShowMoreInfo(!showMoreInfo)}>
+                        <InfoIcon size={16} />
+                        {showMoreInfo ? 'Ocultar detalles' : 'Obtener más información'}
+                        {showMoreInfo ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
                 </div>
+
+                <div className={styles.uuidRow}>
+                    <code className={styles.uuidCode}>{device.uuidinspector}</code>
+                    <button onClick={() => handleCopy(device.uuidinspector, 'uuid-header')} className={styles.copyBtnInline}>
+                        {copiedKey === 'uuid-header' ? <Check size={14} color="#10b981" /> : <Clipboard size={14} />}
+                    </button>
+                </div>
+
+                {/* PANEL EXPANDIBLE: MÁS INFORMACIÓN */}
+                {showMoreInfo && (
+                    <div className={styles.moreInfoPanel}>
+                        <div className={styles.infoGrid}>
+                            <InfoField label="SERVICE ID" value={device.inspector_service_id || 'N/A'} />
+                            <InfoField label="CLIENTE" value={device.client_name || 'Sin registro'} />
+                            <InfoField label="DIRECCIÓN" value={device.address || 'Sin registro'} />
+                            <InfoField label="VELOCIDAD" value={`${device.down_speed || 0} / ${device.up_speed || 0} Mbps`} />
+                            <InfoField label="ESTADO" value={device.status_name || 'Desconocido'} />
+                            <InfoField label="FLEET" value={device.stridinspectorfleet} />
+                        </div>
+                    </div>
+                )}
             </header>
 
+            {/* 3. ACCIONES RÁPIDAS */}
             <div className={styles.actionWrapper}>
                 <DeviceActionBar
                     selectedUuids={[device.uuidinspector]}
@@ -152,29 +170,95 @@ const DeviceDetail = () => {
                 />
             </div>
 
+            {/* 4. LAYOUT PRINCIPAL */}
             <div className={styles.layout}>
-                {/* Panel Izquierdo: Red e Inventario */}
+                {/* Panel Izquierdo: Red */}
                 <div className={styles.leftPanel}>
                     <section className={styles.card}>
                         <div className={styles.cardHeader}>
                             <Globe size={18} /> <h2>Información Técnica</h2>
                         </div>
-                        <div className={styles.infoGrid}>
-                            <InfoField label="IP ADDRESS" value={device.stripaddress} copyable onCopy={() => handleCopy(device.stripaddress, 'ip')} isCopied={copiedKey === 'ip'} />
-                            <InfoField label="MAC ADDRESS" value={device.jsonbobservaciones.mac_address || 'N/A'} copyable onCopy={() => handleCopy(device.jsonbobservaciones.mac_address || '', 'mac')} isCopied={copiedKey === 'mac'} />
-                            <InfoField label="VPN" value={device.boolconnectedtovpn ? 'Conectado' : 'Desconectado'} isStatus online={device.boolconnectedtovpn} />
-                            <InfoField label="LAST SYNC" value={new Date(device.dtlastmetricupdate).toLocaleString()} icon={<Clock size={14} />} />
-                            <InfoField label="OS VERSION" value={device.strosversion} />
-                            <InfoField label="SUPERVISOR" value={device.strsupervisorversion} />
+                        <div className={styles.techInfoGrid}>
+                            {/* Fila 1: Estado y Fleet */}
+                            <div className={styles.techField}>
+                                <span className={styles.techLabel}>ESTADO INVENTARIO</span>
+                                <div className={styles.techValue}>
+                                    <span className={styles.statusBadge} data-status={device.status_name}>
+                                        {device.status_name || 'Desconocido'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className={styles.techField}>
+                                <span className={styles.techLabel}>FLEET</span>
+                                <span className={styles.techValue}>{device.stridinspectorfleet}</span>
+                            </div>
+
+                            {/* Fila 2: Conectividad */}
+                            <div className={styles.techField}>
+                                <span className={styles.techLabel}>CONECTIVIDAD</span>
+                                <div className={styles.techValue}>
+                                    <div className={styles.statusIndicator}>
+                                        <div className={device.boolonline ? styles.statusDotGreen : styles.statusDotRed}></div>
+                                        <span>{device.boolonline ? 'En línea' : 'Desconectado'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className={styles.techField}>
+                                <span className={styles.techLabel}>ÚLTIMA CONEXIÓN</span>
+                                <span className={styles.techValue}>
+                                    {new Date(device.dtlastconnectivityevent).toLocaleString('es-ES', {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    })}
+                                </span>
+                            </div>
+
+                            {/* Fila 3: Direcciones */}
+                            <div className={styles.techField} style={{ gridColumn: '1 / -1' }}>
+                                <span className={styles.techLabel}>DIRECCIÓN IP</span>
+                                <div className={styles.techValue}>
+                                    <code className={styles.codeValue}>{device.stripaddress}</code>
+                                    <button onClick={() => handleCopy(device.stripaddress, 'ip')} className={styles.copyIconButton}>
+                                        {copiedKey === 'ip' ? <Check size={14} color="#10b981" /> : <Clipboard size={14} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className={styles.techField} style={{ gridColumn: '1 / -1' }}>
+                                <span className={styles.techLabel}>MAC ADDRESS</span>
+                                <div className={styles.techValue}>
+                                    <code className={styles.codeValue}>{device.jsonbobservaciones.mac_address || 'N/A'}</code>
+                                    <button onClick={() => handleCopy(device.jsonbobservaciones.mac_address || '', 'mac')} className={styles.copyIconButton}>
+                                        {copiedKey === 'mac' ? <Check size={14} color="#10b981" /> : <Clipboard size={14} />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Fila 4: Versiones */}
+                            <div className={styles.techField}>
+                                <span className={styles.techLabel}>SUPERVISOR</span>
+                                <span className={styles.techValue}>{device.strsupervisorversion}</span>
+                            </div>
+
+                            <div className={styles.techField}>
+                                <span className={styles.techLabel}>SISTEMA OPERATIVO</span>
+                                <span className={styles.techValue}>{device.strosversion}</span>
+                            </div>
+
+                            {/* Fila 5: Notas (si existen) */}
+                            {device.strnote && (
+                                <div className={styles.techField} style={{ gridColumn: '1 / -1' }}>
+                                    <span className={styles.techLabel}>NOTAS</span>
+                                    <p className={styles.noteText}>{device.strnote}</p>
+                                </div>
+                            )}
                         </div>
                     </section>
-
-                    {/* 2. NUEVO COMPONENTE DE PROVISIÓN E INVENTARIO */}
-                    {/* Reemplazamos la sección de notas antigua por esta */}
-                    <ProvisionModal
-                        device={device}
-                        onSuccess={loadData}
-                    />
                 </div>
 
                 {/* Panel Derecho: Telemetría y Logs */}
@@ -183,7 +267,7 @@ const DeviceDetail = () => {
                         <MetricCard title="CPU" value={`${device.intcpuusagepercent}%`} icon={<Activity size={18} />} percent={device.intcpuusagepercent} />
                         <MetricCard title="Temperatura" value={`${device.intcputempc}°C`} icon={<Thermometer size={18} />} percent={device.intcputempc} color="#f59e0b" />
                         <MetricCard title="RAM" value={`${device.intmemoryusagemb} MB`} icon={<Cpu size={18} />} percent={(device.intmemoryusagemb / device.intmemorytotalmb) * 100} />
-                        <MetricCard title="Almacenamiento" value={`${Math.round(device.intstorageusagemb / 1024)} GB`} icon={<HardDrive size={18} />} percent={(device.intstorageusagemb / device.intstoragetotalmb) * 100} />
+                        <MetricCard title="Disco" value={`${Math.round(device.intstorageusagemb / 1024)} GB`} icon={<HardDrive size={18} />} percent={(device.intstorageusagemb / device.intstoragetotalmb) * 100} />
                     </section>
 
                     <section className={styles.consoleCard}>
@@ -196,11 +280,34 @@ const DeviceDetail = () => {
                     </section>
                 </div>
             </div>
+
+            {/* 5. MODAL FLOTANTE DE INVENTARIO */}
+            {isInventoryOpen && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modalContent}>
+                        <div className={styles.modalHeader}>
+                            <h3>Gestión de Inventario y Aprovisionamiento</h3>
+                            <button className={styles.closeModalBtn} onClick={() => setIsInventoryOpen(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className={styles.modalBody}>
+                            <ProvisionModal
+                                device={device}
+                                onSuccess={() => {
+                                    loadData();
+                                    setIsInventoryOpen(false);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
-// --- Sub-componentes ---
+// --- SUB-COMPONENTES ---
 
 const InfoField = ({ label, value, copyable, onCopy, isCopied, icon, isStatus, online }: any) => (
     <div className={styles.infoField}>

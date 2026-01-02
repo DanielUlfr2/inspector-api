@@ -277,28 +277,46 @@ class InfoDevicesRepository:
 
     @staticmethod
     async def get_device_detail_full(uuid: str):
-        # NOTA: Aquí deberías agregar el LEFT JOIN a DeviceStatus si quieres ver el nombre del estado nuevo
+        # Definimos la consulta con LEFT JOIN para evitar el error 404 si no hay inventario
         query = """
             SELECT 
                 i.*,
-                st.strInventoryStatus as status_name, 
-                ser.strClientName as service_name
+                st.strInventoryStatus AS status_name,
+                -- Datos de inventario (pueden ser NULL si no está provisionado)
+                ser.strInspectorServiceId AS inspector_service_id,
+                ser.strClientName AS client_name,
+                ser.strAddress AS address,
+                ser.idCity AS city_id,
+                ser.idCmtsOlt AS cmts_olt_id,
+                ser.idProduct AS product_id,
+                ser.idTechnology AS technology_id,
+                ser.idServiceType AS service_type_id,
+                ser.idCrm AS crm_id,
+                ser.intdownspeed AS down_speed,
+                ser.intupspeed AS up_speed
+
             FROM inspector.Inspector i
+            -- Unión con estados para obtener el nombre legible (ej: "Ocupado")
             LEFT JOIN inspector.InventoryInspectorStatus st 
                 ON i.idInventoryInspectorStatus = st.idInventoryInspectorStatus
+            -- Unión con servicios para obtener los datos de negocio
             LEFT JOIN inspector.InspectorService ser 
                 ON i.strInspectorServiceId = ser.strInspectorServiceId
             WHERE i.uuidInspector = $1
         """
+        
         conn = await PostgresConnector.get_connection()
         try:
             record = await conn.fetchrow(query, uuid)
             if record:
                 data = dict(record)
-                if isinstance(data.get('jsonbobservaciones'), str):
-                     import json
-                     data['jsonbobservaciones'] = json.loads(data['jsonbobservaciones'])
                 
+                # Procesamiento de JSONB si viene como string
+                if isinstance(data.get('jsonbobservaciones'), str):
+                    import json
+                    data['jsonbobservaciones'] = json.loads(data['jsonbobservaciones'])
+                
+                # Normalización de fechas para evitar errores de zona horaria en el frontend
                 if data.get('dtlastconnectivityevent'):
                     data['dtlastconnectivityevent'] = data['dtlastconnectivityevent'].replace(tzinfo=None)
                 

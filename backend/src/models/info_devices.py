@@ -28,7 +28,6 @@ class DeviceDetailSchema(BaseModel):
     
     # Relaciones (Estos vienen de los alias AS en el SQL)
     status_name: Optional[str] = Field("Desconocido", alias="status_name") 
-    service_name: Optional[str] = Field("Sin Asignar", alias="service_name") # Será el Nombre del Cliente
     fleet_id: str = Field(..., alias="stridinspectorfleet")
 
     # Estado Técnico
@@ -54,6 +53,21 @@ class DeviceDetailSchema(BaseModel):
     observaciones: Optional[Dict[str, Any]] = Field({}, alias="jsonbobservaciones")
     last_metric_update: Optional[datetime] = Field(None, alias="dtlastmetricupdate")
     created_at: Optional[datetime] = Field(None, alias="dtdatecreate")
+
+    inspector_service_id: Optional[str] = Field(None, alias="inspector_service_id")
+    client_name: Optional[str] = Field(None, alias="client_name")
+    address: Optional[str] = Field(None, alias="address")
+    city_id: Optional[int] = Field(None, alias="city_id")
+    cmts_olt_id: Optional[int] = Field(None, alias="cmts_olt_id")
+    product_id: Optional[int] = Field(None, alias="product_id")
+    technology_id: Optional[int] = Field(None, alias="technology_id")
+    service_type_id: Optional[int] = Field(None, alias="service_type_id")
+    crm_id: Optional[int] = Field(None, alias="crm_id")
+    down_speed: Optional[int] = Field(None, alias="down_speed")
+    up_speed: Optional[int] = Field(None, alias="up_speed")
+    country_id: Optional[int] = Field(None, alias="country_id")
+    region_id: Optional[int] = Field(None, alias="region_id")
+    department_id: Optional[int] = Field(None, alias="department_id")
 
     class Config:
         from_attributes = True

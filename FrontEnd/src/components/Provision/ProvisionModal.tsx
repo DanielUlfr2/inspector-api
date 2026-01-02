@@ -10,7 +10,7 @@ interface Props {
 
 const ProvisionModal: React.FC<Props> = ({ device, onSuccess }) => {
     const { formData, handleChange, options, filtered, loading, isSubmitting, submit } =
-        useProvisionForm(device.uuidinspector);
+        useProvisionForm(device.uuidinspector, device);
 
     if (loading) return <div className={styles.loader}>Cargando parámetros de red...</div>;
 

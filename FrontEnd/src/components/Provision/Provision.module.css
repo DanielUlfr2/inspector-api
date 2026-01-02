@@ -1,133 +1,186 @@
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-}
+/* ========================================
+   PROVISION MODAL - MODERN REDESIGN
+   ======================================== */
 
+/* Container Principal */
 .container {
-    background: #111;
-    border: 1px solid #333;
-    border-radius: 12px;
-    padding: 24px;
-    color: #eee;
-    width: 90%;
-    max-width: 900px;
-    max-height: 90vh;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    padding: 2rem;
+    max-height: 75vh;
     overflow-y: auto;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
+/* Header del Panel */
 .header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    /* Separar título de botón cerrar */
-    margin-bottom: 24px;
-    border-bottom: 1px solid #222;
-    padding-bottom: 12px;
+    gap: 12px;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--accent);
 }
 
-.closeBtn {
-    background: transparent;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    transition: 0.2s;
+.header h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
 }
 
-.closeBtn:hover {
-    color: white;
-}
-
+/* Grid de Formulario */
 .formGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.75rem;
+    margin-bottom: 2rem;
 }
 
+/* Secciones */
 .section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
+    background: var(--bg-sidebar);
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--bg-hover);
 }
 
 .section h3 {
-    font-size: 0.9rem;
-    color: #888;
+    font-size: 0.85rem;
+    color: var(--text-muted);
     text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 8px;
+    margin: 0 0 8px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--bg-hover);
 }
 
+/* Inputs y Selects */
 .container input,
 .container select {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    padding: 10px 14px;
-    border-radius: 6px;
-    color: white;
+    background: var(--bg-main);
+    border: 1.5px solid var(--bg-hover);
+    padding: 11px 14px;
+    border-radius: 8px;
+    color: var(--text-primary);
     font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.container input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.6;
 }
 
 .container input:focus,
 .container select:focus {
-    outline: none;
-    border-color: #a855f7;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
 }
 
+.container select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-hover);
+}
+
+/* Input Destacado */
 .highlightInput {
-    border-left: 4px solid #a855f7 !important;
-    font-weight: bold;
+    border-left: 4px solid var(--accent) !important;
+    font-weight: 600 !important;
+    background: rgba(168, 85, 247, 0.05) !important;
 }
 
+/* Fila de Velocidades */
 .speedRow {
     display: flex;
-    gap: 10px;
-    font-size: 0.8rem;
+    gap: 12px;
+    align-items: center;
+}
+
+.speedRow label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
 }
 
 .speedRow input {
-    width: 70px;
+    width: 80px;
+    text-align: center;
 }
 
+/* Select de Estado */
+.statusSelect {
+    font-weight: 600 !important;
+    border: 2px solid var(--accent) !important;
+}
+
+/* Botón de Envío */
 .submitBtn {
-    margin-top: 32px;
     width: 100%;
-    background: #a855f7;
+    background: var(--accent);
     color: white;
-    padding: 14px;
+    padding: 14px 24px;
     border: none;
-    border-radius: 8px;
-    font-weight: bold;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
-    transition: 0.2s;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
 }
 
 .submitBtn:hover:not(:disabled) {
     background: #9333ea;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(168, 85, 247, 0.4);
 }
 
 .submitBtn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
 }
 
+/* Loader */
 .loader {
-    padding: 40px;
+    padding: 3rem;
     text-align: center;
-    color: #a855f7;
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Scrollbar Personalizada */
+.container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.container::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: var(--bg-hover);
+    border-radius: 4px;
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
 }
