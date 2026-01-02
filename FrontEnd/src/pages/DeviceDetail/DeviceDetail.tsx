@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
     Globe, Clock, Clipboard, Check, Terminal,
-    Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X
+    Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X, BarChart2
 } from 'lucide-react';
 
 import { deviceService } from '../../features/devices/deviceService';
@@ -12,6 +12,7 @@ import { Device } from '../../types/device';
 import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
 import styles from './DeviceDetail.module.css';
 import ProvisionModal from '../../components/Provision/ProvisionModal';
+import HistoryModal from '../../components/History/HistoryModal';
 
 const DeviceDetail = () => {
     const { uuid } = useParams<{ uuid: string }>();
@@ -26,6 +27,7 @@ const DeviceDetail = () => {
     // Estados de UI (Nuevos)
     const [isInventoryOpen, setIsInventoryOpen] = useState(false);
     const [showMoreInfo, setShowMoreInfo] = useState(false);
+    const [historyMetric, setHistoryMetric] = useState<'cpu' | 'ram' | 'disk' | 'temp' | 'all' | null>(null);
 
     const consoleRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -263,11 +265,31 @@ const DeviceDetail = () => {
 
                 {/* Panel Derecho: Telemetría y Logs */}
                 <div className={styles.rightPanel}>
-                    <section className={styles.statsGrid}>
-                        <MetricCard title="CPU" value={`${device.intcpuusagepercent}%`} icon={<Activity size={18} />} percent={device.intcpuusagepercent} />
-                        <MetricCard title="Temperatura" value={`${device.intcputempc}°C`} icon={<Thermometer size={18} />} percent={device.intcputempc} color="#f59e0b" />
-                        <MetricCard title="RAM" value={`${device.intmemoryusagemb} MB`} icon={<Cpu size={18} />} percent={(device.intmemoryusagemb / device.intmemorytotalmb) * 100} />
-                        <MetricCard title="Disco" value={`${Math.round(device.intstorageusagemb / 1024)} GB`} icon={<HardDrive size={18} />} percent={(device.intstorageusagemb / device.intstoragetotalmb) * 100} />
+                    <section className={styles.card}>
+                        <div className={styles.cardHeader}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Activity size={18} /> <h2>Métricas en Tiempo Real</h2>
+                                </div>
+                                <button className={styles.iconBtn} onClick={() => setHistoryMetric('all')} title="Ver Histórico Completo">
+                                    <BarChart2 size={18} />
+                                </button>
+                            </div>
+                        </div>
+                        <div className={styles.metricsGrid}>
+                            <div onClick={() => setHistoryMetric('cpu')} style={{ cursor: 'pointer' }}>
+                                <MetricCard title="CPU" value={`${device.intcpuusagepercent}%`} icon={<Activity size={18} />} percent={device.intcpuusagepercent} />
+                            </div>
+                            <div onClick={() => setHistoryMetric('temp')} style={{ cursor: 'pointer' }}>
+                                <MetricCard title="Temperatura" value={`${device.intcputempc}°C`} icon={<Thermometer size={18} />} percent={device.intcputempc} color="#f59e0b" />
+                            </div>
+                            <div onClick={() => setHistoryMetric('ram')} style={{ cursor: 'pointer' }}>
+                                <MetricCard title="RAM" value={`${device.intmemoryusagemb} MB`} icon={<Cpu size={18} />} percent={(device.intmemoryusagemb / device.intmemorytotalmb) * 100} />
+                            </div>
+                            <div onClick={() => setHistoryMetric('disk')} style={{ cursor: 'pointer' }}>
+                                <MetricCard title="Disco" value={`${Math.round(device.intstorageusagemb / 1024)} GB`} icon={<HardDrive size={18} />} percent={(device.intstorageusagemb / device.intstoragetotalmb) * 100} />
+                            </div>
+                        </div>
                     </section>
 
                     <section className={styles.consoleCard}>
@@ -302,6 +324,15 @@ const DeviceDetail = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* 6. MODAL DE HISTÓRICO */}
+            {historyMetric && (
+                <HistoryModal
+                    uuid={device.uuidinspector}
+                    onClose={() => setHistoryMetric(null)}
+                    initialMetric={historyMetric}
+                />
             )}
         </div>
     );

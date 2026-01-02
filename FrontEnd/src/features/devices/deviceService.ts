@@ -1,7 +1,6 @@
 // src/features/devices/deviceService.ts
 import apiClient from '../../api/apiClient';
-import { Device, DeviceResponse } from '../../types/device';
-// IMPORTANTE: Importamos los nuevos tipos
+import { Device, DeviceResponse, DeviceHistory } from '../../types/device';
 import { FormOptions, ProvisionPayload } from '../../types/provision';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
@@ -64,19 +63,62 @@ export const deviceService = {
     },
 
     /**
-     * NUEVO: Obtiene las opciones de los catálogos para el formulario
+     * Obtiene las opciones de los catálogos para el formulario
      */
     async getFormOptions(): Promise<FormOptions> {
-        // Asumiendo que la ruta en KrakenD para catálogos es /api/v1/catalogs/form-options
         const url = `${API_BASE}/v1/catalogs/form-options`;
         const response = await apiClient.get<FormOptions>(url);
         return response.data;
     },
 
     /**
+     * NUEVO: Obtiene el historial de métricas
+     */
+    async getDeviceHistory(uuid: string, startDate?: Date, endDate?: Date): Promise<DeviceHistory[]> {
+        // Aseguramos que la URL sea correcta usando el path de devices
+        let url = `${API_BASE}${DEVICES_PATH}/${uuid}/history`;
+
+        // Agregar parámetros de fecha si se proporcionan
+        const params = new URLSearchParams();
+        if (startDate) {
+            params.append('start_date', startDate.toISOString());
+        }
+        if (endDate) {
+            params.append('end_date', endDate.toISOString());
+        }
+        if (params.toString()) {
+            url += `?${params.toString()}`;
+        }
+
+        const response = await apiClient.get<DeviceHistory[] | any>(url);
+
+        // KrakenD puede envolver la respuesta, manejamos ambos casos
+        const data = response.data;
+
+        // Si ya es un array, lo retornamos directamente
+        if (Array.isArray(data)) {
+            return data;
+        }
+
+        // Si está envuelto en un objeto, intentamos extraer el array
+        // Casos comunes: { data: [...] }, { history: [...] }, { collection: [...] }
+        if (data && typeof data === 'object') {
+            const possibleArrays = [(data as any).data, (data as any).history, (data as any).collection, (data as any).results];
+            for (const arr of possibleArrays) {
+                if (Array.isArray(arr)) {
+                    return arr;
+                }
+            }
+        }
+
+        console.error('Unexpected response format:', data);
+        return [];
+    },
+
+    /**
      * NUEVO: Ejecuta la provisión completa del dispositivo
      */
-    async provisionDevice(uuid: string, data: ProvisionPayload) {
+    async provisionDevice(uuid: string, data: ProvisionPayload): Promise<any> {
         const url = `${API_BASE}${ADMIN_PATH}/${uuid}/provision`;
         const response = await apiClient.post(url, data);
         return response.data;

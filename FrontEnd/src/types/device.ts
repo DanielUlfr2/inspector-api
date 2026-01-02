@@ -65,3 +65,17 @@ export interface Device {
 export interface DeviceResponse {
     devices: Device[];
 }
+
+// History Data Interface
+export interface DeviceHistory {
+    id: number;
+    uuid: string;
+    timestamp: string;
+    cpu_usage: number;
+    cpu_temp: number;
+    memory_usage: number;
+    memory_total: number;
+    storage_usage: number;
+    storage_total: number;
+    is_online: boolean;
+}
