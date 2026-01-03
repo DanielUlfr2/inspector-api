@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
-    Globe, Clock, Clipboard, Check, Terminal,
+    Globe, Clipboard, Check, Terminal,
     Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X, BarChart2
 } from 'lucide-react';
 

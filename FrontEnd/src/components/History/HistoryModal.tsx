@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { X, Activity, Cpu, HardDrive, Thermometer, BarChart2 } from 'lucide-react';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import { deviceService } from '../../features/devices/deviceService';
 import { DeviceHistory } from '../../types/device';
+import { TimeRange } from '../../types/history';
+import DateRangeSelector from '../DateRange/DateRangeSelector';
+import CustomDatePicker from '../DateRange/CustomDatePicker';
 import styles from './History.module.css';
 
 interface Props {
@@ -14,36 +17,45 @@ interface Props {
 }
 
 const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
-    const [history, setHistory] = useState<any[]>([]);
+    const [history, setHistory] = useState<DeviceHistory[]>([]);
     const [loading, setLoading] = useState(true);
-    const [timeRange, setTimeRange] = useState<number>(24); // Horas por defecto
+
+    // Estados para el rango de fechas
+    const [selectedRange, setSelectedRange] = useState<TimeRange>('24h');
+    const [customRange, setCustomRange] = useState<{ start: Date; end: Date } | null>(null);
+    const [isCustomPickerOpen, setIsCustomPickerOpen] = useState(false);
+
+    const customButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         loadHistory();
-    }, [uuid, timeRange]); // Recargar cuando cambie el rango
+    }, [uuid, selectedRange, customRange]);
 
     const loadHistory = async () => {
         try {
             setLoading(true);
+            let startDate = new Date();
+            let endDate = new Date();
 
-            // Calcular fechas basadas en el rango seleccionado
-            const endDate = new Date();
-            const startDate = new Date();
-            startDate.setHours(startDate.getHours() - timeRange);
+            if (selectedRange === 'custom' && customRange) {
+                startDate = customRange.start;
+                endDate = customRange.end;
+            } else {
+                // Cálculo basado en horas predefinidas
+                const hoursMap: Record<string, number> = { '6h': 6, '12h': 12, '24h': 24 };
+                const hours = hoursMap[selectedRange] || 24;
+                startDate.setHours(startDate.getHours() - hours);
+            }
 
             const data = await deviceService.getDeviceHistory(uuid, startDate, endDate);
 
-            console.log("Raw API response:", data);
-            console.log("Is array?", Array.isArray(data));
-
-            // Verificar si data es un array
             if (!Array.isArray(data)) {
                 console.error("Expected array but got:", typeof data, data);
                 setHistory([]);
                 return;
             }
 
-            // Formatear fechas para el gráfico (backend ya devuelve timestamps redondeados)
+            // Formatear fechas para el gráfico
             const formatted = data.map((d, index) => {
                 const timestamp = new Date(d.timestamp);
 
@@ -74,6 +86,24 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
         }
     };
 
+    const handleRangeChange = (range: TimeRange) => {
+        if (range === 'custom') {
+            setIsCustomPickerOpen(true);
+        } else {
+            setSelectedRange(range);
+            setCustomRange(null);
+        }
+    };
+
+    const handleCustomApply = (startStr: string, endStr: string) => {
+        setCustomRange({
+            start: new Date(startStr),
+            end: new Date(endStr)
+        });
+        setSelectedRange('custom');
+        setIsCustomPickerOpen(false);
+    };
+
     const CustomTooltip = ({ active, payload, unit }: any) => {
         if (active && payload && payload.length) {
             return (
@@ -88,7 +118,7 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
         return null;
     };
 
-    const renderChart = (metric: string, color: string, name: string, unit: string, icon: any) => (
+    const renderChart = (metric: keyof DeviceHistory, color: string, name: string, unit: string, icon: any) => (
         <div className={styles.chartCard}>
             <div className={styles.chartHeader}>
                 <h3>{icon} {name}</h3>
@@ -112,23 +142,12 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
                             interval={0}
                             tick={(props) => {
                                 const { x, y, payload, index } = props;
-
-                                // Solo mostrar si es la primera aparición de este valor
-                                const firstIndex = history.findIndex(h => h.time === payload.value);
-                                if (firstIndex !== index) {
-                                    return null; // No mostrar duplicados
-                                }
+                                const firstIndex = history.findIndex((h: any) => h.time === payload.value);
+                                if (firstIndex !== index) return null;
 
                                 return (
                                     <g transform={`translate(${x},${y})`}>
-                                        <text
-                                            x={0}
-                                            y={0}
-                                            dy={16}
-                                            textAnchor="middle"
-                                            fill="#9ca3af"
-                                            fontSize={11}
-                                        >
+                                        <text x={0} y={0} dy={16} textAnchor="middle" fill="#9ca3af" fontSize={11}>
                                             {payload.value}
                                         </text>
                                     </g>
@@ -139,7 +158,7 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
                         <Tooltip content={<CustomTooltip unit={unit} />} />
                         <Area
                             type="monotone"
-                            dataKey={metric}
+                            dataKey={metric as string}
                             stroke={color}
                             fillOpacity={1}
                             fill={`url(#color${metric})`}
@@ -159,7 +178,7 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
     const showTemp = !initialMetric || initialMetric === 'all' || initialMetric === 'temp';
 
     return (
-        <div className={styles.modalOverlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+        <div className={styles.modalOverlay}>
             <div className={styles.modalContent}>
                 <header className={styles.modalHeader}>
                     <div className={styles.headerTitle}>
@@ -167,17 +186,21 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
                         <h2>Histórico de Rendimiento</h2>
                     </div>
 
-                    {/* Selector de Rango de Tiempo */}
-                    <div className={styles.timeRangeSelector}>
-                        {[6, 12, 24, 48, 168].map(hours => (
-                            <button
-                                key={hours}
-                                className={`${styles.timeRangeBtn} ${timeRange === hours ? styles.active : ''}`}
-                                onClick={() => setTimeRange(hours)}
-                            >
-                                {hours < 24 ? `${hours}h` : hours === 24 ? '24h' : `${hours / 24}d`}
-                            </button>
-                        ))}
+                    <div style={{ position: 'relative' }}>
+                        <DateRangeSelector
+                            selectedRange={selectedRange}
+                            onRangeChange={handleRangeChange}
+                            customButtonRef={customButtonRef}
+                        />
+
+                        {isCustomPickerOpen && (
+                            <div style={{ position: 'absolute', top: '100%', right: 0, zIndex: 50, marginTop: '10px' }}>
+                                <CustomDatePicker
+                                    onApply={handleCustomApply}
+                                    onCancel={() => setIsCustomPickerOpen(false)}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <button className={styles.closeBtn} onClick={onClose}>
