@@ -14,7 +14,7 @@ interface Props {
 }
 
 const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
-    const [history, setHistory] = useState<DeviceHistory[]>([]);
+    const [history, setHistory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState<number>(24); // Horas por defecto
 
@@ -43,12 +43,28 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
                 return;
             }
 
-            // Formatear fechas para el gráfico
-            const formatted = data.map(d => ({
-                ...d,
-                time: new Date(d.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                fullDate: new Date(d.timestamp).toLocaleString()
-            }));
+            // Formatear fechas para el gráfico (backend ya devuelve timestamps redondeados)
+            const formatted = data.map((d, index) => {
+                const timestamp = new Date(d.timestamp);
+
+                // Formato de hora
+                const timeFormat = timestamp.toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Incluir fecha si es necesario (primer punto o cambio de día)
+                const showDate = index === 0 ||
+                    (index > 0 && timestamp.toDateString() !== new Date(data[index - 1].timestamp).toDateString());
+
+                return {
+                    ...d,
+                    time: showDate
+                        ? `${timestamp.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })} ${timeFormat}`
+                        : timeFormat,
+                    fullDate: timestamp.toLocaleString('es-ES')
+                };
+            });
             setHistory(formatted);
         } catch (error) {
             console.error("Error loading history:", error);
@@ -87,7 +103,38 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
                             </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-                        <XAxis dataKey="time" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
+                        <XAxis
+                            dataKey="time"
+                            stroke="#9ca3af"
+                            fontSize={11}
+                            tickLine={false}
+                            axisLine={false}
+                            interval={0}
+                            tick={(props) => {
+                                const { x, y, payload, index } = props;
+
+                                // Solo mostrar si es la primera aparición de este valor
+                                const firstIndex = history.findIndex(h => h.time === payload.value);
+                                if (firstIndex !== index) {
+                                    return null; // No mostrar duplicados
+                                }
+
+                                return (
+                                    <g transform={`translate(${x},${y})`}>
+                                        <text
+                                            x={0}
+                                            y={0}
+                                            dy={16}
+                                            textAnchor="middle"
+                                            fill="#9ca3af"
+                                            fontSize={11}
+                                        >
+                                            {payload.value}
+                                        </text>
+                                    </g>
+                                );
+                            }}
+                        />
                         <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
                         <Tooltip content={<CustomTooltip unit={unit} />} />
                         <Area
@@ -143,10 +190,10 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
                         <div style={{ textAlign: 'center', padding: '50px', color: '#9ca3af' }}>Cargando datos históricos...</div>
                     ) : (
                         <div className={`${styles.chartGrid} ${(showCpu && !showRam && !showDisk && !showTemp) ||
-                                (!showCpu && showRam && !showDisk && !showTemp) ||
-                                (!showCpu && !showRam && showDisk && !showTemp) ||
-                                (!showCpu && !showRam && !showDisk && showTemp)
-                                ? styles.singleChart : ''
+                            (!showCpu && showRam && !showDisk && !showTemp) ||
+                            (!showCpu && !showRam && showDisk && !showTemp) ||
+                            (!showCpu && !showRam && !showDisk && showTemp)
+                            ? styles.singleChart : ''
                             }`}>
                             {showCpu && renderChart('cpu_usage', '#a855f7', 'Uso de CPU', '%', <Activity size={16} />)}
                             {showTemp && renderChart('cpu_temp', '#f59e0b', 'Temperatura', '°C', <Thermometer size={16} />)}

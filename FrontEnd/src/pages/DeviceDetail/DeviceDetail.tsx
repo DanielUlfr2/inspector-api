@@ -13,6 +13,8 @@ import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
 import styles from './DeviceDetail.module.css';
 import ProvisionModal from '../../components/Provision/ProvisionModal';
 import HistoryModal from '../../components/History/HistoryModal';
+import DeviceNotes from '../../components/Notes/DeviceNotes';
+
 
 const DeviceDetail = () => {
     const { uuid } = useParams<{ uuid: string }>();
@@ -252,13 +254,11 @@ const DeviceDetail = () => {
                                 <span className={styles.techValue}>{device.strosversion}</span>
                             </div>
 
-                            {/* Fila 5: Notas (si existen) */}
-                            {device.strnote && (
-                                <div className={styles.techField} style={{ gridColumn: '1 / -1' }}>
-                                    <span className={styles.techLabel}>NOTAS</span>
-                                    <p className={styles.noteText}>{device.strnote}</p>
-                                </div>
-                            )}
+                            {/* Fila 5: Notas (Componente Interactivo) */}
+                            <DeviceNotes
+                                deviceUuid={device.uuidinspector}
+                                initialNote={device.strnote}
+                            />
                         </div>
                     </section>
                 </div>

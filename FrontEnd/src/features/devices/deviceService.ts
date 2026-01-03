@@ -59,7 +59,7 @@ export const deviceService = {
      */
     async updateNote(uuid: string, note: string) {
         const url = `${API_BASE}${ADMIN_PATH}/${uuid}/note`;
-        return await apiClient.post(url, { note });
+        return await apiClient.put(url, { note });
     },
 
     /**

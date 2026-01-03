@@ -259,7 +259,9 @@ class InfoDevicesRepository:
                 intHistoryCpuTempC as cpu_temp,
                 intHistoryCpuUsagePercent as cpu_usage,
                 idHistoricScript as script_id,
-                dtValidate as timestamp
+                -- Redondear timestamp al intervalo de 5 minutos más cercano
+                date_trunc('hour', dtValidate) + 
+                (ROUND(EXTRACT(MINUTE FROM dtValidate) / 5.0) * 5) * INTERVAL '1 minute' as timestamp
             FROM inspector.StatusInspectorHistory
             WHERE uuidInspector = $1
               AND dtValidate BETWEEN $2 AND $3
