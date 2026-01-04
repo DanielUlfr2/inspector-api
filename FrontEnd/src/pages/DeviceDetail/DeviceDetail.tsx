@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
-    Globe, Clipboard, Check, Terminal,
+    Globe, Clipboard, Check, Terminal, Settings,
     Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X, BarChart2
 } from 'lucide-react';
 
@@ -14,7 +14,9 @@ import styles from './DeviceDetail.module.css';
 import ProvisionModal from '../../components/Provision/ProvisionModal';
 import HistoryModal from '../../components/History/HistoryModal';
 import DeviceNotes from '../../components/Notes/DeviceNotes';
-
+import VariablesModal from '../../components/Variables/VariablesModal';
+import { Variable } from '../../types/device';
+import { variableService } from '../../features/devices/variableService';
 
 const DeviceDetail = () => {
     const { uuid } = useParams<{ uuid: string }>();
@@ -30,6 +32,10 @@ const DeviceDetail = () => {
     const [isInventoryOpen, setIsInventoryOpen] = useState(false);
     const [showMoreInfo, setShowMoreInfo] = useState(false);
     const [historyMetric, setHistoryMetric] = useState<'cpu' | 'ram' | 'disk' | 'temp' | 'all' | null>(null);
+    const [isVariablesOpen, setIsVariablesOpen] = useState(false);
+
+    // Estados de Variables
+    const [deviceVariables, setDeviceVariables] = useState<Variable[]>([]);
 
     const consoleRef = useRef<HTMLDivElement>(null);
     const abortControllerRef = useRef<AbortController | null>(null);
@@ -98,6 +104,16 @@ const DeviceDetail = () => {
         try {
             const deviceData = await deviceService.getDeviceByUuid(uuid);
             setDevice(deviceData);
+
+            // Cargar variables desde endpoint dedicado
+            try {
+                const varsResponse = await variableService.getDeviceVariables(uuid);
+                setDeviceVariables(varsResponse.data?.variables || []);
+            } catch (error) {
+                console.error('Error loading variables:', error);
+                setDeviceVariables([]);
+            }
+
             startLogsStream(uuid);
         } catch (error) {
             console.error("Error crítico:", error);
@@ -137,11 +153,18 @@ const DeviceDetail = () => {
                         </button>
                     </div>
 
-                    <button className={styles.infoToggleBtn} onClick={() => setShowMoreInfo(!showMoreInfo)}>
-                        <InfoIcon size={16} />
-                        {showMoreInfo ? 'Ocultar detalles' : 'Obtener más información'}
-                        {showMoreInfo ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                    </button>
+                    <div className={styles.actionsGroup}>
+                        <button className={styles.infoToggleBtn} onClick={() => setShowMoreInfo(!showMoreInfo)}>
+                            <InfoIcon size={16} />
+                            {showMoreInfo ? 'Ocultar detalles' : 'Obtener más información'}
+                            {showMoreInfo ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        </button>
+
+                        <button className={styles.infoToggleBtn} onClick={() => setIsVariablesOpen(true)}>
+                            <Settings size={16} />
+                            Variables
+                        </button>
+                    </div>
                 </div>
 
                 <div className={styles.uuidRow}>
@@ -332,6 +355,17 @@ const DeviceDetail = () => {
                     uuid={device.uuidinspector}
                     onClose={() => setHistoryMetric(null)}
                     initialMetric={historyMetric}
+                />
+            )}
+
+            {/* 7. MODAL DE VARIABLES */}
+            {isVariablesOpen && (
+                <VariablesModal
+                    deviceUuid={device.uuidinspector}
+                    deviceName={device.strinspectorname}
+                    variables={deviceVariables}
+                    onClose={() => setIsVariablesOpen(false)}
+                    onUpdate={loadData}
                 />
             )}
         </div>

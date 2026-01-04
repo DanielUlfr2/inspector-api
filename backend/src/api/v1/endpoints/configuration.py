@@ -28,6 +28,21 @@ async def sync_all_configuration():
         "monitor_status": "Revisa script MANUAL_COLLECTION_VARS_INSPECTOR"
     }
 
+@router.get("/fleet/{slug:path}/variables")
+async def get_fleet_variables(slug: str):
+    """
+    Obtiene todas las variables de una flota específica.
+    """
+    result = await ConfigurationSyncService.get_fleet_variables(slug)
+    
+    if not result["success"]:
+        raise HTTPException(status_code=404, detail=result["message"])
+    
+    return {
+        "fleet_id": slug,
+        "variables": result["variables"]
+    }
+
 @router.post("/fleet/{slug:path}/variable", status_code=201)
 async def set_fleet_variable(
     slug: str, 
@@ -73,6 +88,21 @@ async def set_device_variable(
         raise HTTPException(status_code=500, detail=result["message"])
     
     return {"message": result["message"], "data": var}
+
+@router.get("/device/{uuid}/variables")
+async def get_device_variables(uuid: str):
+    """
+    Obtiene todas las variables de un dispositivo específico.
+    """
+    result = await ConfigurationSyncService.get_device_variables(uuid)
+    
+    if not result["success"]:
+        raise HTTPException(status_code=404, detail=result["message"])
+    
+    return {
+        "device_uuid": uuid,
+        "variables": result["variables"]
+    }
 
 @router.delete("/fleet/{slug:path}/variable/{key}", status_code=200)
 async def delete_fleet_variable(

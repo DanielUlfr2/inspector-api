@@ -59,6 +59,16 @@ export interface Device {
     country_id?: number;
     region_id?: number;
     department_id?: number;
+
+    // Variables de configuración
+    device_variables?: Variable[];
+    fleet_variables?: Variable[];
+}
+
+// Variable Interface
+export interface Variable {
+    name: string;
+    value: string;
 }
 
 // Respuesta del endpoint de lista (/v1/infodevices)

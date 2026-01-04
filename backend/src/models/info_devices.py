@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 # --- ESQUEMA RESUMIDO (LISTADO) ---
@@ -19,6 +19,14 @@ class DeviceInfoSchema(BaseModel):
     class Config:
         from_attributes = True
         populate_by_name = True 
+
+# --- ESQUEMA DE VARIABLE ---
+class VariableSchema(BaseModel):
+    name: str
+    value: str
+
+    class Config:
+        from_attributes = True
 
 # --- [NUEVO] ESQUEMA DETALLADO (FICHA TÉCNICA) ---
 class DeviceDetailSchema(BaseModel):

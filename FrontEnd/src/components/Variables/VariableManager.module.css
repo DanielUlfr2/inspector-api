@@ -1,0 +1,157 @@
+.varCard {
+    background: var(--bg-main);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--bg-hover);
+    margin-top: 1rem;
+    transition: all 0.2s;
+}
+
+.varCard:hover {
+    border-color: var(--accent);
+}
+
+.varHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.varHeader h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.varList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.empty {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 1rem;
+    margin: 0;
+}
+
+.varItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-sidebar);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--bg-hover);
+    transition: all 0.2s;
+}
+
+.varItem:hover {
+    border-color: var(--accent);
+}
+
+.varInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.varKey {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: 'Fira Code', monospace;
+}
+
+.varValue {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    word-break: break-all;
+    font-family: 'Fira Code', monospace;
+}
+
+.delBtn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.delBtn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.delBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.varForm {
+    display: flex;
+    gap: 8px;
+}
+
+.varForm input {
+    flex: 1;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--bg-hover);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-family: 'Fira Code', monospace;
+    transition: all 0.2s;
+}
+
+.varForm input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+}
+
+.varForm input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+.addBtn {
+    background: var(--accent);
+    border: none;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.addBtn:hover {
+    background: #9333ea;
+    transform: translateY(-1px);
+}
+
+.addBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}

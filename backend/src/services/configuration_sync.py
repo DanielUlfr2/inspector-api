@@ -163,6 +163,72 @@ class ConfigurationSyncService:
             return False
 
     # =========================================================================
+    # 3. OBTENER VARIABLES (GET)
+    # =========================================================================
+    
+    @classmethod
+    async def get_fleet_variables(cls, fleet_identifier: str):
+        """
+        Obtiene todas las variables de una flota desde la base de datos local.
+        """
+        try:
+            variables_dict = await FleetRepository.get_variables_dict(fleet_identifier)
+            
+            if variables_dict is None:
+                return {
+                    "success": False,
+                    "message": f"Flota '{fleet_identifier}' no encontrada"
+                }
+            
+            # Convertir dict a lista de objetos {name, value}
+            variables_list = [
+                {"name": key, "value": value}
+                for key, value in variables_dict.items()
+            ]
+            
+            return {
+                "success": True,
+                "variables": variables_list
+            }
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo variables de flota {fleet_identifier}: {e}")
+            return {
+                "success": False,
+                "message": f"Error interno: {str(e)}"
+            }
+
+    @classmethod
+    async def get_device_variables(cls, uuid: str):
+        """
+        Obtiene todas las variables de un dispositivo desde la base de datos local.
+        """
+        try:
+            variables_dict = await InfoDevicesRepository.get_variables_dict(uuid)
+            
+            if variables_dict is None:
+                return {
+                    "success": False,
+                    "message": f"Dispositivo '{uuid}' no encontrado"
+                }
+            
+            # Convertir dict a lista de objetos {name, value}
+            variables_list = [
+                {"name": key, "value": value}
+                for key, value in variables_dict.items()
+            ]
+            
+            return {
+                "success": True,
+                "variables": variables_list
+            }
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo variables de dispositivo {uuid}: {e}")
+            return {
+                "success": False,
+                "message": f"Error interno: {str(e)}"
+            }
+
+    # =========================================================================
     # 4. CREACIÓN MANUAL (CORREGIDA ✅)
     # Usa: MANUAL_SET_VAR_INSPECTOR
     # =========================================================================
