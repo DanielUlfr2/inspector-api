@@ -73,6 +73,56 @@ class FleetRepository:
             await PostgresConnector.release_connection(conn)
 
     @staticmethod
+    async def get_all_fleets_with_stats() -> List[Dict[str, Any]]:
+        """
+        Retrieves all fleets with aggregated device statistics.
+        JOINs with inspector.Inspector to count devices by status.
+        """
+        query = """
+            SELECT 
+                f.stridInspectorFleet as id,
+                f.strSlug as slug,
+                f.idDeviceType as device_type_id,
+                f.dtCreate as created_at,
+                f.dtModificationDate as updated_at,
+                dt.strDeviceSlug as device_type_slug,
+                -- Count total devices
+                COUNT(i.uuidInspector) as total_devices,
+                -- Count by status (assuming idDeviceStatus: 1=Operativo, 2=Desconectado, 3=Reducido, 4=Libre)
+                COUNT(CASE WHEN i.idDeviceStatus = 1 THEN 1 END) as count_operativo,
+                COUNT(CASE WHEN i.idDeviceStatus = 2 THEN 1 END) as count_desconectado,
+                COUNT(CASE WHEN i.idDeviceStatus = 3 THEN 1 END) as count_reducido,
+                COUNT(CASE WHEN i.idDeviceStatus = 4 THEN 1 END) as count_libre
+            FROM inspector.InspectorFleets f
+            LEFT JOIN inspector.DeviceType dt ON f.idDeviceType = dt.idDeviceType
+            LEFT JOIN inspector.Inspector i ON f.stridInspectorFleet = i.stridInspectorFleet
+            GROUP BY f.stridInspectorFleet, f.strSlug, f.idDeviceType, f.dtCreate, f.dtModificationDate, dt.strDeviceSlug
+            ORDER BY f.stridInspectorFleet ASC;
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            records = await conn.fetch(query)
+            results = []
+            for r in records:
+                # Construct the nested stats object
+                row = dict(r)
+                stats = {
+                    "total": row.pop("total_devices", 0),
+                    "operativo": row.pop("count_operativo", 0),
+                    "desconectado": row.pop("count_desconectado", 0),
+                    "reducido": row.pop("count_reducido", 0),
+                    "libre": row.pop("count_libre", 0),
+                }
+                row["stats"] = stats
+                results.append(row)
+            return results
+        except Exception as e:
+            logger.error(f"❌ Error fetching fleets with stats: {e}")
+            return []
+        finally:
+            await PostgresConnector.release_connection(conn)
+
+    @staticmethod
     async def get_device_type_map():
         query = "SELECT idDeviceType, strDeviceSlug FROM inspector.DeviceType;"
         conn = await PostgresConnector.get_connection()

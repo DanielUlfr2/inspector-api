@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { X, Activity, Cpu, HardDrive, Thermometer, BarChart2 } from 'lucide-react';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
+    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
 import { deviceService } from '../../features/devices/deviceService';
 import { DeviceHistory } from '../../types/device';
@@ -139,20 +139,9 @@ const HistoryModal: React.FC<Props> = ({ uuid, onClose, initialMetric }) => {
                             fontSize={11}
                             tickLine={false}
                             axisLine={false}
-                            interval={0}
-                            tick={(props) => {
-                                const { x, y, payload, index } = props;
-                                const firstIndex = history.findIndex((h: any) => h.time === payload.value);
-                                if (firstIndex !== index) return null;
-
-                                return (
-                                    <g transform={`translate(${x},${y})`}>
-                                        <text x={0} y={0} dy={16} textAnchor="middle" fill="#9ca3af" fontSize={11}>
-                                            {payload.value}
-                                        </text>
-                                    </g>
-                                );
-                            }}
+                            interval="preserveStartEnd"
+                            minTickGap={50}
+                            tick={{ fill: '#9ca3af', fontSize: 11 }}
                         />
                         <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
                         <Tooltip content={<CustomTooltip unit={unit} />} />

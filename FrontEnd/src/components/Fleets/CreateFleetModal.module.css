@@ -1,0 +1,149 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #0f172a;
+}
+
+.title h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.closeBtn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.form {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field label {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #475569;
+}
+
+.input,
+.select {
+    padding: 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.input:focus,
+.select:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+.hint {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.error {
+    background: #fee2e2;
+    color: #b91c1c;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    border: 1px solid #fecaca;
+}
+
+.actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+}
+
+.cancelBtn,
+.submitBtn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.cancelBtn {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.cancelBtn:hover:not(:disabled) {
+    background: #e2e8f0;
+}
+
+.submitBtn {
+    background: #a855f7;
+    color: white;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: #9333ea;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.3);
+}
+
+.cancelBtn:disabled,
+.submitBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

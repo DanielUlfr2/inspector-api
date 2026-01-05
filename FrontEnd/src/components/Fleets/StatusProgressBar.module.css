@@ -1,0 +1,37 @@
+.container {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.bar {
+    display: flex;
+    height: 6px;
+    width: 100%;
+    background-color: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.operativo {
+    background-color: #10b981;
+    /* Green */
+    height: 100%;
+}
+
+.reducido {
+    background-color: #f59e0b;
+    /* Amber */
+    height: 100%;
+}
+
+.desconectado {
+    background-color: #ef4444;
+    /* Red */
+    height: 100%;
+}
+
+.libre {
+    background-color: #94a3b8;
+    /* Slate */
+    height: 100%;
+}

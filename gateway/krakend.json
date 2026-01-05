@@ -846,6 +846,47 @@
         },
         {
             "endpoint": "/v1/fleets",
+            "method": "GET",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/fleets",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "fleets"
+                    }
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_viewer",
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/fleets",
             "method": "POST",
             "level": "DEBUG",
             "backend": [

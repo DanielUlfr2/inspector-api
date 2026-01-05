@@ -1,8 +1,18 @@
 from fastapi import APIRouter, HTTPException, Body
 from src.services.fleet_admin_service import FleetAdminService
-from src.api.v1.schemas.fleet_schema import FleetCreateRequest, FleetRenameRequest
+from typing import List
+from src.api.v1.schemas.fleet_schema import FleetCreateRequest, FleetRenameRequest, FleetSummary
 
 router = APIRouter()
+
+# --- 0. LISTAR FLOTAS (DASHBOARD) ---
+@router.get("/", response_model=List[FleetSummary])
+async def get_all_fleets():
+    """
+    Retorna la lista de todas las flotas con estadísticas de sus dispositivos.
+    """
+    from src.repositories.fleet_repo import FleetRepository
+    return await FleetRepository.get_all_fleets_with_stats()
 
 # --- 1. CATALOGO DE DISPOSITIVOS ---
 @router.get("/supported-devices")

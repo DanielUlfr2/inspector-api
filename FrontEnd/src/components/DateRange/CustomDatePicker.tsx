@@ -30,9 +30,19 @@ const CustomDatePicker = ({ onApply, onCancel, initialStart, initialEnd }: Custo
         const end = new Date();
         const start = new Date();
         start.setDate(start.getDate() - days);
-        // Formato para datetime-local: YYYY-MM-DDTHH:mm
-        setStartDate(start.toISOString().slice(0, 16));
-        setEndDate(end.toISOString().slice(0, 16));
+
+        // Función para formatear fecha local en formato datetime-local (YYYY-MM-DDTHH:mm)
+        const formatLocalDateTime = (date: Date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        };
+
+        setStartDate(formatLocalDateTime(start));
+        setEndDate(formatLocalDateTime(end));
     };
 
     return (
