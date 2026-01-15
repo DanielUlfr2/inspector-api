@@ -76,19 +76,25 @@ const FleetDetail: React.FC = () => {
         };
 
         devices.forEach(device => {
-            const status = device.jsonbobservaciones.overall_status_raw?.toLowerCase();
-            switch (status) {
-                case 'operational':
-                    stats.operativo++;
-                    break;
-                case 'reduced-functionality':
-                    stats.reducido++;
-                    break;
-                case 'disconnected':
-                    stats.desconectado++;
-                    break;
-                default:
-                    stats.libre++;
+            const statusId = device.iddevicestatus;
+
+            // Mapeo según la lógica del backend (inventory_sync.py)
+            // Categorías: 1-Operativo, 2-Reducido, 3-Desconectado, 4-Libre
+            if (statusId === 4) {
+                // Free
+                stats.libre++;
+            } else if (statusId === 3 || statusId === 8) {
+                // Disconnected (3) o Inactive (8)
+                stats.desconectado++;
+            } else if (statusId === 2 || statusId === 9) {
+                // Reduced (2) o Frozen (9)
+                stats.reducido++;
+            } else if (statusId === 1 || statusId === 5 || statusId === 6 || statusId === 7) {
+                // Operational (1), Configuring (5), Updating (6), Post-Provisioning (7)
+                stats.operativo++;
+            } else {
+                // Fallback para valores desconocidos
+                stats.desconectado++;
             }
         });
 
@@ -139,7 +145,7 @@ const FleetDetail: React.FC = () => {
                 <div className={styles.fleetInfo}>
                     <div className={styles.fleetIcon}>🚢</div>
                     <div className={styles.fleetDetails}>
-                        <h1 className={styles.fleetName}>{fleetId}</h1>
+                        <h1 className={styles.fleetName}>{fleetData?.id || fleetId}</h1>
                         <span className={styles.fleetTag}>{fleetData?.slug || 'Cargando...'}</span>
                     </div>
                 </div>
@@ -201,7 +207,6 @@ const FleetDetail: React.FC = () => {
 
                 <FleetActionsMenu
                     fleetId={fleetId!}
-                    onUpdate={fetchData}
                 />
             </div>
 

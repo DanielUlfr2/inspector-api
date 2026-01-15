@@ -88,10 +88,11 @@ class FleetRepository:
                 dt.strDeviceSlug as device_type_slug,
                 -- Count total devices
                 COUNT(i.uuidInspector) as total_devices,
-                -- Count by status (assuming idDeviceStatus: 1=Operativo, 2=Desconectado, 3=Reducido, 4=Libre)
-                COUNT(CASE WHEN i.idDeviceStatus = 1 THEN 1 END) as count_operativo,
-                COUNT(CASE WHEN i.idDeviceStatus = 2 THEN 1 END) as count_desconectado,
-                COUNT(CASE WHEN i.idDeviceStatus = 3 THEN 1 END) as count_reducido,
+                -- Count by status (matching inventory_sync.py logic)
+                -- 1,5,6,7=Operativo | 2,9=Reducido | 3,8=Desconectado | 4=Libre
+                COUNT(CASE WHEN i.idDeviceStatus IN (1, 5, 6, 7) THEN 1 END) as count_operativo,
+                COUNT(CASE WHEN i.idDeviceStatus IN (3, 8) THEN 1 END) as count_desconectado,
+                COUNT(CASE WHEN i.idDeviceStatus IN (2, 9) THEN 1 END) as count_reducido,
                 COUNT(CASE WHEN i.idDeviceStatus = 4 THEN 1 END) as count_libre
             FROM inspector.InspectorFleets f
             LEFT JOIN inspector.DeviceType dt ON f.idDeviceType = dt.idDeviceType

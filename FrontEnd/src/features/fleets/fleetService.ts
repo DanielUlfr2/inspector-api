@@ -23,7 +23,7 @@ export const fleetService = {
      * Endpoint: GET /v1/fleets/supported-devices
      */
     async getSupportedDevices(): Promise<DeviceType[]> {
-        const response = await apiClient.get<DeviceType[] | { device_types: DeviceType[] }>('/v1/fleet-support/devices');
+        const response = await apiClient.get<DeviceType[] | { device_types: DeviceType[] }>('/v1/fleets/supported-devices');
         // Handle both direct array and wrapped response
         if (Array.isArray(response.data)) {
             return response.data;
@@ -42,29 +42,29 @@ export const fleetService = {
 
     /**
      * Crea una nueva flota
-     * Endpoint: POST /v1/fleet-actions/create
+     * Endpoint: POST /v1/fleets
      */
     async createFleet(payload: CreateFleetPayload): Promise<Fleet> {
-        const response = await apiClient.post<Fleet>('/v1/fleet-actions/create', payload);
+        const response = await apiClient.post<Fleet>('/v1/fleets', payload);
         return response.data;
     },
 
     /**
      * Renombra una flota existente
-     * Endpoint: PUT /v1/fleet-actions/{slug}/rename
+     * Endpoint: PUT /v1/fleets/{slug}/rename
      */
     async renameFleet(slug: string, payload: RenameFleetPayload): Promise<Fleet> {
         const encodedSlug = encodeURIComponent(slug);
-        const response = await apiClient.put<Fleet>(`/v1/fleet-actions/${encodedSlug}/rename`, payload);
+        const response = await apiClient.put<Fleet>(`/v1/fleets/${encodedSlug}/rename`, payload);
         return response.data;
     },
 
     /**
      * Elimina una flota (solo si está vacía)
-     * Endpoint: DELETE /v1/fleet-actions/{slug}/delete
+     * Endpoint: DELETE /v1/fleets/{slug}
      */
     async deleteFleet(slug: string): Promise<void> {
         const encodedSlug = encodeURIComponent(slug);
-        await apiClient.delete(`/v1/fleet-actions/${encodedSlug}/delete`);
+        await apiClient.delete(`/v1/fleets/${encodedSlug}`);
     }
 };

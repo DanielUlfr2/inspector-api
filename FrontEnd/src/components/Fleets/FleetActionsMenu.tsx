@@ -6,10 +6,9 @@ import styles from './FleetActionsMenu.module.css';
 
 interface Props {
     fleetId: string;
-    onUpdate: () => void;
 }
 
-const FleetActionsMenu: React.FC<Props> = ({ fleetId, onUpdate }) => {
+const FleetActionsMenu: React.FC<Props> = ({ fleetId }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [showRenameModal, setShowRenameModal] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -27,7 +26,10 @@ const FleetActionsMenu: React.FC<Props> = ({ fleetId, onUpdate }) => {
         try {
             await fleetService.renameFleet(fleetId, { new_name: newName });
             setShowRenameModal(false);
-            onUpdate();
+            setNewName('');
+
+            // Navigate to the new fleet name to keep URL in sync
+            navigate(`/fleets/${newName}`);
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Error al renombrar la flota');
         } finally {
