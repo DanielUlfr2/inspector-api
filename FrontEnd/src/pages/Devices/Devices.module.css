@@ -206,6 +206,18 @@
     color: #f59e0b;
 }
 
+.libre {
+    background: #faf5ff;
+    /* Púrpura muy claro */
+    color: #a855f7;
+    /* Púrpura */
+    border: 1px solid #f3e8ff;
+}
+
+.libre svg {
+    color: #a855f7;
+}
+
 /* Estado desconocido por si llega algo raro en el JSON */
 .unknown {
     background: #f1f5f9;

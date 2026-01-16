@@ -6,6 +6,7 @@ import {
 // Servicios y Tipos
 import { deviceService } from '../../features/devices/deviceService';
 import { Device } from '../../types/device';
+import { getDeviceRealStatus } from '../../utils/deviceStatus';
 
 // Componentes de Feature
 import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
@@ -44,25 +45,31 @@ const Devices = () => {
 
     useEffect(() => { fetchDevices(); }, []);
 
-    // Configuración visual de los estados basada en overall_status_raw
-    const getStatusConfig = (statusRaw?: string) => {
-        const status = statusRaw?.toLowerCase() || 'unknown';
-        switch (status) {
-            case 'operational':
-                return { label: 'Operational', className: styles.online, icon: <Wifi size={14} /> };
-            case 'disconnected':
-                return { label: 'Disconnected', className: styles.offline, icon: <WifiOff size={14} /> };
-            case 'reduced-functionality':
-                return { label: 'Reduced', className: styles.reduced, icon: <AlertTriangle size={14} /> };
+    // Configuración visual de los estados con prioridad de "Libre"
+    const getStatusConfig = (device: Device) => {
+        const realStatus = getDeviceRealStatus(device);
+
+        switch (realStatus) {
+            case 'operativo':
+                return { label: 'Operational', className: styles.online, icon: <Wifi size={14} />, value: 'operational' };
+            case 'desconectado':
+                return { label: 'Disconnected', className: styles.offline, icon: <WifiOff size={14} />, value: 'disconnected' };
+            case 'reducido':
+                return { label: 'Reduced', className: styles.reduced, icon: <AlertTriangle size={14} />, value: 'reduced' };
+            case 'libre':
+                return { label: 'Libre', className: styles.libre, icon: <AlertCircle size={14} />, value: 'libre' };
             default:
-                return { label: status, className: styles.unknown, icon: <AlertCircle size={14} /> };
+                return { label: 'Unknown', className: styles.unknown, icon: <AlertCircle size={14} />, value: 'unknown' };
         }
     };
 
     // Lógica de Filtrado (Global + Columnas con estados específicos)
     const filteredDevices = useMemo(() => {
         return devices.filter(device => {
-            const rawStatus = device.jsonbobservaciones.overall_status_raw?.toLowerCase() || '';
+            const realStatus = getDeviceRealStatus(device);
+            const statusValue = realStatus === 'operativo' ? 'operational' :
+                realStatus === 'desconectado' ? 'disconnected' :
+                    realStatus === 'reducido' ? 'reduced' : 'libre';
 
             // 1. Filtro Global (Search bar)
             const globalTerm = searchTerm.toLowerCase();
@@ -73,7 +80,7 @@ const Devices = () => {
                 device.uuidinspector.toLowerCase().includes(globalTerm);
 
             // 2. Filtros Específicos por Columna
-            const matchesStatus = columnFilters.status === '' || rawStatus === columnFilters.status;
+            const matchesStatus = columnFilters.status === '' || statusValue === columnFilters.status;
             const matchesName = device.strinspectorname.toLowerCase().includes(columnFilters.name.toLowerCase()) ||
                 device.uuidinspector.toLowerCase().includes(columnFilters.name.toLowerCase());
             const matchesFleet = device.stridinspectorfleet.toLowerCase().includes(columnFilters.fleet.toLowerCase());
@@ -161,7 +168,8 @@ const Devices = () => {
                                     <option value="">Todos</option>
                                     <option value="operational">Operational</option>
                                     <option value="disconnected">Disconnected</option>
-                                    <option value="reduced-functionality">Reduced</option>
+                                    <option value="reduced">Reduced</option>
+                                    <option value="libre">Libre</option>
                                 </select>
                             </th>
                             <th><input placeholder="Filtrar..." value={columnFilters.name} onChange={(e) => setColumnFilters({ ...columnFilters, name: e.target.value })} className={styles.columnInput} /></th>
@@ -177,7 +185,7 @@ const Devices = () => {
                             <tr><td colSpan={8} className={styles.empty}>No hay resultados para los filtros aplicados.</td></tr>
                         ) : (
                             filteredDevices.map((device) => {
-                                const statusCfg = getStatusConfig(device.jsonbobservaciones.overall_status_raw);
+                                const statusCfg = getStatusConfig(device);
                                 const isSelected = selectedUuids.includes(device.uuidinspector);
                                 return (
                                     <tr key={device.uuidinspector} className={isSelected ? styles.rowSelected : ''}>

@@ -4,6 +4,10 @@
     background-color: #f8fafc;
 }
 
+[data-theme="dark"] .container {
+    background-color: #000000;
+}
+
 .header {
     display: flex;
     justify-content: space-between;
@@ -22,6 +26,10 @@
     font-weight: 700;
     color: #0f172a;
     margin: 0;
+}
+
+[data-theme="dark"] .titleSection h1 {
+    color: #f1f5f9;
 }
 
 .badge {
@@ -141,10 +149,20 @@
     gap: 1rem;
 }
 
+[data-theme="dark"] .fleetCard {
+    background: #0a0a0a;
+    border-color: #333;
+}
+
 .fleetCard:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     border-color: #cbd5e1;
+}
+
+[data-theme="dark"] .fleetCard:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    border-color: #475569;
 }
 
 .cardHeader {
@@ -154,14 +172,11 @@
 }
 
 .fleetIcon {
-    width: 2.5rem;
-    height: 2.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 0.5rem;
+    width: 4rem;
+    height: 4rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
 }
 
 .fleetInfo {
@@ -174,6 +189,10 @@
     font-size: 1rem;
     font-weight: 600;
     color: #0f172a;
+}
+
+[data-theme="dark"] .fleetName {
+    color: #f1f5f9;
 }
 
 .fleetType {
@@ -194,6 +213,10 @@
     font-weight: 700;
     color: #0f172a;
     line-height: 1;
+}
+
+[data-theme="dark"] .count {
+    color: #f1f5f9;
 }
 
 .label {

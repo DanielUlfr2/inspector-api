@@ -18,6 +18,12 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
+[data-theme="dark"] .fleetHeader {
+    background: #0a0a0a;
+    border-color: #333;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
 .fleetInfo {
     display: flex;
     align-items: center;
@@ -25,14 +31,11 @@
 }
 
 .fleetIcon {
-    width: 3.5rem;
-    height: 3.5rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
+    width: 15rem;
+    height: 10rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
 }
 
 .fleetDetails {
@@ -45,6 +48,10 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: #0f172a;
+}
+
+[data-theme="dark"] .fleetName {
+    color: #f1f5f9;
 }
 
 .fleetTag {
@@ -231,6 +238,12 @@
     width: 100%;
 }
 
+[data-theme="dark"] .tableContainer {
+    background: #0a0a0a;
+    border-color: #333;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -284,6 +297,18 @@
     background: #fff7ed;
     color: #f59e0b;
     border: 1px solid #ffedd5;
+}
+
+.libre {
+    background: #faf5ff;
+    /* Púrpura muy claro */
+    color: #a855f7;
+    /* Púrpura */
+    border: 1px solid #f3e8ff;
+}
+
+.libre svg {
+    color: #a855f7;
 }
 
 .unknown {

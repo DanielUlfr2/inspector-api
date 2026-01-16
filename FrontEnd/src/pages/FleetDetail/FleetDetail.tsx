@@ -5,9 +5,11 @@ import { deviceService } from '../../features/devices/deviceService';
 import { fleetService } from '../../features/fleets/fleetService';
 import { Device } from '../../types/device';
 import { Fleet } from '../../types/fleet';
+import { getDeviceRealStatus } from '../../utils/deviceStatus';
 import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
 import FleetActionsMenu from '../../components/Fleets/FleetActionsMenu';
 import { Link } from 'react-router-dom';
+import FlotasIcon from '../../assets/icons/Flotas.png';
 import styles from './FleetDetail.module.css';
 
 const FleetDetail: React.FC = () => {
@@ -50,18 +52,21 @@ const FleetDetail: React.FC = () => {
         fetchData();
     }, [fleetId]);
 
-    // Configuración visual de los estados
-    const getStatusConfig = (statusRaw?: string) => {
-        const status = statusRaw?.toLowerCase() || 'unknown';
-        switch (status) {
-            case 'operational':
-                return { label: 'Operational', className: styles.online, icon: <Wifi size={14} /> };
-            case 'disconnected':
-                return { label: 'Disconnected', className: styles.offline, icon: <WifiOff size={14} /> };
-            case 'reduced-functionality':
-                return { label: 'Reduced', className: styles.reduced, icon: <AlertTriangle size={14} /> };
+    // Configuración visual de los estados con prioridad de "Libre"
+    const getStatusConfig = (device: Device) => {
+        const realStatus = getDeviceRealStatus(device);
+
+        switch (realStatus) {
+            case 'operativo':
+                return { label: 'Operational', className: styles.online, icon: <Wifi size={14} />, value: 'operational' };
+            case 'desconectado':
+                return { label: 'Disconnected', className: styles.offline, icon: <WifiOff size={14} />, value: 'disconnected' };
+            case 'reducido':
+                return { label: 'Reduced', className: styles.reduced, icon: <AlertTriangle size={14} />, value: 'reduced' };
+            case 'libre':
+                return { label: 'Libre', className: styles.libre, icon: <AlertCircle size={14} />, value: 'libre' };
             default:
-                return { label: status, className: styles.unknown, icon: <AlertCircle size={14} /> };
+                return { label: 'Unknown', className: styles.unknown, icon: <AlertCircle size={14} />, value: 'unknown' };
         }
     };
 
@@ -76,6 +81,13 @@ const FleetDetail: React.FC = () => {
         };
 
         devices.forEach(device => {
+            // PRIORIDAD 1: Si la nota contiene "Libre", es Libre
+            if (device.strnote && device.strnote.toLowerCase().includes('libre')) {
+                stats.libre++;
+                return;
+            }
+
+            // PRIORIDAD 2: Usar iddevicestatus
             const statusId = device.iddevicestatus;
 
             // Mapeo según la lógica del backend (inventory_sync.py)
@@ -104,7 +116,10 @@ const FleetDetail: React.FC = () => {
     // Lógica de Filtrado
     const filteredDevices = useMemo(() => {
         return devices.filter(device => {
-            const rawStatus = device.jsonbobservaciones.overall_status_raw?.toLowerCase() || '';
+            const realStatus = getDeviceRealStatus(device);
+            const statusValue = realStatus === 'operativo' ? 'operational' :
+                realStatus === 'desconectado' ? 'disconnected' :
+                    realStatus === 'reducido' ? 'reduced' : 'libre';
 
             const globalTerm = searchTerm.toLowerCase();
             const matchesGlobal =
@@ -112,7 +127,7 @@ const FleetDetail: React.FC = () => {
                 device.strnote.toLowerCase().includes(globalTerm) ||
                 device.uuidinspector.toLowerCase().includes(globalTerm);
 
-            const matchesStatus = columnFilters.status === '' || rawStatus === columnFilters.status;
+            const matchesStatus = columnFilters.status === '' || statusValue === columnFilters.status;
             const matchesName = device.strinspectorname.toLowerCase().includes(columnFilters.name.toLowerCase()) ||
                 device.uuidinspector.toLowerCase().includes(columnFilters.name.toLowerCase());
             const matchesNote = device.strnote.toLowerCase().includes(columnFilters.note.toLowerCase());
@@ -143,7 +158,9 @@ const FleetDetail: React.FC = () => {
             {/* Fleet Info Header */}
             <div className={styles.fleetHeader}>
                 <div className={styles.fleetInfo}>
-                    <div className={styles.fleetIcon}>🚢</div>
+                    <div className={styles.fleetIcon}>
+                        <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '60%', height: '60%', objectFit: 'contain' }} />
+                    </div>
                     <div className={styles.fleetDetails}>
                         <h1 className={styles.fleetName}>{fleetData?.id || fleetId}</h1>
                         <span className={styles.fleetTag}>{fleetData?.slug || 'Cargando...'}</span>
@@ -269,7 +286,8 @@ const FleetDetail: React.FC = () => {
                                     <option value="">Todos</option>
                                     <option value="operational">Operational</option>
                                     <option value="disconnected">Disconnected</option>
-                                    <option value="reduced-functionality">Reduced</option>
+                                    <option value="reduced">Reduced</option>
+                                    <option value="libre">Libre</option>
                                 </select>
                             </th>
                             <th><input placeholder="Filtrar..." value={columnFilters.name} onChange={(e) => setColumnFilters({ ...columnFilters, name: e.target.value })} className={styles.columnInput} /></th>
@@ -284,7 +302,7 @@ const FleetDetail: React.FC = () => {
                             <tr><td colSpan={7} className={styles.empty}>No hay resultados para los filtros aplicados.</td></tr>
                         ) : (
                             filteredDevices.map((device) => {
-                                const statusCfg = getStatusConfig(device.jsonbobservaciones.overall_status_raw);
+                                const statusCfg = getStatusConfig(device);
                                 const isSelected = selectedUuids.includes(device.uuidinspector);
                                 return (
                                     <tr key={device.uuidinspector} className={isSelected ? styles.rowSelected : ''}>

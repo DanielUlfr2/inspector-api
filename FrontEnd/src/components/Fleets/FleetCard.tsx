@@ -1,7 +1,8 @@
 // src/components/Fleets/FleetCard.tsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HardDrive, Monitor, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import FlotasIcon from '../../assets/icons/Flotas.png';
 import { Fleet } from '../../types/fleet';
 import { StatusProgressBar } from './StatusProgressBar';
 import styles from './FleetCard.module.css';
@@ -16,7 +17,9 @@ export const FleetCard: React.FC<Props> = ({ fleet }) => {
     return (
         <div className={styles.card} onClick={() => navigate(`/flotas/${fleet.id}`)}>
             <div className={styles.header}>
-                <div className={styles.iconContainer}>🚢</div>
+                <div className={styles.iconContainer}>
+                    <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                </div>
                 <div className={styles.titleInfo}>
                     <h3>{fleet.id}</h3>
                     <span>{fleet.device_type_slug}</span>

@@ -88,12 +88,25 @@ class FleetRepository:
                 dt.strDeviceSlug as device_type_slug,
                 -- Count total devices
                 COUNT(i.uuidInspector) as total_devices,
-                -- Count by status (matching inventory_sync.py logic)
-                -- 1,5,6,7=Operativo | 2,9=Reducido | 3,8=Desconectado | 4=Libre
-                COUNT(CASE WHEN i.idDeviceStatus IN (1, 5, 6, 7) THEN 1 END) as count_operativo,
-                COUNT(CASE WHEN i.idDeviceStatus IN (3, 8) THEN 1 END) as count_desconectado,
-                COUNT(CASE WHEN i.idDeviceStatus IN (2, 9) THEN 1 END) as count_reducido,
-                COUNT(CASE WHEN i.idDeviceStatus = 4 THEN 1 END) as count_libre
+                -- Count by status with note priority (matching frontend logic)
+                -- PRIORITY 1: Note contains 'libre' → Libre
+                -- PRIORITY 2: idDeviceStatus mapping
+                COUNT(CASE 
+                    WHEN LOWER(i.strnote) LIKE '%libre%' THEN NULL  -- Exclude from operativo if Libre
+                    WHEN i.idDeviceStatus IN (1, 5, 6, 7) THEN 1 
+                END) as count_operativo,
+                COUNT(CASE 
+                    WHEN LOWER(i.strnote) LIKE '%libre%' THEN NULL  -- Exclude from desconectado if Libre
+                    WHEN i.idDeviceStatus IN (3, 8) THEN 1 
+                END) as count_desconectado,
+                COUNT(CASE 
+                    WHEN LOWER(i.strnote) LIKE '%libre%' THEN NULL  -- Exclude from reducido if Libre
+                    WHEN i.idDeviceStatus IN (2, 9) THEN 1 
+                END) as count_reducido,
+                COUNT(CASE 
+                    WHEN LOWER(i.strnote) LIKE '%libre%' THEN 1  -- Include in libre if note contains 'libre'
+                    WHEN i.idDeviceStatus = 4 THEN 1 
+                END) as count_libre
             FROM inspector.InspectorFleets f
             LEFT JOIN inspector.DeviceType dt ON f.idDeviceType = dt.idDeviceType
             LEFT JOIN inspector.Inspector i ON f.stridInspectorFleet = i.stridInspectorFleet

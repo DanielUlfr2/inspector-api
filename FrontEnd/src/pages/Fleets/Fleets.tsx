@@ -3,6 +3,7 @@ import { LayoutGrid, List, RefreshCw, Plus } from 'lucide-react';
 import { useFleets } from '../../hooks/useFleets';
 import { useNavigate } from 'react-router-dom';
 import CreateFleetModal from '../../components/Fleets/CreateFleetModal';
+import FlotasIcon from '../../assets/icons/Flotas.png';
 import styles from './Fleets.module.css';
 
 const Fleets: React.FC = () => {
@@ -70,7 +71,9 @@ const Fleets: React.FC = () => {
                         >
                             {/* Header con icono y nombre */}
                             <div className={styles.cardHeader}>
-                                <div className={styles.fleetIcon}>🚢</div>
+                                <div className={styles.fleetIcon}>
+                                    <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                </div>
                                 <div className={styles.fleetInfo}>
                                     <h3 className={styles.fleetName}>{fleet.id}</h3>
                                     <span className={styles.fleetType}>{fleet.device_type_slug || 'Tipo uno'}</span>
