@@ -925,12 +925,14 @@
             "endpoint": "/v1/fleets/{name}/rename",
             "method": "PUT",
             "level": "DEBUG",
+            "timeout": "30s",
             "backend": [
                 {
                     "url_pattern": "/api/v1/fleets/{name}/rename",
                     "host": [
                         "http://open_balena_apis:5000"
-                    ]
+                    ],
+                    "timeout": "30s"
                 }
             ],
             "extra_config": {
@@ -960,12 +962,14 @@
             "endpoint": "/v1/fleets/{name}",
             "method": "DELETE",
             "level": "DEBUG",
+            "timeout": "30s",
             "backend": [
                 {
                     "url_pattern": "/api/v1/fleets/{name}",
                     "host": [
                         "http://open_balena_apis:5000"
-                    ]
+                    ],
+                    "timeout": "30s"
                 }
             ],
             "extra_config": {

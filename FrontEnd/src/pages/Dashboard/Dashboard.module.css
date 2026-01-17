@@ -276,3 +276,46 @@
         transform: rotate(360deg);
     }
 }
+
+/* Custom Tooltip Styles */
+.customTooltip {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    min-width: 200px;
+}
+
+:global([data-theme='dark']) .customTooltip {
+    background-color: #0a0a0a;
+    border-color: #333;
+    color: #e5e5e5;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.tooltipLabel {
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.9rem;
+}
+
+:global([data-theme='dark']) .tooltipLabel {
+    color: #f3f4f6;
+}
+
+/* Fix for span colors in tooltip */
+.customTooltip span {
+    color: inherit !important;
+}
+
+.tooltipItem {
+    margin: 0;
+    font-size: 0.85rem;
+    padding: 0.1rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}

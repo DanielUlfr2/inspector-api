@@ -75,7 +75,8 @@
 }
 
 .pencilBtn {
-    background: var(--accent);
+    background: #00377B;
+    /* Tigo Blue */
     border: none;
     color: white;
     padding: 10px;
@@ -85,18 +86,30 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 55, 123, 0.3);
 }
 
 .pencilBtn:hover {
-    background: #9333ea;
+    background: #002a5e;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 55, 123, 0.4);
 }
+
+:global([data-theme='dark']) .pencilBtn {
+    background: #00377B;
+    border: 1px solid #00C8FF;
+}
+
+:global([data-theme='dark']) .pencilBtn:hover {
+    background: #00C8FF;
+    color: #000;
+}
+
 
 .infoToggleBtn {
     background: var(--bg-main);
-    border: 2px solid var(--accent);
+    border: 2px solid #00377B;
+    /* Tigo Blue */
     color: var(--text-primary);
     padding: 10px 20px;
     border-radius: 10px;
@@ -110,9 +123,22 @@
 }
 
 .infoToggleBtn:hover {
-    background: var(--accent);
+    background: #00377B;
+    /* Tigo Blue */
     color: white;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 55, 123, 0.3);
+}
+
+:global([data-theme='dark']) .infoToggleBtn {
+    border-color: #00C8FF;
+    /* Cyan border for Dark Mode */
+}
+
+:global([data-theme='dark']) .infoToggleBtn:hover {
+    background: #00C8FF;
+    color: #000;
+    border-color: #00C8FF;
 }
 
 .uuidRow {

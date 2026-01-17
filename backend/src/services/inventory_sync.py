@@ -50,6 +50,7 @@ class InventorySyncService:
             for f in raw_fleets:
                 app_name = f.get("app_name") 
                 slug = f.get("slug")
+                balena_id = f.get("id")  # NUEVO: Capturar ID numérico inmutable
                 remote_type_slug = f.get("device_type", "DEFAULT")
                 mapped_id = type_map.get(remote_type_slug, default_type_id)
 
@@ -59,6 +60,7 @@ class InventorySyncService:
 
                 fleets_to_save.append({
                     "id": app_name, 
+                    "balena_id": balena_id,  # NUEVO: Incluir ID de Balena
                     "slug": slug,
                     "device_type_id": mapped_id, 
                     "device_count": f.get("device_count", 0) 

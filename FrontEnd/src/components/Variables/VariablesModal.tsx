@@ -86,7 +86,7 @@ const VariablesModal = ({ deviceUuid, deviceName, variables, onClose, onUpdate }
                 {/* Header */}
                 <div className={styles.modalHeader}>
                     <div className={styles.headerTitle}>
-                        <Settings size={24} color="#a855f7" />
+                        <Settings size={24} color="#00C8FF" />
                         <h2>Variables del Dispositivo</h2>
                     </div>
                     <button className={styles.closeBtn} onClick={onClose}>

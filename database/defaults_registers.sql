@@ -1645,8 +1645,8 @@ INSERT INTO inspector.DeviceType (strDeviceNameType, strDeviceSlug, strCpuArchit
 ('Zynq ZC702 (DISCONTINUED)', 'zynq-xz702', 'aarch64', NOW());
 
 INSERT INTO inspector.InspectorFleets
-(stridInspectorFleet, strSlug, idDeviceType, intDeviceCount, dtCreate, dtModificationDate)VALUES
-('DEFAULT', 'DEFAULT', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+(stridInspectorFleet, intIdBalenaFleet, strSlug, idDeviceType, intDeviceCount, dtCreate, dtModificationDate)VALUES
+('DEFAULT', 0, 'DEFAULT', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (stridInspectorFleet) DO NOTHING;
 
 

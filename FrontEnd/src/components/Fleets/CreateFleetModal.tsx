@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus } from 'lucide-react';
 import { fleetService, CreateFleetPayload, DeviceType } from '../../features/fleets/fleetService';
+import CustomDropdown from './CustomDropdown';
 import styles from './CreateFleetModal.module.css';
 
 interface Props {
@@ -71,7 +72,7 @@ const CreateFleetModal: React.FC<Props> = ({ onClose, onSuccess }) => {
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
                 <header className={styles.header}>
                     <div className={styles.title}>
-                        <Plus size={24} />
+                        <Plus size={24} color="#00C8FF" />
                         <h2>Crear Nueva Flota</h2>
                     </div>
                     <button className={styles.closeBtn} onClick={onClose}>
@@ -98,26 +99,16 @@ const CreateFleetModal: React.FC<Props> = ({ onClose, onSuccess }) => {
 
                     <div className={styles.field}>
                         <label htmlFor="device_type_id">Tipo de Dispositivo *</label>
-                        <select
-                            id="device_type_id"
+                        <CustomDropdown
+                            options={deviceTypes.map(type => ({
+                                value: type.iddevicetype,
+                                label: type.strdevicenametype
+                            }))}
                             value={formData.device_type_id}
-                            onChange={(e) => setFormData({ ...formData, device_type_id: parseInt(e.target.value) })}
-                            required
-                            className={styles.select}
-                            disabled={loadingDeviceTypes}
-                        >
-                            {loadingDeviceTypes ? (
-                                <option value={0}>Cargando tipos...</option>
-                            ) : deviceTypes.length === 0 ? (
-                                <option value={0}>No hay tipos disponibles</option>
-                            ) : (
-                                deviceTypes.map(type => (
-                                    <option key={type.iddevicetype} value={type.iddevicetype}>
-                                        {type.strdevicenametype}
-                                    </option>
-                                ))
-                            )}
-                        </select>
+                            onChange={(value) => setFormData({ ...formData, device_type_id: value })}
+                            placeholder={loadingDeviceTypes ? "Cargando tipos..." : "Seleccionar tipo de dispositivo"}
+                            disabled={loadingDeviceTypes || deviceTypes.length === 0}
+                        />
                     </div>
 
                     <div className={styles.field}>

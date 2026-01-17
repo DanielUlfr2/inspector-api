@@ -12,6 +12,36 @@ import CustomDatePicker from '../../components/DateRange/CustomDatePicker';
 
 import styles from './Dashboard.module.css';
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        // Obtenemos el timestamp real del objeto de datos (payload) en lugar del label formateado
+        const dataPoint = payload[0].payload;
+        const dateObj = new Date(dataPoint.timestamp);
+
+        return (
+            <div className={styles.customTooltip}>
+                <p className={styles.tooltipLabel}>
+                    {dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    <span style={{ fontSize: '0.8em', fontWeight: 'normal', marginLeft: '0.5rem', opacity: 0.7 }}>
+                        ({dateObj.toLocaleDateString()})
+                    </span>
+                </p>
+                {payload.map((entry: any) => (
+                    <div key={entry.name} className={styles.tooltipItem} style={{ color: entry.color }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: entry.color }}></div>
+                            {entry.name}:
+                        </span>
+                        <span style={{ fontWeight: 600 }}>{entry.value}</span>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+    return null;
+};
+
+
 const Dashboard = () => {
     const [stats, setStats] = useState<GlobalStat[]>([]);
     // 1. Separamos los loadings
@@ -202,28 +232,8 @@ const Dashboard = () => {
                                     dx={-10}
                                 />
                                 <Tooltip
-                                    contentStyle={{
-                                        borderRadius: '16px',
-                                        border: document.documentElement.getAttribute('data-theme') === 'dark'
-                                            ? '1px solid #333'
-                                            : '1px solid #e5e7eb',
-                                        background: document.documentElement.getAttribute('data-theme') === 'dark'
-                                            ? '#0a0a0a'
-                                            : '#ffffff',
-                                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                        padding: '16px',
-                                        fontWeight: 500,
-                                        color: document.documentElement.getAttribute('data-theme') === 'dark'
-                                            ? '#e5e5e5'
-                                            : '#111827'
-                                    }}
-                                    labelStyle={{
-                                        color: document.documentElement.getAttribute('data-theme') === 'dark'
-                                            ? '#e5e5e5'
-                                            : '#111827',
-                                        fontWeight: 600,
-                                        marginBottom: '8px'
-                                    }}
+                                    content={<CustomTooltip />}
+                                    cursor={{ stroke: '#6b7280', strokeWidth: 1, strokeDasharray: '4 4' }}
                                 />
                                 <Legend verticalAlign="top" height={40} iconType="circle" />
                                 <Line

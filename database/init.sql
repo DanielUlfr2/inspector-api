@@ -167,6 +167,7 @@ CREATE TABLE DeviceType (
 
 CREATE TABLE InspectorFleets (
   stridInspectorFleet varchar(50) PRIMARY KEY,
+  intIdBalenaFleet INTEGER NOT NULL UNIQUE,
   strSlug varchar(50) NOT NULL,
   idDeviceType int NOT NULL,
   intDeviceCount INT NOT NULL DEFAULT 0,

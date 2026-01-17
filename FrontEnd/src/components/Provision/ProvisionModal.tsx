@@ -27,7 +27,7 @@ const ProvisionModal: React.FC<Props> = ({ device, onSuccess }) => {
     return (
         <div className={styles.container}>
             <header className={styles.header}>
-                <Info size={20} color="#a855f7" />
+                <Info size={20} color="#00377B" />
                 <h2>Panel de Provisión e Inventario</h2>
             </header>
 

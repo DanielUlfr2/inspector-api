@@ -62,18 +62,61 @@
     border: 1px solid var(--accent);
 }
 
-/* Estilos específicos por acción (Mantenemos los colores semánticos en hover para feedback visual) */
-.group button:nth-child(1):hover {
-    background: #6366f1;
-    color: white;
-    border-color: #6366f1;
+/* Restart -> Tigo Dark Blue */
+.group button:nth-child(1) {
+    background: rgba(0, 55, 123, 0.1);
+    color: #00377B;
+    border: 1px solid rgba(0, 55, 123, 0.2);
 }
 
-/* Reboot -> Amber */
-.group button:nth-child(2):hover {
-    background: #f59e0b;
+.group button:nth-child(1):hover {
+    background: #00377B;
     color: white;
-    border-color: #f59e0b;
+    border-color: #00377B;
+    box-shadow: 0 4px 12px rgba(0, 55, 123, 0.3);
+}
+
+/* Dark Mode Adaptation for Restart */
+:global([data-theme='dark']) .group button:nth-child(1) {
+    background: rgba(0, 200, 255, 0.1);
+    /* Cyan tint instead of too-dark blue */
+    color: #00C8FF;
+    border-color: rgba(0, 200, 255, 0.2);
+}
+
+:global([data-theme='dark']) .group button:nth-child(1):hover {
+    background: #00377B;
+    /* Solid Tigo Blue on hover */
+    color: white;
+    border-color: #00C8FF;
+    /* Cyan border for visibility */
+}
+
+/* Reboot -> Tigo Yellow */
+.group button:nth-child(2) {
+    background: rgba(255, 190, 3, 0.15);
+    color: #854d0e;
+    /* Darker orange/brown for legibility on light bg */
+    border: 1px solid rgba(255, 190, 3, 0.4);
+}
+
+.group button:nth-child(2):hover {
+    background: #FFBE03;
+    color: #000000;
+    /* Black text on yellow for contrast */
+    border-color: #FFBE03;
+    box-shadow: 0 4px 12px rgba(255, 190, 3, 0.4);
+}
+
+/* Dark Mode Adaptation for Reboot */
+:global([data-theme='dark']) .group button:nth-child(2) {
+    color: #FFBE03;
+    border-color: rgba(255, 190, 3, 0.3);
+}
+
+:global([data-theme='dark']) .group button:nth-child(2):hover {
+    background: #FFBE03;
+    color: #000000;
 }
 
 /* Botón de Shutdown (Peligro) */

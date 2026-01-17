@@ -28,8 +28,8 @@ const FleetActionsMenu: React.FC<Props> = ({ fleetId }) => {
             setShowRenameModal(false);
             setNewName('');
 
-            // Navigate to the new fleet name to keep URL in sync
-            navigate(`/fleets/${newName}`);
+            // Navigate and reload in one step for cleaner transition
+            window.location.href = `/fleets/${newName}`;
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Error al renombrar la flota');
         } finally {

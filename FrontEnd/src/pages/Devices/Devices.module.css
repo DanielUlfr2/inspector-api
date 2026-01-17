@@ -47,8 +47,8 @@
 }
 
 .searchInput:focus {
-    border-color: #a855f7;
-    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+    border-color: #00377B;
+    box-shadow: 0 0 0 3px rgba(0, 55, 123, 0.1);
 }
 
 /* Tabla */
@@ -133,7 +133,7 @@
 
 .refreshBtn:hover {
     background: #f8fafc;
-    color: #a855f7;
+    color: #00377B;
 }
 
 .spin {
@@ -170,7 +170,7 @@
 }
 
 .columnInput:focus {
-    border-color: #a855f7;
+    border-color: #00377B;
 }
 
 .columnSelect {
@@ -184,7 +184,7 @@
 }
 
 .columnSelect:focus {
-    border-color: #a855f7;
+    border-color: #00377B;
 }
 
 /* Ajuste para que la tabla no se vea apretada */
@@ -291,7 +291,7 @@
 }
 
 :global([data-theme='dark']) .searchInput:focus {
-    border-color: #a855f7;
+    border-color: #00C8FF;
     background: #1a1a1a;
 }
 
@@ -312,7 +312,7 @@
 
 :global([data-theme='dark']) .refreshBtn:hover {
     background: #1a1a1a;
-    color: #a855f7;
+    color: #00C8FF;
 }
 
 /* Contenedor de la tabla */
@@ -348,7 +348,7 @@
 }
 
 :global([data-theme='dark']) .columnInput:focus {
-    border-color: #a855f7;
+    border-color: #00C8FF;
     background: #1a1a1a;
 }
 
@@ -364,7 +364,7 @@
 }
 
 :global([data-theme='dark']) .columnSelect:focus {
-    border-color: #a855f7;
+    border-color: #00C8FF;
 }
 
 /* Badge de flota */

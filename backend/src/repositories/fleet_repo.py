@@ -22,14 +22,16 @@ class FleetRepository:
         query = """
             INSERT INTO inspector.InspectorFleets (
                 stridInspectorFleet, 
+                intIdBalenaFleet,
                 strSlug, 
                 idDeviceType, 
                 intDeviceCount, 
                 dtCreate, 
                 dtModificationDate
-            ) VALUES ($1, $2, $3, $4, NOW(), NOW())
-            ON CONFLICT (stridInspectorFleet) 
+            ) VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+            ON CONFLICT (intIdBalenaFleet) 
             DO UPDATE SET 
+                stridInspectorFleet = EXCLUDED.stridInspectorFleet,
                 strSlug = EXCLUDED.strSlug,
                 idDeviceType = EXCLUDED.idDeviceType,
                 intDeviceCount = EXCLUDED.intDeviceCount,
@@ -38,7 +40,8 @@ class FleetRepository:
         
         values = [
             (
-                f["id"], 
+                f["id"],
+                f.get("balena_id"),
                 f["slug"], 
                 f["device_type_id"], 
                 f.get("device_count", 0)
@@ -170,11 +173,18 @@ class FleetRepository:
     async def delete_fleet(fleet_id: str):
         """
         Elimina la flota. (El servicio ya debió verificar que count == 0)
+        IMPORTANTE: Primero elimina las variables de la flota para evitar violación de FK.
         """
-        query = "DELETE FROM inspector.inspectorfleets WHERE stridinspectorfleet = $1"
         conn = await PostgresConnector.get_connection()
         try:
-            await conn.execute(query, fleet_id)
+            # 1. Primero eliminar las variables de la flota
+            query_delete_vars = "DELETE FROM inspector.inspectorfleetsvariables WHERE stridinspectorfleet = $1"
+            await conn.execute(query_delete_vars, fleet_id)
+            logger.info(f"✅ DB: Variables de flota {fleet_id} eliminadas.")
+            
+            # 2. Luego eliminar la flota
+            query_delete_fleet = "DELETE FROM inspector.inspectorfleets WHERE stridinspectorfleet = $1"
+            await conn.execute(query_delete_fleet, fleet_id)
             logger.info(f"✅ DB: Flota {fleet_id} eliminada.")
             return True
         except Exception as e:

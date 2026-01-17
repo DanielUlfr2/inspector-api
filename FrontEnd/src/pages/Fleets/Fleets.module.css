@@ -62,7 +62,12 @@
 
 .refreshBtn:hover {
     background: #f1f5f9;
-    color: #0f172a;
+    color: #00377B;
+}
+
+[data-theme="dark"] .refreshBtn:hover {
+    background: #1a1a1a;
+    color: #00C8FF;
 }
 
 .createBtn {
@@ -70,7 +75,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #a855f7;
+    background: #00377B;
+    /* Tigo Blue */
     color: white;
     border: none;
     border-radius: 0.5rem;
@@ -81,9 +87,22 @@
 }
 
 .createBtn:hover {
-    background: #9333ea;
+    background: #002a5e;
+    /* Darker Blue */
     transform: translateY(-1px);
-    box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(0, 55, 123, 0.4);
+}
+
+[data-theme="dark"] .createBtn {
+    background: #00377B;
+    border: 1px solid #00C8FF;
+    /* Cyan border pop */
+}
+
+[data-theme="dark"] .createBtn:hover {
+    background: #00C8FF;
+    color: #000;
+    border-color: #00C8FF;
 }
 
 .viewToggle {
