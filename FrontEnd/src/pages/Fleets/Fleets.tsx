@@ -72,7 +72,7 @@ const Fleets: React.FC = () => {
                             {/* Header con icono y nombre */}
                             <div className={styles.cardHeader}>
                                 <div className={styles.fleetIcon}>
-                                    <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                    <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scaleX(-1)' }} />
                                 </div>
                                 <div className={styles.fleetInfo}>
                                     <h3 className={styles.fleetName}>{fleet.id}</h3>

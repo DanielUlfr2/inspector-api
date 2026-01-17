@@ -18,7 +18,7 @@ export const FleetCard: React.FC<Props> = ({ fleet }) => {
         <div className={styles.card} onClick={() => navigate(`/flotas/${fleet.id}`)}>
             <div className={styles.header}>
                 <div className={styles.iconContainer}>
-                    <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scaleX(-1)' }} />
                 </div>
                 <div className={styles.titleInfo}>
                     <h3>{fleet.id}</h3>

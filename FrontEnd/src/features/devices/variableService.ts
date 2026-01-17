@@ -30,6 +30,11 @@ export const variableService = {
         return await apiClient.delete(url);
     },
 
+    async getFleetVariables(fleetSlug: string) {
+        const url = `${API_BASE}${CONFIG_PATH}/fleet/${encodeURIComponent(fleetSlug)}/variables`;
+        return await apiClient.get(url);
+    },
+
     async getDeviceVariables(uuid: string) {
         const url = `${API_BASE}${CONFIG_PATH}/device/${uuid}/variables`;
         return await apiClient.get(url);

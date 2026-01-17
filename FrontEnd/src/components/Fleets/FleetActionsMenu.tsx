@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit2, Trash2, Settings } from 'lucide-react';
 import { fleetService } from '../../features/fleets/fleetService';
 import { useNavigate } from 'react-router-dom';
 import styles from './FleetActionsMenu.module.css';
 
 interface Props {
     fleetId: string;
+    onVariablesClick?: () => void;
 }
 
-const FleetActionsMenu: React.FC<Props> = ({ fleetId }) => {
+const FleetActionsMenu: React.FC<Props> = ({ fleetId, onVariablesClick }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [showRenameModal, setShowRenameModal] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -60,6 +61,16 @@ const FleetActionsMenu: React.FC<Props> = ({ fleetId }) => {
                 <>
                     <div className={styles.overlay} onClick={() => setIsOpen(false)} />
                     <div className={styles.menu}>
+                        <button
+                            className={styles.menuItem}
+                            onClick={() => {
+                                onVariablesClick?.();
+                                setIsOpen(false);
+                            }}
+                        >
+                            <Settings size={16} />
+                            <span>Variables de Flota</span>
+                        </button>
                         <button
                             className={styles.menuItem}
                             onClick={() => {

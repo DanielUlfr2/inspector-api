@@ -9,9 +9,10 @@ interface Props {
     variables: Variable[];
     onClose: () => void;
     onUpdate: () => void;
+    entityType?: 'device' | 'fleet'; // New prop to distinguish between device and fleet
 }
 
-const VariablesModal = ({ deviceUuid, deviceName, variables, onClose, onUpdate }: Props) => {
+const VariablesModal = ({ deviceUuid, deviceName, variables, onClose, onUpdate, entityType = 'device' }: Props) => {
     const [loading, setLoading] = useState(false);
     const [newVar, setNewVar] = useState({ name: '', value: '' });
     const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -22,7 +23,11 @@ const VariablesModal = ({ deviceUuid, deviceName, variables, onClose, onUpdate }
         if (!newVar.name || !newVar.value) return;
         setLoading(true);
         try {
-            await variableService.setDeviceVariable(deviceUuid, newVar);
+            if (entityType === 'fleet') {
+                await variableService.setFleetVariable(deviceUuid, newVar);
+            } else {
+                await variableService.setDeviceVariable(deviceUuid, newVar);
+            }
             setNewVar({ name: '', value: '' });
             onUpdate();
         } catch (error: any) {
@@ -44,7 +49,11 @@ const VariablesModal = ({ deviceUuid, deviceName, variables, onClose, onUpdate }
     const handleSaveEdit = async (key: string) => {
         setLoading(true);
         try {
-            await variableService.setDeviceVariable(deviceUuid, { name: key, value: editValue });
+            if (entityType === 'fleet') {
+                await variableService.setFleetVariable(deviceUuid, { name: key, value: editValue });
+            } else {
+                await variableService.setDeviceVariable(deviceUuid, { name: key, value: editValue });
+            }
             setEditingKey(null);
             onUpdate();
         } catch (error: any) {
@@ -67,7 +76,11 @@ const VariablesModal = ({ deviceUuid, deviceName, variables, onClose, onUpdate }
         if (!confirm(`¿Estás seguro de eliminar la variable "${key}"?`)) return;
         setLoading(true);
         try {
-            await variableService.deleteDeviceVariable(deviceUuid, key);
+            if (entityType === 'fleet') {
+                await variableService.deleteFleetVariable(deviceUuid, key);
+            } else {
+                await variableService.deleteDeviceVariable(deviceUuid, key);
+            }
             onUpdate();
         } catch (error: any) {
             if (error.response && (error.response.status === 401 || error.response.status === 403)) {
@@ -87,7 +100,7 @@ const VariablesModal = ({ deviceUuid, deviceName, variables, onClose, onUpdate }
                 <div className={styles.modalHeader}>
                     <div className={styles.headerTitle}>
                         <Settings size={24} color="#00C8FF" />
-                        <h2>Variables del Dispositivo</h2>
+                        <h2>{entityType === 'fleet' ? 'Variables de la Flota' : 'Variables del Dispositivo'}</h2>
                     </div>
                     <button className={styles.closeBtn} onClick={onClose}>
                         <X size={24} />

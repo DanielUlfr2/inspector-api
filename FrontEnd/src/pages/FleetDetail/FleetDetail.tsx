@@ -3,11 +3,13 @@ import { useParams } from 'react-router-dom';
 import { RefreshCw, Monitor, Wifi, WifiOff, AlertCircle, AlertTriangle, ExternalLink, Search } from 'lucide-react';
 import { deviceService } from '../../features/devices/deviceService';
 import { fleetService } from '../../features/fleets/fleetService';
+import { variableService, Variable } from '../../features/devices/variableService';
 import { Device } from '../../types/device';
 import { Fleet } from '../../types/fleet';
 import { getDeviceRealStatus } from '../../utils/deviceStatus';
 import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
 import FleetActionsMenu from '../../components/Fleets/FleetActionsMenu';
+import VariablesModal from '../../components/Variables/VariablesModal';
 import { Link } from 'react-router-dom';
 import FlotasIcon from '../../assets/icons/Flotas.png';
 import styles from './FleetDetail.module.css';
@@ -19,6 +21,8 @@ const FleetDetail: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [selectedUuids, setSelectedUuids] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [showVariablesModal, setShowVariablesModal] = useState(false);
+    const [fleetVariables, setFleetVariables] = useState<Variable[]>([]);
 
     // Filtros por columna
     const [columnFilters, setColumnFilters] = useState({
@@ -46,6 +50,30 @@ const FleetDetail: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchFleetVariables = async () => {
+        if (!fleetId) return;
+        try {
+            const response = await variableService.getFleetVariables(fleetId);
+            setFleetVariables(response.data?.variables || []);
+        } catch (error) {
+            console.error("Error al cargar variables de la flota:", error);
+            setFleetVariables([]);
+        }
+    };
+
+    const handleOpenVariables = async () => {
+        await fetchFleetVariables();
+        setShowVariablesModal(true);
+    };
+
+    const handleCloseVariables = () => {
+        setShowVariablesModal(false);
+    };
+
+    const handleUpdateVariables = async () => {
+        await fetchFleetVariables();
     };
 
     useEffect(() => {
@@ -159,7 +187,7 @@ const FleetDetail: React.FC = () => {
             <div className={styles.fleetHeader}>
                 <div className={styles.fleetInfo}>
                     <div className={styles.fleetIcon}>
-                        <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '60%', height: '60%', objectFit: 'contain' }} />
+                        <img src={FlotasIcon} alt="Fleet Icon" style={{ width: '60%', height: '60%', objectFit: 'contain', transform: 'scaleX(-1)' }} />
                     </div>
                     <div className={styles.fleetDetails}>
                         <h1 className={styles.fleetName}>{fleetData?.id || fleetId}</h1>
@@ -224,6 +252,7 @@ const FleetDetail: React.FC = () => {
 
                 <FleetActionsMenu
                     fleetId={fleetId!}
+                    onVariablesClick={handleOpenVariables}
                 />
             </div>
 
@@ -345,6 +374,18 @@ const FleetDetail: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Variables Modal */}
+            {showVariablesModal && fleetData && (
+                <VariablesModal
+                    deviceUuid={fleetId!}
+                    deviceName={fleetData.id}
+                    variables={fleetVariables}
+                    onClose={handleCloseVariables}
+                    onUpdate={handleUpdateVariables}
+                    entityType="fleet"
+                />
+            )}
         </div>
     );
 };
