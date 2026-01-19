@@ -12,18 +12,24 @@ import CustomDatePicker from '../../components/DateRange/CustomDatePicker';
 
 import styles from './Dashboard.module.css';
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
         // Obtenemos el timestamp real del objeto de datos (payload) en lugar del label formateado
         const dataPoint = payload[0].payload;
-        const dateObj = new Date(dataPoint.timestamp);
+        const rawTimestamp = dataPoint.timestamp.endsWith('Z') ? dataPoint.timestamp.slice(0, -1) : dataPoint.timestamp;
+        const dateObj = new Date(rawTimestamp);
 
         return (
             <div className={styles.customTooltip}>
                 <p className={styles.tooltipLabel}>
-                    {dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {dateObj.toLocaleTimeString('es-CO', {
+                        timeZone: 'America/Bogota',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                    })}
                     <span style={{ fontSize: '0.8em', fontWeight: 'normal', marginLeft: '0.5rem', opacity: 0.7 }}>
-                        ({dateObj.toLocaleDateString()})
+                        ({dateObj.toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })})
                     </span>
                 </p>
                 {payload.map((entry: any) => (

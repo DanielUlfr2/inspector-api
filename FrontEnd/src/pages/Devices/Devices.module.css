@@ -97,9 +97,19 @@
     color: #15803d;
 }
 
+[data-theme="dark"] .online {
+    background: rgba(21, 128, 61, 0.2);
+    color: #4ade80;
+}
+
 .offline {
     background: #fee2e2;
     color: #b91c1c;
+}
+
+[data-theme="dark"] .offline {
+    background: rgba(185, 28, 28, 0.2);
+    color: #f87171;
 }
 
 .fleetBadge {
@@ -196,26 +206,42 @@
 
 .reduced {
     background: #fff7ed;
-    /* Naranja muy claro */
     color: #f59e0b;
-    /* Naranja Dashboard */
     border: 1px solid #ffedd5;
+}
+
+[data-theme="dark"] .reduced {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.3);
 }
 
 .reduced svg {
     color: #f59e0b;
 }
 
+[data-theme="dark"] .reduced svg {
+    color: #fbbf24;
+}
+
 .libre {
     background: #faf5ff;
-    /* Púrpura muy claro */
     color: #a855f7;
-    /* Púrpura */
     border: 1px solid #f3e8ff;
+}
+
+[data-theme="dark"] .libre {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.3);
 }
 
 .libre svg {
     color: #a855f7;
+}
+
+[data-theme="dark"] .libre svg {
+    color: #c084fc;
 }
 
 /* Estado desconocido por si llega algo raro en el JSON */
@@ -223,6 +249,12 @@
     background: #f1f5f9;
     color: #64748b;
     border: 1px solid #e2e8f0;
+}
+
+[data-theme="dark"] .unknown {
+    background: #1e293b;
+    color: #94a3b8;
+    border-color: #333;
 }
 
 /* src/pages/Devices/Devices.module.css */

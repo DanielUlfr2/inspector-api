@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { RefreshCw, Monitor, Wifi, WifiOff, AlertCircle, AlertTriangle, ExternalLink, Search } from 'lucide-react';
+import { RefreshCw, Monitor, Wifi, WifiOff, AlertCircle, AlertTriangle, ExternalLink, Search, ArrowLeft } from 'lucide-react';
 import { deviceService } from '../../features/devices/deviceService';
 import { fleetService } from '../../features/fleets/fleetService';
 import { variableService, Variable } from '../../features/devices/variableService';
@@ -10,12 +10,13 @@ import { getDeviceRealStatus } from '../../utils/deviceStatus';
 import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
 import FleetActionsMenu from '../../components/Fleets/FleetActionsMenu';
 import VariablesModal from '../../components/Variables/VariablesModal';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import FlotasIcon from '../../assets/icons/Flotas.png';
 import styles from './FleetDetail.module.css';
 
 const FleetDetail: React.FC = () => {
     const { fleetId } = useParams<{ fleetId: string }>();
+    const navigate = useNavigate();
     const [devices, setDevices] = useState<Device[]>([]);
     const [fleetData, setFleetData] = useState<Fleet | null>(null);
     const [loading, setLoading] = useState(true);
@@ -183,6 +184,13 @@ const FleetDetail: React.FC = () => {
 
     return (
         <div className={styles.container}>
+            {/* 1. NAVEGACIÓN */}
+            <nav className={styles.topNav}>
+                <button onClick={() => navigate('/fleets')} className={styles.backBtn}>
+                    <ArrowLeft size={20} /> Volver a lista de flotas
+                </button>
+            </nav>
+
             {/* Fleet Info Header */}
             <div className={styles.fleetHeader}>
                 <div className={styles.fleetInfo}>

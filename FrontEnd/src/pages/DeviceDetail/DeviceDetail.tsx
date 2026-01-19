@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
     Globe, Clipboard, Check, Terminal, Settings,
-    Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X, BarChart2
+    Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X, BarChart2, Trash2
 } from 'lucide-react';
 
 import { deviceService } from '../../features/devices/deviceService';
@@ -15,6 +15,7 @@ import ProvisionModal from '../../components/Provision/ProvisionModal';
 import HistoryModal from '../../components/History/HistoryModal';
 import DeviceNotes from '../../components/Notes/DeviceNotes';
 import VariablesModal from '../../components/Variables/VariablesModal';
+import DeleteConfirmationModal from '../../components/Common/DeleteConfirmationModal';
 import { Variable } from '../../types/device';
 import { variableService } from '../../features/devices/variableService';
 
@@ -33,6 +34,9 @@ const DeviceDetail = () => {
     const [showMoreInfo, setShowMoreInfo] = useState(false);
     const [historyMetric, setHistoryMetric] = useState<'cpu' | 'ram' | 'disk' | 'temp' | 'all' | null>(null);
     const [isVariablesOpen, setIsVariablesOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     // Estados de Variables
     const [deviceVariables, setDeviceVariables] = useState<Variable[]>([]);
@@ -131,6 +135,22 @@ const DeviceDetail = () => {
         setTimeout(() => setCopiedKey(null), 2000);
     };
 
+    const handleDeleteDevice = async () => {
+        if (!uuid) return;
+        setDeleteLoading(true);
+        setDeleteError(null);
+        try {
+            await deviceService.deleteDevice(uuid);
+            setIsDeleteModalOpen(false);
+            navigate('/devices'); // Redirigir a la lista
+        } catch (error: any) {
+            console.error('Error eliminando dispositivo:', error);
+            setDeleteError(error.response?.data?.detail || error.message || "Error desconocido al eliminar.");
+        } finally {
+            setDeleteLoading(false);
+        }
+    };
+
     if (loading) return <div className={styles.loadingState}>Sincronizando con Inspector...</div>;
     if (!device) return <div className={styles.errorState}>Dispositivo no encontrado.</div>;
 
@@ -163,6 +183,15 @@ const DeviceDetail = () => {
                         <button className={styles.infoToggleBtn} onClick={() => setIsVariablesOpen(true)}>
                             <Settings size={16} />
                             Variables
+                        </button>
+
+                        <button
+                            className={`${styles.infoToggleBtn} ${styles.dangerBtn}`}
+                            onClick={() => setIsDeleteModalOpen(true)}
+                            title="Eliminar Dispositivo"
+                            style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                        >
+                            <Trash2 size={16} />
                         </button>
                     </div>
                 </div>
@@ -368,6 +397,24 @@ const DeviceDetail = () => {
                     onUpdate={loadData}
                 />
             )}
+
+            {/* 8. MODAL DE ELIMINACIÓN */}
+            <DeleteConfirmationModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDeleteDevice}
+                title="Eliminar Dispositivo"
+                message={
+                    <span>
+                        ¿Estás seguro de que deseas eliminar permanentemente el dispositivo <strong>{device.strinspectorname}</strong> ({device.uuidinspector})?
+                        <br /><br />
+                        Esta acción<strong> borrará el equipo de Balena Cloud</strong> y de la base de datos local.
+                        El historial de métricas se conservará.
+                    </span>
+                }
+                loading={deleteLoading}
+                error={deleteError}
+            />
         </div>
     );
 };

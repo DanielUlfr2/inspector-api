@@ -1719,7 +1719,8 @@ insert into inspector.ScriptTransaction (strscriptid, strscriptdescription, dtla
 ('MANUAL_SET_VAR_INSPECTOR', 'Setea las variables tanto de las flotas como los inspectors', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('AUTOMATIC_COLLECTION_VARS_INSPECTOR', 'Script de colecta variables relacionada a el inspector de manera automatica.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
 ('MANUAL_COLLECTION_VARS_INSPECTOR', 'Script de colecta variables relacionada a el inspector de manera manual.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
-('MANUAL_SET_NOTE_INSPECTOR', 'Asignación manual de nota o comentario al inspector.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
+('MANUAL_SET_NOTE_INSPECTOR', 'Asignación manual de nota o comentario al inspector.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+('MANUAL_DELETE_INSPECTOR', 'Eliminación manual de dispositivo desde la plataforma', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1);
 
 INSERT INTO inspector.StatusInspectorHistory(uuidInspector, idtransactionstatus, boolOnline, intHistoryMemoryUsageMB, intHistoryMemoryTotalMB,
 intHistoryStorageUsageMB, intHistoryStorageTotalMB, intHistoryCpuUsagePercent, intHistoryCpuTempC, idHistoricScript, dtValidate) VALUES 

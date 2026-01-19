@@ -314,7 +314,6 @@ CREATE TABLE StatusInspectorHistory (
   idHistoricScript BIGINT NOT NULL,
   dtValidate timestamp NOT NULL,
   CONSTRAINT fk_statushistory_inspector FOREIGN KEY (uuidInspector) REFERENCES Inspector (uuidInspector),
-  CONSTRAINT fk_statushistory_transactionstatus FOREIGN KEY (idTransactionStatus) REFERENCES TransactionStatus (idTransactionStatus),
   CONSTRAINT pk_constraint_statusinsphist PRIMARY KEY (idInspectorHistory, dtValidate) 
 ) PARTITION BY RANGE (dtValidate);
 

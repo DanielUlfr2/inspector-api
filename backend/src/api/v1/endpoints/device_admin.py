@@ -120,3 +120,18 @@ async def get_device_logs_stream(
     }
     
     return StreamingResponse(log_generator, media_type="text/event-stream", headers=headers)
+
+@router.delete("/{uuid}")
+async def delete_device_endpoint(
+    uuid: str,
+    x_user_id: str = Header("SYSTEM", alias="X-User-Id"), 
+    x_role: str = Header("SYSTEM", alias="X-Role")
+):
+    """
+    Elimina un dispositivo de la base de datos y de Balena Cloud.
+    Mantiene el historial de métricas.
+    """
+    result = await DeviceAdminService.remove_device(uuid, user=x_user_id, role=x_role)
+    if not result["success"]:
+        raise HTTPException(status_code=400, detail=result["message"])
+    return result

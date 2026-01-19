@@ -122,5 +122,16 @@ export const deviceService = {
         const url = `${API_BASE}${ADMIN_PATH}/${uuid}/provision`;
         const response = await apiClient.post(url, data);
         return response.data;
+    },
+
+    /**
+     * NUEVO: Elimina un dispositivo (BD + Balena)
+     */
+    async deleteDevice(uuid: string): Promise<any> {
+        // Endpoint configurado en KrakenD: DELETE /v1/admin/{uuid}
+        // Backend Real: DELETE /api/v1/admin/{uuid}
+        const url = `${API_BASE}${ADMIN_PATH}/${uuid}`;
+        const response = await apiClient.delete(url);
+        return response.data;
     }
 };

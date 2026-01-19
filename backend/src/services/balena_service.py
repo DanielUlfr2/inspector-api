@@ -322,6 +322,31 @@ class BalenaService:
         except Exception as e:
             yield f"data: ❌ Internal Error streaming logs: {str(e)}\n\n"
 
+    @staticmethod
+    def remove_device(uuid: str) -> bool:
+        """
+        Elimina el dispositivo de Balena Cloud.
+        Comando: balena device rm <uuid> --yes
+        """
+        try:
+            logger.info(f"🗑️ Eliminando dispositivo {uuid} de Balena Cloud...")
+            subprocess.run(
+                ["balena", "device", "rm", uuid, "--yes"],
+                check=True, capture_output=True, text=True
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            err_msg = e.stderr.strip()
+            out_msg = e.stdout.strip()
+            
+            # Idempotencia: Si ya no existe, asumimos éxito para limpiar BD local
+            if "Device not found" in err_msg or "Device not found" in out_msg:
+                logger.warning(f"⚠️ Dispositivo {uuid} no encontrado en Balena. Procediendo a eliminación local.")
+                return True
+                
+            logger.error(f"❌ Error borrando device {uuid} en Balena (Exit {e.returncode}).\nSTDERR: {err_msg}\nSTDOUT: {out_msg}")
+            return False
+
     # ==========================================
     # 👇 METADATA (Notas)
     # ==========================================

@@ -6,6 +6,27 @@
     gap: 1.5rem;
 }
 
+/* Navigation */
+.topNav {
+    margin-bottom: 1.5rem;
+}
+
+.backBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.backBtn:hover {
+    color: var(--accent);
+}
+
 /* Fleet Header Section */
 .fleetHeader {
     background: white;

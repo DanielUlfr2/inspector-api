@@ -1,0 +1,218 @@
+/* ========== CAROUSEL CONTAINER ========== */
+.carouselContainer {
+    margin: 40px 0;
+    position: relative;
+}
+
+.carouselWrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========== IMAGE ========== */
+.imageWrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carouselImage {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: opacity 0.3s ease;
+}
+
+/* ========== NAVIGATION BUTTONS ========== */
+.navButton {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+}
+
+.navButton:hover {
+    background: rgba(0, 217, 255, 0.8);
+    border-color: #00D9FF;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 217, 255, 0.4);
+}
+
+.navButton:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.navButtonLeft {
+    left: 16px;
+}
+
+.navButtonRight {
+    right: 16px;
+}
+
+/* ========== INDICATORS ========== */
+.indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.indicator:hover {
+    background: rgba(0, 217, 255, 0.6);
+    transform: scale(1.2);
+}
+
+.indicatorActive {
+    background: #00D9FF;
+    width: 32px;
+    border-radius: 6px;
+}
+
+/* ========== COUNTER ========== */
+.counter {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ========== AUTO-PLAY INDICATOR ========== */
+.autoPlayIndicator {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(16, 185, 129, 0.8);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    .navButton {
+        width: 40px;
+        height: 40px;
+    }
+
+    .navButtonLeft {
+        left: 8px;
+    }
+
+    .navButtonRight {
+        right: 8px;
+    }
+
+    .counter {
+        bottom: 8px;
+        right: 8px;
+        font-size: 11px;
+        padding: 4px 10px;
+    }
+
+    .autoPlayIndicator {
+        top: 8px;
+        left: 8px;
+        font-size: 10px;
+        padding: 4px 10px;
+    }
+}
+
+/* ========== LIGHT THEME ========== */
+[data-theme="light"] .carouselWrapper {
+    background: rgba(0, 0, 0, 0.02);
+    border: 2px dashed #cbd5e1;
+}
+
+[data-theme="light"] .navButton {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #cbd5e1;
+    color: #0f172a;
+}
+
+[data-theme="light"] .navButton:hover {
+    background: rgba(14, 165, 233, 0.9);
+    border-color: #0ea5e9;
+    color: #fff;
+}
+
+[data-theme="light"] .indicator {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .indicator:hover {
+    background: rgba(14, 165, 233, 0.6);
+}
+
+[data-theme="light"] .indicatorActive {
+    background: #0ea5e9;
+}
+
+[data-theme="light"] .counter {
+    background: rgba(255, 255, 255, 0.9);
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+}
+
+[data-theme="light"] .autoPlayIndicator {
+    background: rgba(16, 185, 129, 0.9);
+    color: #fff;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}

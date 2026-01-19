@@ -1,11 +1,10 @@
 .container {
     padding: 2rem;
     min-height: 100vh;
-    background-color: #f8fafc;
-}
-
-[data-theme="dark"] .container {
-    background-color: #000000;
+    width: 100%;
+    /* Ensure full width */
+    box-sizing: border-box;
+    /* Preventive fix for padding */
 }
 
 .header {
@@ -41,6 +40,13 @@
     font-weight: 600;
 }
 
+[data-theme="dark"] .badge {
+    background-color: #1e1b4b;
+    /* Dark indigo */
+    color: #818cf8;
+    /* Light indigo text */
+}
+
 .actions {
     display: flex;
     gap: 0.75rem;
@@ -63,6 +69,12 @@
 .refreshBtn:hover {
     background: #f1f5f9;
     color: #00377B;
+}
+
+[data-theme="dark"] .refreshBtn {
+    background: #000;
+    border-color: #333;
+    color: #94a3b8;
 }
 
 [data-theme="dark"] .refreshBtn:hover {
@@ -114,6 +126,11 @@
     padding: 0.25rem;
 }
 
+[data-theme="dark"] .viewToggle {
+    background: #000;
+    border-color: #333;
+}
+
 .viewToggle button {
     display: flex;
     align-items: center;
@@ -127,14 +144,28 @@
     transition: all 0.2s;
 }
 
+[data-theme="dark"] .viewToggle button {
+    color: #64748b;
+}
+
 .viewToggle button.active {
     background: #f1f5f9;
     color: #4f46e5;
 }
 
+[data-theme="dark"] .viewToggle button.active {
+    background: #1a1a1a;
+    color: #818cf8;
+}
+
 .viewToggle button:hover:not(.active) {
     background: #f8fafc;
 }
+
+[data-theme="dark"] .viewToggle button:hover:not(.active) {
+    background: #111;
+}
+
 
 .grid {
     display: grid;
@@ -220,6 +251,10 @@
     text-transform: capitalize;
 }
 
+[data-theme="dark"] .fleetType {
+    color: #64748b;
+}
+
 .deviceCount {
     display: flex;
     flex-direction: column;
@@ -246,6 +281,10 @@
     margin-top: 0.25rem;
 }
 
+[data-theme="dark"] .label {
+    color: #64748b;
+}
+
 /* Progress Bar */
 .progressBar {
     display: flex;
@@ -254,6 +293,10 @@
     background-color: #f1f5f9;
     border-radius: 9999px;
     overflow: hidden;
+}
+
+[data-theme="dark"] .progressBar {
+    background-color: #27272a;
 }
 
 .segmentOperativo {
@@ -283,6 +326,11 @@
     gap: 0.5rem;
     font-size: 0.75rem;
     color: #64748b;
+}
+
+[data-theme="dark"] .statusLegend {
+    color: #a1a1aa;
+    /* Much lighter for visibility */
 }
 
 .legendItem {
@@ -323,6 +371,10 @@
     border-top: 1px solid #f1f5f9;
 }
 
+[data-theme="dark"] .cardFooter {
+    border-top-color: #262626;
+}
+
 .updateLabel {
     font-size: 0.625rem;
     font-weight: 600;
@@ -330,7 +382,17 @@
     letter-spacing: 0.05em;
 }
 
+[data-theme="dark"] .updateLabel {
+    color: #52525b;
+    /* Zinc-600 */
+}
+
 .updateDate {
     font-size: 0.75rem;
     color: #64748b;
+}
+
+[data-theme="dark"] .updateDate {
+    color: #a1a1aa;
+    /* Zinc-400 */
 }

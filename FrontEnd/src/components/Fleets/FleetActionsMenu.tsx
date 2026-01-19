@@ -4,6 +4,8 @@ import { fleetService } from '../../features/fleets/fleetService';
 import { useNavigate } from 'react-router-dom';
 import styles from './FleetActionsMenu.module.css';
 
+import DeleteConfirmationModal from '../Common/DeleteConfirmationModal';
+
 interface Props {
     fleetId: string;
     onVariablesClick?: () => void;
@@ -134,34 +136,21 @@ const FleetActionsMenu: React.FC<Props> = ({ fleetId, onVariablesClick }) => {
             )}
 
             {/* Delete Confirmation */}
-            {showDeleteConfirm && (
-                <div className={styles.modalOverlay} onClick={() => setShowDeleteConfirm(false)}>
-                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                        <h3>Eliminar Flota</h3>
-                        <p>¿Estás seguro de que deseas eliminar la flota <strong>{fleetId}</strong>?</p>
-                        <p className={styles.warning}>Esta acción no se puede deshacer. La flota debe estar vacía para ser eliminada.</p>
-
-                        {error && <div className={styles.error}>{error}</div>}
-
-                        <div className={styles.actions}>
-                            <button
-                                onClick={() => setShowDeleteConfirm(false)}
-                                className={styles.cancelBtn}
-                                disabled={loading}
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleDelete}
-                                className={styles.deleteBtn}
-                                disabled={loading}
-                            >
-                                {loading ? 'Eliminando...' : 'Eliminar'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <DeleteConfirmationModal
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDelete}
+                title="Eliminar Flota"
+                message={
+                    <span>
+                        ¿Estás seguro de que deseas eliminar la flota <strong>{fleetId}</strong>?
+                        <br />
+                        <span className={styles.warning}>Esta acción no se puede deshacer. La flota debe estar vacía para ser eliminada.</span>
+                    </span>
+                }
+                loading={loading}
+                error={error}
+            />
         </div>
     );
 };

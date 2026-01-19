@@ -112,7 +112,7 @@ class FleetRepository:
                 END) as count_libre
             FROM inspector.InspectorFleets f
             LEFT JOIN inspector.DeviceType dt ON f.idDeviceType = dt.idDeviceType
-            LEFT JOIN inspector.Inspector i ON f.stridInspectorFleet = i.stridInspectorFleet
+            LEFT JOIN inspector.Inspector i ON f.stridInspectorFleet = i.stridInspectorFleet AND i.strInspectorName != 'ELIMINADO'
             GROUP BY f.stridInspectorFleet, f.strSlug, f.idDeviceType, f.dtCreate, f.dtModificationDate, dt.strDeviceSlug
             ORDER BY f.stridInspectorFleet ASC;
         """
@@ -162,7 +162,7 @@ class FleetRepository:
         """
         Consulta cuántos equipos existen asociados a esta flota.
         """
-        query = "SELECT COUNT(*) FROM inspector.inspector WHERE stridinspectorfleet = $1"
+        query = "SELECT COUNT(*) FROM inspector.inspector WHERE stridinspectorfleet = $1 AND strInspectorName != 'ELIMINADO'"
         conn = await PostgresConnector.get_connection()
         try:
             return await conn.fetchval(query, fleet_id)

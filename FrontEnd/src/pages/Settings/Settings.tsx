@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import keycloak from '../../features/auth/keycloakService';
-import { User, ShieldCheck, Pencil, X, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { User, Pencil, Lock, ArrowRight, AlertCircle, BookOpen } from 'lucide-react';
 import styles from './Settings.module.css';
+import Documentation from '../../components/Documentation/Documentation';
 
 const availableAvatars = [
     { id: 'avatar-01.png', label: 'Ovni' }, { id: 'avatar-02.png', label: 'Año nuevo' },
@@ -23,6 +24,9 @@ const Settings = () => {
     const [showVerifyInput, setShowVerifyInput] = useState(false);
     const [currentPass, setCurrentPass] = useState('');
     const [passError, setPassError] = useState('');
+
+    // ESTADO PARA TABS
+    const [activeTab, setActiveTab] = useState<'profile' | 'documentation'>('profile');
 
     const userInfo = {
         username: keycloak.tokenParsed?.preferred_username || '',
@@ -122,79 +126,96 @@ const Settings = () => {
             <aside className={styles.settingsSidebar}>
                 <div className={styles.sidebarSection}>
                     <p className={styles.sectionLabel}>Cuenta</p>
-                    <button className={`${styles.sideBtn} ${styles.active}`}><User size={16} /> Mi Perfil</button>
+                    <button
+                        className={`${styles.sideBtn} ${activeTab === 'profile' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('profile')}
+                    >
+                        <User size={16} /> Mi Perfil
+                    </button>
+                    <button
+                        className={`${styles.sideBtn} ${activeTab === 'documentation' ? styles.active : ''}`}
+                        onClick={() => setActiveTab('documentation')}
+                    >
+                        <BookOpen size={16} /> Documentación
+                    </button>
                 </div>
             </aside>
 
             <main className={styles.content}>
-                <section className={styles.section}>
-                    <h2 className={styles.title}>Mi Perfil</h2>
-                    <div className={styles.profileHeader}>
-                        <div className={styles.avatarContainer}>
-                            <img src={`/src/assets/avatars/${tempAvatar}`} className={styles.mainAvatar} alt="Avatar" />
-                            <button className={styles.editBadge} onClick={() => setIsPickerOpen(!isPickerOpen)}><Pencil size={14} /></button>
-                            {isPickerOpen && (
-                                <div className={styles.avatarDropdown} ref={pickerRef}>
-                                    <div className={styles.avatarGrid}>
-                                        {availableAvatars.map((av) => (
-                                            <div key={av.id} className={`${styles.gridItem} ${tempAvatar === av.id ? styles.selected : ''}`} onClick={() => setTempAvatar(av.id)}>
-                                                <img src={`/src/assets/avatars/${av.id}`} alt={av.label} />
+                {activeTab === 'profile' ? (
+                    <>
+                        <section className={styles.section}>
+                            <h2 className={styles.title}>Mi Perfil</h2>
+                            <div className={styles.profileHeader}>
+                                <div className={styles.avatarContainer}>
+                                    <img src={`/src/assets/avatars/${tempAvatar}`} className={styles.mainAvatar} alt="Avatar" />
+                                    <button className={styles.editBadge} onClick={() => setIsPickerOpen(!isPickerOpen)}><Pencil size={14} /></button>
+                                    {isPickerOpen && (
+                                        <div className={styles.avatarDropdown} ref={pickerRef}>
+                                            <div className={styles.avatarGrid}>
+                                                {availableAvatars.map((av) => (
+                                                    <div key={av.id} className={`${styles.gridItem} ${tempAvatar === av.id ? styles.selected : ''}`} onClick={() => setTempAvatar(av.id)}>
+                                                        <img src={`/src/assets/avatars/${av.id}`} alt={av.label} />
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
-                                    </div>
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                        <div className={styles.userActionZone}>
-                            <h3>{userInfo.fullName}</h3>
-                            <p className={styles.userRole}>{userInfo.role}</p>
-                            <p>{userInfo.email}</p>
-                            {tempAvatar !== selectedAvatar && (
-                                <button className={styles.btnSaveAvatar} onClick={saveAvatar} disabled={loading}>
-                                    {loading ? 'Guardando...' : 'Guardar nueva foto'}
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </section>
+                                <div className={styles.userActionZone}>
+                                    <h3>{userInfo.fullName}</h3>
+                                    <p className={styles.userRole}>{userInfo.role}</p>
+                                    <p>{userInfo.email}</p>
+                                    {tempAvatar !== selectedAvatar && (
+                                        <button className={styles.btnSaveAvatar} onClick={saveAvatar} disabled={loading}>
+                                            {loading ? 'Guardando...' : 'Guardar nueva foto'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
 
-                <section className={styles.section}>
-                    <h2 className={styles.title}>Seguridad</h2>
-                    <div className={styles.securityCard}>
-                        {!showVerifyInput ? (
-                            <div className={styles.passwordStepContent}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <Lock size={20} />
-                                    <h4>Cambiar Contraseña</h4>
-                                </div>
-                                <p>Para cambiar tu clave, primero verificaremos que eres tú.</p>
-                                <button className={styles.btnPrimary} onClick={() => setShowVerifyInput(true)} style={{ marginTop: '15px' }}>
-                                    Iniciar proceso de cambio
-                                </button>
+                        <section className={styles.section}>
+                            <h2 className={styles.title}>Seguridad</h2>
+                            <div className={styles.securityCard}>
+                                {!showVerifyInput ? (
+                                    <div className={styles.passwordStepContent}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                            <Lock size={20} />
+                                            <h4>Cambiar Contraseña</h4>
+                                        </div>
+                                        <p>Para cambiar tu clave, primero verificaremos que eres tú.</p>
+                                        <button className={styles.btnPrimary} onClick={() => setShowVerifyInput(true)} style={{ marginTop: '15px' }}>
+                                            Iniciar proceso de cambio
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className={styles.passwordStepContent}>
+                                        <h4>Confirma tu identidad</h4>
+                                        <p>Ingresa tu contraseña actual:</p>
+                                        <input
+                                            type="password"
+                                            placeholder="Contraseña actual"
+                                            className={styles.inputField}
+                                            value={currentPass}
+                                            onChange={(e) => setCurrentPass(e.target.value)}
+                                            autoFocus
+                                        />
+                                        {passError && <div className={styles.errorMessage}><AlertCircle size={14} /> {passError}</div>}
+                                        <div className={styles.stepActions}>
+                                            <button onClick={handleVerifyAndRedirect} className={styles.btnPrimary} disabled={!currentPass || loading}>
+                                                {loading ? 'Verificando...' : 'Siguiente'} <ArrowRight size={16} />
+                                            </button>
+                                            <button onClick={() => { setShowVerifyInput(false); setCurrentPass(''); setPassError(''); }} className={styles.btnGhost}>Cancelar</button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        ) : (
-                            <div className={styles.passwordStepContent}>
-                                <h4>Confirma tu identidad</h4>
-                                <p>Ingresa tu contraseña actual:</p>
-                                <input
-                                    type="password"
-                                    placeholder="Contraseña actual"
-                                    className={styles.inputField}
-                                    value={currentPass}
-                                    onChange={(e) => setCurrentPass(e.target.value)}
-                                    autoFocus
-                                />
-                                {passError && <div className={styles.errorMessage}><AlertCircle size={14} /> {passError}</div>}
-                                <div className={styles.stepActions}>
-                                    <button onClick={handleVerifyAndRedirect} className={styles.btnPrimary} disabled={!currentPass || loading}>
-                                        {loading ? 'Verificando...' : 'Siguiente'} <ArrowRight size={16} />
-                                    </button>
-                                    <button onClick={() => { setShowVerifyInput(false); setCurrentPass(''); setPassError(''); }} className={styles.btnGhost}>Cancelar</button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </section>
+                        </section>
+                    </>
+                ) : (
+                    <Documentation />
+                )}
             </main>
         </div>
     );

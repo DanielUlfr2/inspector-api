@@ -170,6 +170,7 @@ class InfoDevicesRepository:
                 strnote,
                 idDeviceStatus AS iddevicestatus
             FROM inspector.inspector
+            WHERE strInspectorName != 'ELIMINADO'
         """
         conn = await PostgresConnector.get_connection()
         try:
@@ -196,7 +197,7 @@ class InfoDevicesRepository:
 
     @staticmethod
     async def get_all_uuids():
-        query = 'SELECT uuidinspector FROM inspector.inspector;'
+        query = "SELECT uuidinspector FROM inspector.inspector WHERE strInspectorName != 'ELIMINADO';"
         conn = await PostgresConnector.get_connection()
         try:
             records = await conn.fetch(query)
@@ -304,7 +305,7 @@ class InfoDevicesRepository:
             -- Unión con servicios para obtener los datos de negocio
             LEFT JOIN inspector.InspectorService ser 
                 ON i.strInspectorServiceId = ser.strInspectorServiceId
-            WHERE i.uuidInspector = $1
+            WHERE i.uuidInspector = $1 AND i.strInspectorName != 'ELIMINADO'
         """
         
         conn = await PostgresConnector.get_connection()
@@ -384,5 +385,46 @@ class InfoDevicesRepository:
         conn = await PostgresConnector.get_connection()
         try:
             await conn.execute(query, uuid, name)
+        finally:
+            await PostgresConnector.release_connection(conn)
+
+    @staticmethod
+    async def delete_device(uuid: str) -> bool:
+        """
+        Soft Delete / Anonimización del dispositivo.
+        1. Borra variables del dispositivo.
+        2. Actualiza el nombre a "ELIMINADO" y lo asigna a la flota 'DEFAULT'.
+        3. Pone boolOnline = FALSE.
+        4. Mantiene el UUID para no romper integridad referencial con el historial.
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            async with conn.transaction():
+                # 1. Borrar variables del dispositivo
+                await conn.execute("DELETE FROM inspector.InspectorDeviceVariables WHERE uuidInspector = $1", uuid)
+                
+                # 2. Actualizar el dispositivo (Soft Delete)
+                query = """
+                    UPDATE inspector.Inspector
+                    SET strInspectorName = 'ELIMINADO',
+                        stridInspectorFleet = 'DEFAULT',
+                        boolOnline = FALSE,
+                        strNote = '',
+                        strIpAddress = '0.0.0.0',
+                        jsonbObservaciones = '{}'::jsonb,
+                        dtModificationDate = NOW()
+                    WHERE uuidInspector = $1
+                """
+                result = await conn.execute(query, uuid)
+                
+                if result == "UPDATE 0":
+                    logger.warning(f"⚠️ Intentando borrar dispositivo {uuid} pero no existe en BD.")
+                    return False
+                    
+                logger.info(f"🗑️ Dispositivo {uuid} marcado como ELIMINADO en BD local (Soft Delete).")
+                return True
+        except Exception as e:
+            logger.error(f"❌ Error soft-deleting dispositivo {uuid}: {e}")
+            raise e
         finally:
             await PostgresConnector.release_connection(conn)

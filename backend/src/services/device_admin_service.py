@@ -143,3 +143,46 @@ class DeviceAdminService:
         if historic_id: 
             await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.FALLIDO, "Balena rechazó movimiento")
         return {"success": False, "message": "Error moviendo en Balena."}
+
+    # ==========================================
+    # 5. ELIMINAR DISPOSITIVO
+    # ==========================================
+    @classmethod
+    async def remove_device(cls, uuid: str, user: str = "SYSTEM", role: str = "SYSTEM"):
+        logger.info(f"🗑️ Eliminando dispositivo {uuid} solicitador por {user}...")
+
+        script_id = ScriptIds.MANUAL_DELETE_INSPECTOR
+        snapshot = await InfoDevicesRepository.get_device_by_uuid(uuid) or {}
+
+        # 1. Iniciar Transacción
+        historic_id = await TransactionManager.start_transaction(script_id, user=user, role=role)
+        if historic_id:
+            await HistoryRepository.log_device_snapshot(historic_id, uuid, TransactionStatus.EN_PROGRESO, snapshot)
+
+        # 2. Login Balena
+        if not BalenaService.login():
+            if historic_id: await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.FALLIDO, "Fallo Login Balena")
+            return {"success": False, "message": "Fallo Login Balena"}
+
+        # 3. Eliminar de Balena
+        balena_success = await run_in_threadpool(BalenaService.remove_device, uuid)
+        
+        if not balena_success:
+            if historic_id: await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.FALLIDO, "Error eliminando en Balena")
+            return {"success": False, "message": "Error eliminando en Balena Cloud. Operación abortada."}
+
+        # 4. Eliminar de DB Local
+        try:
+            db_success = await InfoDevicesRepository.delete_device(uuid)
+            status = TransactionStatus.COMPLETO if db_success else TransactionStatus.FALLIDO
+            msg = "Dispositivo eliminado correctamente." if db_success else "Eliminado de Balena, pero error en BD local."
+            
+            if historic_id: 
+                await TransactionManager.finish_transaction(historic_id, script_id, status, msg)
+            
+            return {"success": db_success, "message": msg}
+
+        except Exception as e:
+            if historic_id: 
+                await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.FALLIDO, f"Error DB: {e}")
+            return {"success": False, "message": f"Error eliminando de BD: {e}"}
