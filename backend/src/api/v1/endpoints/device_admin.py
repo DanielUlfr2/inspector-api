@@ -3,9 +3,11 @@ from fastapi import APIRouter, HTTPException, Header, BackgroundTasks, Depends
 from src.services.device_admin_service import DeviceAdminService
 from src.services.balena_service import BalenaService
 from src.api.v1.schemas.provisioning_schema import ProvisioningRequest
-from src.api.v1.schemas.device_action_schema import DeviceNoteRequest, DeviceMoveRequest
+from src.api.v1.schemas.device_action_schema import DeviceNoteRequest, DeviceMoveRequest, BulkActionRequest
 from fastapi.responses import StreamingResponse
 from src.core.security import require_roles
+from src.core.celery_app import celery_app
+from typing import List
 
 router = APIRouter()
 
@@ -21,44 +23,66 @@ async def provision_device_endpoint(
         raise HTTPException(status_code=400, detail=result["message"])
     return result
 
-@router.post("/{uuid}/reboot", status_code=200)
+@router.post("/bulk/{action}", status_code=202)
+async def bulk_power_action_endpoint(
+    action: str,
+    request: BulkActionRequest,
+    x_user_id: str = Header("SYSTEM", alias="X-User-Id"),
+    x_role: str = Header("SYSTEM", alias="X-Role")
+):
+    """
+    Ejecuta una acción de poder en múltiples dispositivos usando Celery.
+    Válido para: restart, reboot, shutdown
+    """
+    if action not in ["restart", "reboot", "shutdown"]:
+        raise HTTPException(status_code=400, detail="Acción inválida. Use: restart, reboot o shutdown")
+    
+    if not request.uuids or len(request.uuids) == 0:
+        raise HTTPException(status_code=400, detail="Debe proporcionar al menos un UUID")
+    
+    task = celery_app.send_task("tasks.restart_bulk_devices", args=[request.uuids, action, x_user_id, x_role])
+    return {
+        "success": True, 
+        "message": f"{len(request.uuids)} dispositivos encolados para {action}.", 
+        "task_id": task.id,
+        "total_devices": len(request.uuids)
+    }
+
+@router.post("/{uuid}/reboot", status_code=202)
 async def reboot_device_endpoint(
-    uuid: str, 
-    background_tasks: BackgroundTasks,
+    uuid: str,
     x_user_id: str = Header("SYSTEM", alias="X-User-Id"), 
     x_role: str = Header("SYSTEM", alias="X-Role")
 ):
     """
-    Reinicia el dispositivo (OS) en segundo plano.
+    Reinicia el dispositivo (OS) usando Celery.
     """
-    background_tasks.add_task(DeviceAdminService.execute_power_action, uuid, "reboot", user=x_user_id, role=x_role)
-    return {"success": True, "message": "Reinicio de sistema iniciado. Verifique el historial."}
+    task = celery_app.send_task("tasks.restart_single_device", args=[uuid, "reboot", x_user_id, x_role])
+    return {"success": True, "message": "Reinicio de sistema encolado.", "task_id": task.id}
 
-@router.post("/{uuid}/restart", status_code=200)
+@router.post("/{uuid}/restart", status_code=202)
 async def restart_container_endpoint(
-    uuid: str, 
-    background_tasks: BackgroundTasks,
+    uuid: str,
     x_user_id: str = Header("SYSTEM", alias="X-User-Id"), 
     x_role: str = Header("SYSTEM", alias="X-Role")
 ):
     """
-    Reinicia la aplicación (Contenedor) en segundo plano.
+    Reinicia la aplicación (Contenedor) usando Celery.
     """
-    background_tasks.add_task(DeviceAdminService.execute_power_action, uuid, "restart", user=x_user_id, role=x_role)
-    return {"success": True, "message": "Reinicio de aplicación iniciado. Verifique el historial."}
+    task = celery_app.send_task("tasks.restart_single_device", args=[uuid, "restart", x_user_id, x_role])
+    return {"success": True, "message": "Reinicio de aplicación encolado.", "task_id": task.id}
 
-@router.post("/{uuid}/shutdown", status_code=200)
+@router.post("/{uuid}/shutdown", status_code=202)
 async def shutdown_device_endpoint(
-    uuid: str, 
-    background_tasks: BackgroundTasks,
+    uuid: str,
     x_user_id: str = Header("SYSTEM", alias="X-User-Id"), 
     x_role: str = Header("SYSTEM", alias="X-Role")
 ):
     """
-    Apaga el dispositivo en segundo plano.
+    Apaga el dispositivo usando Celery.
     """
-    background_tasks.add_task(DeviceAdminService.execute_power_action, uuid, "shutdown", user=x_user_id, role=x_role)
-    return {"success": True, "message": "Apagado iniciado. Verifique el historial."}
+    task = celery_app.send_task("tasks.restart_single_device", args=[uuid, "shutdown", x_user_id, x_role])
+    return {"success": True, "message": "Apagado encolado.", "task_id": task.id}
 
 @router.put("/{uuid}/note")
 async def set_device_note_endpoint(
@@ -135,3 +159,29 @@ async def delete_device_endpoint(
     if not result["success"]:
         raise HTTPException(status_code=400, detail=result["message"])
     return result
+@router.get("/tasks/{task_id}")
+async def get_task_status(
+    task_id: str,
+    x_user_id: str = Header("SYSTEM", alias="X-User-Id"), 
+    x_role: str = Header("SYSTEM", alias="X-Role")
+):
+    """
+    Obtiene el estado de una tarea de Celery (PENDING, STARTED, SUCCESS, FAILURE, REVOKED).
+    """
+    task_result = celery_app.AsyncResult(task_id)
+    
+    response = {
+        "task_id": task_id,
+        "status": task_result.status,
+        "result": None
+    }
+    
+    # Solo incluir resultado si terminó
+    if task_result.ready():
+        if task_result.successful():
+            response["result"] = task_result.result
+        else:
+            # Si falló, el result suele ser la excepción str(e)
+            response["result"] = str(task_result.result)
+            
+    return response

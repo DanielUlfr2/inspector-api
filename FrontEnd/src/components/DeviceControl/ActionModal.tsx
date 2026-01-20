@@ -1,18 +1,22 @@
 // src/components/DeviceControl/ActionModal.tsx
-import { AlertTriangle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, XCircle, Loader2, Info } from 'lucide-react';
 import styles from './ActionModal.module.css';
 
 interface ActionModalProps {
     isOpen: boolean;
     action: string;
     count: number;
-    status: 'idle' | 'loading' | 'success' | 'error';
+    status: 'idle' | 'loading' | 'success' | 'error' | 'partial';
+    excludedCount?: number;
+    excludedReasons?: string[];
     onConfirm: () => void;
     onClose: () => void;
 }
 
-const ActionModal = ({ isOpen, action, count, status, onConfirm, onClose }: ActionModalProps) => {
+const ActionModal = ({ isOpen, action, count, status, excludedCount = 0, excludedReasons = [], onConfirm, onClose }: ActionModalProps) => {
     if (!isOpen) return null;
+
+    const validCount = count - excludedCount;
 
     return (
         <div className={styles.overlay}>
@@ -21,10 +25,18 @@ const ActionModal = ({ isOpen, action, count, status, onConfirm, onClose }: Acti
                     <div className={styles.content}>
                         <AlertTriangle className={styles.warningIcon} size={48} />
                         <h3>¿Confirmar {action}?</h3>
-                        <p>Se ejecutará en <strong>{count}</strong> dispositivo(s).</p>
+                        <p>Se ejecutará en <strong>{validCount}</strong> dispositivo(s).</p>
+                        {excludedCount > 0 && (
+                            <div className={styles.warning}>
+                                <Info size={16} />
+                                <span>{excludedCount} dispositivos excluidos (offline/reducidos)</span>
+                            </div>
+                        )}
                         <div className={styles.actions}>
                             <button onClick={onClose} className={styles.cancelBtn}>Cancelar</button>
-                            <button onClick={onConfirm} className={styles.confirmBtn}>Sí, ejecutar</button>
+                            <button onClick={onConfirm} className={styles.confirmBtn} disabled={validCount === 0}>
+                                Sí, ejecutar
+                            </button>
                         </div>
                     </div>
                 )}
@@ -50,7 +62,30 @@ const ActionModal = ({ isOpen, action, count, status, onConfirm, onClose }: Acti
                     <div className={styles.content}>
                         <XCircle className={styles.errorIcon} size={48} />
                         <h3>Error</h3>
-                        <p>No se pudo completar la acción en el servidor.</p>
+                        <p>
+                            {excludedCount === count
+                                ? 'Ningún dispositivo está operativo para ejecutar esta acción.'
+                                : 'No se pudo completar la acción en el servidor.'}
+                        </p>
+                        <button onClick={onClose} className={styles.closeBtn}>Cerrar</button>
+                    </div>
+                )}
+
+                {status === 'partial' && (
+                    <div className={styles.content}>
+                        <CheckCircle2 className={styles.successIcon} size={48} />
+                        <h3>Completado Parcialmente</h3>
+                        <p>Se procesaron <strong>{validCount}</strong> de {count} dispositivos.</p>
+                        {excludedReasons.length > 0 && (
+                            <details className={styles.excludedList}>
+                                <summary>{excludedCount} dispositivos excluidos</summary>
+                                <ul>
+                                    {excludedReasons.map((reason, i) => (
+                                        <li key={i}>{reason}</li>
+                                    ))}
+                                </ul>
+                            </details>
+                        )}
                         <button onClick={onClose} className={styles.closeBtn}>Cerrar</button>
                     </div>
                 )}

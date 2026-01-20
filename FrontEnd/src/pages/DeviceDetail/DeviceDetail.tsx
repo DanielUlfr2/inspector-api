@@ -221,7 +221,7 @@ const DeviceDetail = () => {
             {/* 3. ACCIONES RÁPIDAS */}
             <div className={styles.actionWrapper}>
                 <DeviceActionBar
-                    selectedUuids={[device.uuidinspector]}
+                    selectedDevices={device ? [device] : []}
                     onActionComplete={loadData}
                 />
             </div>

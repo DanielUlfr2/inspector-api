@@ -16,7 +16,12 @@ celery_app.conf.update(
     result_serializer="json",
     timezone="America/Bogota",
     enable_utc=True,
-    imports=["src.worker.tasks"] 
+    imports=["src.worker.tasks"],
+    
+    # 🔧 Optimizaciones de Worker
+    worker_prefetch_multiplier=int(os.getenv("CELERY_WORKER_PREFETCH_MULTIPLIER", "2")),
+    task_acks_late=True,           # Confirma tarea solo después de completarla
+    task_reject_on_worker_lost=True,  # Re-encola si worker muere
 )
 
 # === DEFINICIÓN DE JOBS (CRONOGRAMA) ===

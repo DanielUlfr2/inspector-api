@@ -359,15 +359,95 @@
             }
         },
         {
+            "endpoint": "/v1/admin/tasks/{task_id}",
+            "method": "GET",
+            "level": "DEBUG",
+            "cache_ttl": "0s",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/tasks/{task_id}",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/admin/bulk/{action}",
+            "method": "POST",
+            "output_encoding": "no-op",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/admin/bulk/{action}",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ],
+                    "encoding": "no-op"
+                }
+            ],
+            "extra_config": {
+                "backend/http": {
+                    "return_error_code": true
+                },
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
             "endpoint": "/v1/admin/{uuid}/reboot",
             "method": "POST",
+            "output_encoding": "no-op",
             "level": "DEBUG",
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/reboot",
                     "host": [
                         "http://open_balena_apis:5000"
-                    ]
+                    ],
+                    "encoding": "no-op"
                 }
             ],
             "extra_config": {
@@ -397,13 +477,15 @@
         {
             "endpoint": "/v1/admin/{uuid}/restart",
             "method": "POST",
+            "output_encoding": "no-op",
             "level": "DEBUG",
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/restart",
                     "host": [
                         "http://open_balena_apis:5000"
-                    ]
+                    ],
+                    "encoding": "no-op"
                 }
             ],
             "extra_config": {
@@ -433,13 +515,15 @@
         {
             "endpoint": "/v1/admin/{uuid}/shutdown",
             "method": "POST",
+            "output_encoding": "no-op",
             "level": "DEBUG",
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/shutdown",
                     "host": [
                         "http://open_balena_apis:5000"
-                    ]
+                    ],
+                    "encoding": "no-op"
                 }
             ],
             "extra_config": {

@@ -1,27 +1,58 @@
 // src/features/devices/hooks/useDeviceControl.ts
 import { useState } from 'react';
 import { deviceService, DeviceAction } from '../deviceService';
+import { Device } from '../../../types/device';
+import { getDeviceRealStatus } from '../../../utils/deviceStatus';
 
 export const useDeviceControl = () => {
     // Manejamos estados granulares para el modal
-    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'partial'>('idle');
+    const [excludedCount, setExcludedCount] = useState(0);
+    const [excludedReasons, setExcludedReasons] = useState<string[]>([]);
 
-    const executeAction = async (uuids: string[], action: DeviceAction) => {
-        if (uuids.length === 0) return false;
+    const executeAction = async (devices: Device[], action: DeviceAction) => {
+        if (devices.length === 0) return false;
 
         setStatus('loading');
+
+        // 🔍 FILTRAR DISPOSITIVOS VÁLIDOS (solo operativos)
+        const validDevices = devices.filter(device => {
+            const realStatus = getDeviceRealStatus(device);
+            return realStatus === 'operativo';
+        });
+
+        const excluded = devices.length - validDevices.length;
+        setExcludedCount(excluded);
+
+        // Generar lista de razones de exclusión
+        if (excluded > 0) {
+            const reasons = devices
+                .filter(d => getDeviceRealStatus(d) !== 'operativo')
+                .map(d => `${d.strinspectorname} (${getDeviceRealStatus(d)})`);
+            setExcludedReasons(reasons);
+        } else {
+            setExcludedReasons([]);
+        }
+
+        // Si no hay dispositivos válidos, error
+        if (validDevices.length === 0) {
+            setStatus('error');
+            return false;
+        }
+
         try {
-            // Ejecutamos y verificamos que el servidor responda 200 OK
-            const results = await deviceService.sendBulkAction(uuids, action);
+            const uuids = validDevices.map(d => d.uuidinspector);
 
-            // Validamos si todas las respuestas fueron exitosas (status 200)
-            const allSuccessful = results.every(res => res.status === 200);
-
-            if (allSuccessful) {
-                setStatus('success');
-                return true;
+            // Usar endpoint bulk si hay más de 5 dispositivos
+            if (uuids.length > 5) {
+                await deviceService.sendBulkActionOptimized(uuids, action);
+            } else {
+                await deviceService.sendBulkAction(uuids, action);
             }
-            throw new Error("Respuesta del servidor no válida");
+
+            // Partial si hubo exclusiones, success si todos fueron procesados
+            setStatus(excluded > 0 ? 'partial' : 'success');
+            return true;
         } catch (error) {
             console.error("Error en la acción:", error);
             setStatus('error');
@@ -29,5 +60,5 @@ export const useDeviceControl = () => {
         }
     };
 
-    return { executeAction, status, setStatus };
+    return { executeAction, status, setStatus, excludedCount, excludedReasons };
 };

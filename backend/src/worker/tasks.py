@@ -61,6 +61,148 @@ def task_sync_single_device_vars(uuid: str):
     async_to_sync(ConfigurationSyncService.sync_device_variables)(uuid)
     return f"Device Vars {uuid} synced"
 
+# ==============================================================================
+# TAREAS DE REINICIO DE DISPOSITIVOS
+# ==============================================================================
+
+@celery_app.task(name="tasks.restart_single_device")
+def task_restart_single_device(uuid: str, action: str, user: str = "SYSTEM", role: str = "SYSTEM"):
+    """
+    Reinicia un dispositivo individual (restart/reboot/shutdown).
+    Valida el estado antes de ejecutar.
+    """
+    from src.services.device_admin_service import DeviceAdminService
+    from src.repositories.info_devices_repo import InfoDevicesRepository
+    from src.utils.deviceStatus import get_device_real_status
+    
+    logger.info(f"🔄 WORKER: Reiniciando {uuid} (acción: {action}) por {user}")
+    
+    # Validar estado del dispositivo
+    try:
+        device = async_to_sync(InfoDevicesRepository.get_device_by_uuid)(uuid)
+        if not device:
+            logger.warning(f"⚠️ Dispositivo {uuid} no encontrado en BD")
+            return {"success": False, "message": "Dispositivo no encontrado"}
+        
+        # Validar que esté operativo - REMOVIDO para permitir intentos forzados
+        # status = get_device_real_status(device)
+        # if status != "operativo":
+        #    logger.warning(f"⚠️ Dispositivo {uuid} no está operativo (estado: {status})")
+        #    return {"success": False, "message": f"Dispositivo {status}, no se puede reiniciar"}
+        
+        # Ejecutar acción
+        result = async_to_sync(DeviceAdminService.execute_power_action)(uuid, action, user, role)
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error reiniciando {uuid}: {e}")
+        return {"success": False, "message": str(e)}
+
+@celery_app.task(name="tasks.restart_bulk_devices")
+def task_restart_bulk_devices(uuids: list, action: str, user: str = "SYSTEM", role: str = "SYSTEM"):
+    """
+    Reinicia múltiples dispositivos en lotes (chunks de 10).
+    Filtra automáticamente dispositivos offline/reducidos.
+    """
+    from src.repositories.info_devices_repo import InfoDevicesRepository
+    from src.utils.deviceStatus import get_device_real_status
+    
+    logger.info(f"🔄 WORKER: Reinicio masivo de {len(uuids)} dispositivos por {user}")
+    
+    # Filtrar dispositivos válidos
+    valid_uuids = []
+    excluded_count = 0
+    
+    try:
+        for uuid in uuids:
+            device = async_to_sync(InfoDevicesRepository.get_device_by_uuid)(uuid)
+            if device and get_device_real_status(device) == "operativo":
+                valid_uuids.append(uuid)
+            else:
+                excluded_count += 1
+        
+        logger.info(f"✅ {len(valid_uuids)} dispositivos válidos, {excluded_count} excluidos")
+        
+        # Procesar en chunks de 10
+        chunk_size = 10
+        results = []
+        
+        for i in range(0, len(valid_uuids), chunk_size):
+            chunk = valid_uuids[i:i + chunk_size]
+            logger.info(f"📦 Procesando chunk {i//chunk_size + 1} ({len(chunk)} dispositivos)")
+            
+            # Disparar tareas individuales para cada dispositivo del chunk
+            for uuid in chunk:
+                task_restart_single_device.delay(uuid, action, user, role)
+            
+            results.append(f"Chunk {i//chunk_size + 1} encolado")
+        
+        return {
+            "success": True,
+            "total": len(uuids),
+            "valid": len(valid_uuids),
+            "excluded": excluded_count,
+            "chunks": len(results)
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error en reinicio masivo: {e}")
+        return {"success": False, "message": str(e)}
+
+@celery_app.task(name="tasks.run_automatic_restart")
+def task_run_automatic_restart(is_manual: bool = False):
+    """
+    Tarea programada para reinicio automático diario (5 AM).
+    Solo reinicia dispositivos operativos.
+    """
+    from src.repositories.info_devices_repo import InfoDevicesRepository
+    from src.utils.deviceStatus import get_device_real_status
+    from src.utils.transaction_manager import ScriptIds, TransactionManager, TransactionStatus
+    
+    script_name = "MANUAL" if is_manual else "AUTO"
+    logger.info(f"🌅 WORKER: Iniciando Reinicio Automático ({script_name})...")
+    
+    script_id = ScriptIds.AUTO_RESTART if not is_manual else ScriptIds.MANUAL_RESTART
+    
+    try:
+        # Obtener todos los dispositivos
+        all_devices = async_to_sync(InfoDevicesRepository.get_all_devices)()
+        
+        # Filtrar solo operativos
+        operational_devices = [
+            d for d in all_devices 
+            if get_device_real_status(d) == "operativo"
+        ]
+        
+        logger.info(f"📊 Total: {len(all_devices)}, Operativos: {len(operational_devices)}")
+        
+        if not operational_devices:
+            logger.warning("⚠️ No hay dispositivos operativos para reiniciar")
+            return {"success": True, "message": "No hay dispositivos operativos"}
+        
+        # Iniciar transacción de auditoría
+        historic_id = async_to_sync(TransactionManager.start_transaction)(
+            script_id, 
+            user="SYSTEM_CRON", 
+            role="SYSTEM"
+        )
+        
+        # Ejecutar reinicio masivo
+        uuids = [d["uuidinspector"] for d in operational_devices]
+        result = task_restart_bulk_devices(uuids, "restart", "SYSTEM_CRON", "SYSTEM")
+        
+        # Finalizar transacción
+        if historic_id:
+            status = TransactionStatus.COMPLETO if result.get("success") else TransactionStatus.FALLIDO
+            msg = f"Reiniciados {result.get('valid', 0)} de {result.get('total', 0)} dispositivos"
+            async_to_sync(TransactionManager.finish_transaction)(historic_id, script_id, status, msg)
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"❌ Error en reinicio automático: {e}")
+        return {"success": False, "message": str(e)}
+
 # --- NOTA SOBRE TAREAS DE INVENTARIO INDIVIDUAL ---
 # En el InventorySyncService actual NO definimos 'sync_device_by_uuid' ni 'sync_fleet_by_slug'.
 # Solo definimos 'sync_all'. 

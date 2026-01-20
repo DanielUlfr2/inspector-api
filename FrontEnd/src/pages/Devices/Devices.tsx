@@ -20,7 +20,7 @@ const Devices = () => {
     const [devices, setDevices] = useState<Device[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedUuids, setSelectedUuids] = useState<string[]>([]);
+    const [selectedDevices, setSelectedDevices] = useState<Device[]>([]);
 
     // Filtros por columna
     const [columnFilters, setColumnFilters] = useState({
@@ -35,7 +35,7 @@ const Devices = () => {
         try {
             const data = await deviceService.getDevices();
             setDevices(data);
-            setSelectedUuids([]);
+            setSelectedDevices([]);
         } catch (error) {
             console.error("Error cargando dispositivos:", error);
         } finally {
@@ -92,16 +92,18 @@ const Devices = () => {
 
     // Handlers de selección
     const handleSelectAll = () => {
-        if (selectedUuids.length === filteredDevices.length && filteredDevices.length > 0) {
-            setSelectedUuids([]);
+        if (selectedDevices.length === filteredDevices.length && filteredDevices.length > 0) {
+            setSelectedDevices([]);
         } else {
-            setSelectedUuids(filteredDevices.map(d => d.uuidinspector));
+            setSelectedDevices(filteredDevices);
         }
     };
 
-    const handleSelectRow = (uuid: string) => {
-        setSelectedUuids(prev =>
-            prev.includes(uuid) ? prev.filter(id => id !== uuid) : [...prev, uuid]
+    const handleSelectRow = (device: Device) => {
+        setSelectedDevices(prev =>
+            prev.some(d => d.uuidinspector === device.uuidinspector)
+                ? prev.filter(d => d.uuidinspector !== device.uuidinspector)
+                : [...prev, device]
         );
     };
 
@@ -133,8 +135,8 @@ const Devices = () => {
             </header>
 
             <DeviceActionBar
-                selectedUuids={selectedUuids}
-                onActionComplete={() => setSelectedUuids([])}
+                selectedDevices={selectedDevices}
+                onActionComplete={() => setSelectedDevices([])}
             />
 
             <div className={styles.tableContainer}>
@@ -145,7 +147,7 @@ const Devices = () => {
                                 <input
                                     type="checkbox"
                                     onChange={handleSelectAll}
-                                    checked={filteredDevices.length > 0 && selectedUuids.length === filteredDevices.length}
+                                    checked={filteredDevices.length > 0 && selectedDevices.length === filteredDevices.length}
                                 />
                             </th>
                             <th>Estado</th>
@@ -186,14 +188,14 @@ const Devices = () => {
                         ) : (
                             filteredDevices.map((device) => {
                                 const statusCfg = getStatusConfig(device);
-                                const isSelected = selectedUuids.includes(device.uuidinspector);
+                                const isSelected = selectedDevices.some(d => d.uuidinspector === device.uuidinspector);
                                 return (
                                     <tr key={device.uuidinspector} className={isSelected ? styles.rowSelected : ''}>
                                         <td className={styles.checkboxCell}>
                                             <input
                                                 type="checkbox"
                                                 checked={isSelected}
-                                                onChange={() => handleSelectRow(device.uuidinspector)}
+                                                onChange={() => handleSelectRow(device)}
                                             />
                                         </td>
                                         <td>

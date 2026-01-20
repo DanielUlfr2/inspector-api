@@ -20,7 +20,7 @@ const FleetDetail: React.FC = () => {
     const [devices, setDevices] = useState<Device[]>([]);
     const [fleetData, setFleetData] = useState<Fleet | null>(null);
     const [loading, setLoading] = useState(true);
-    const [selectedUuids, setSelectedUuids] = useState<string[]>([]);
+    const [selectedDevices, setSelectedDevices] = useState<Device[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [showVariablesModal, setShowVariablesModal] = useState(false);
     const [fleetVariables, setFleetVariables] = useState<Variable[]>([]);
@@ -45,7 +45,7 @@ const FleetDetail: React.FC = () => {
             const data = await deviceService.getDevices();
             const filtered = data.filter(d => d.stridinspectorfleet === fleetId);
             setDevices(filtered);
-            setSelectedUuids([]);
+            setSelectedDevices([]);
         } catch (error) {
             console.error("Error al cargar datos de la flota:", error);
         } finally {
@@ -167,16 +167,18 @@ const FleetDetail: React.FC = () => {
 
     // Handlers de selección
     const handleSelectAll = () => {
-        if (selectedUuids.length === filteredDevices.length && filteredDevices.length > 0) {
-            setSelectedUuids([]);
+        if (selectedDevices.length === filteredDevices.length && filteredDevices.length > 0) {
+            setSelectedDevices([]);
         } else {
-            setSelectedUuids(filteredDevices.map(d => d.uuidinspector));
+            setSelectedDevices(filteredDevices);
         }
     };
 
-    const handleSelectRow = (uuid: string) => {
-        setSelectedUuids(prev =>
-            prev.includes(uuid) ? prev.filter(id => id !== uuid) : [...prev, uuid]
+    const handleSelectRow = (device: Device) => {
+        setSelectedDevices(prev =>
+            prev.some(d => d.uuidinspector === device.uuidinspector)
+                ? prev.filter(d => d.uuidinspector !== device.uuidinspector)
+                : [...prev, device]
         );
     };
 
@@ -289,7 +291,7 @@ const FleetDetail: React.FC = () => {
             </header>
 
             <DeviceActionBar
-                selectedUuids={selectedUuids}
+                selectedDevices={selectedDevices}
                 onActionComplete={fetchData}
             />
 
@@ -301,7 +303,7 @@ const FleetDetail: React.FC = () => {
                                 <input
                                     type="checkbox"
                                     onChange={handleSelectAll}
-                                    checked={filteredDevices.length > 0 && selectedUuids.length === filteredDevices.length}
+                                    checked={filteredDevices.length > 0 && selectedDevices.length === filteredDevices.length}
                                 />
                             </th>
                             <th>Estado</th>
@@ -340,14 +342,14 @@ const FleetDetail: React.FC = () => {
                         ) : (
                             filteredDevices.map((device) => {
                                 const statusCfg = getStatusConfig(device);
-                                const isSelected = selectedUuids.includes(device.uuidinspector);
+                                const isSelected = selectedDevices.some(d => d.uuidinspector === device.uuidinspector);
                                 return (
                                     <tr key={device.uuidinspector} className={isSelected ? styles.rowSelected : ''}>
                                         <td className={styles.checkboxCell}>
                                             <input
                                                 type="checkbox"
                                                 checked={isSelected}
-                                                onChange={() => handleSelectRow(device.uuidinspector)}
+                                                onChange={() => handleSelectRow(device)}
                                             />
                                         </td>
                                         <td>

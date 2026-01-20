@@ -200,7 +200,11 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: celery_worker_inspector
-    command: celery -A src.core.celery_app worker --loglevel=info
+    command: >
+      celery -A src.core.celery_app worker 
+      --loglevel=info 
+      --concurrency=${CELERY_WORKER_CONCURRENCY:-4}
+      --max-tasks-per-child=${CELERY_WORKER_MAX_TASKS_PER_CHILD:-50}
     volumes:
       - ./backend:/app
       - ./backend_logs:/app/logs
@@ -209,6 +213,7 @@ services:
     environment:
       - TZ=${TZ}
       - APP_ENV=${APP_ENV}
+      - CELERYD_PREFETCH_MULTIPLIER=${CELERY_WORKER_PREFETCH_MULTIPLIER:-2}
     depends_on:
       - redis
       - postgres_principal

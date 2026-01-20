@@ -46,6 +46,14 @@ export const deviceService = {
     },
 
     /**
+     * Envía acciones en lote usando el endpoint bulk (más eficiente para >5 dispositivos)
+     */
+    async sendBulkActionOptimized(uuids: string[], action: DeviceAction) {
+        const url = `${API_BASE}${ADMIN_PATH}/bulk/${action}`;
+        return await apiClient.post(url, { uuids });
+    },
+
+    /**
      * Obtiene logs (Legacy/Sync)
      */
     async getDeviceLogs(uuid: string): Promise<string> {
@@ -132,6 +140,24 @@ export const deviceService = {
         // Backend Real: DELETE /api/v1/admin/{uuid}
         const url = `${API_BASE}${ADMIN_PATH}/${uuid}`;
         const response = await apiClient.delete(url);
+        return response.data;
+    },
+
+    /**
+     * Envía una acción individual y retorna info, incluyendo task_id
+     */
+    async sendSingleAction(uuid: string, action: DeviceAction) {
+        const url = `${API_BASE}${ADMIN_PATH}/${uuid}/${action}`;
+        const response = await apiClient.post(url);
+        return response.data;
+    },
+
+    /**
+     * Obtiene el estado de una tarea async
+     */
+    async getTaskStatus(taskId: string) {
+        const url = `${API_BASE}${ADMIN_PATH}/tasks/${taskId}`;
+        const response = await apiClient.get(url);
         return response.data;
     }
 };
