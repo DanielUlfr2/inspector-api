@@ -65,11 +65,17 @@ def task_sync_single_device_vars(uuid: str):
 # TAREAS DE REINICIO DE DISPOSITIVOS
 # ==============================================================================
 
-@celery_app.task(name="tasks.restart_single_device")
-def task_restart_single_device(uuid: str, action: str, user: str = "SYSTEM", role: str = "SYSTEM"):
+@celery_app.task(name="tasks.restart_single_device", bind=True)
+def task_restart_single_device(self, uuid: str, action: str, user: str = "SYSTEM", role: str = "SYSTEM"):
     """
     Reinicia un dispositivo individual (restart/reboot/shutdown).
-    Valida el estado antes de ejecutar.
+    Valida el estado antes de ejecutar Y verifica que se completó.
+    
+    Estados de Celery:
+    - PENDING: Tarea encolada (estado por defecto)
+    - STARTED: Comando enviado, esperando confirmación
+    - SUCCESS: Reinicio confirmado exitosamente
+    - FAILURE: Error o timeout
     """
     from src.services.device_admin_service import DeviceAdminService
     from src.repositories.info_devices_repo import InfoDevicesRepository
@@ -77,26 +83,75 @@ def task_restart_single_device(uuid: str, action: str, user: str = "SYSTEM", rol
     
     logger.info(f"🔄 WORKER: Reiniciando {uuid} (acción: {action}) por {user}")
     
-    # Validar estado del dispositivo
+    
+    # Actualizar estado a STARTED (IN_PROGRESS)
+    self.update_state(
+        state='STARTED',
+        meta={
+            'status': 'in_progress',
+            'step': 'init',
+            'message': f'Iniciando secuencia de {action}...',
+            'uuid': uuid,
+            'action': action
+        }
+    )
+    
+    # Validar estado del dispositivo (opcional - comentado para permitir intentos forzados)
     try:
         device = async_to_sync(InfoDevicesRepository.get_device_by_uuid)(uuid)
         if not device:
-            logger.warning(f"⚠️ Dispositivo {uuid} no encontrado en BD")
-            return {"success": False, "message": "Dispositivo no encontrado"}
+            err_msg = "Dispositivo no encontrado en base de datos"
+            logger.warning(f"⚠️ {err_msg}")
+            raise Exception(err_msg)
         
-        # Validar que esté operativo - REMOVIDO para permitir intentos forzados
-        # status = get_device_real_status(device)
-        # if status != "operativo":
-        #    logger.warning(f"⚠️ Dispositivo {uuid} no está operativo (estado: {status})")
-        #    return {"success": False, "message": f"Dispositivo {status}, no se puede reiniciar"}
+        # Ejecutar acción CON MONITOREO (Consumir generador)
+        final_result = None
         
-        # Ejecutar acción
-        result = async_to_sync(DeviceAdminService.execute_power_action)(uuid, action, user, role)
-        return result
+        # Iteramos sobre el generador síncrono monitor_power_action
+        for update in DeviceAdminService.monitor_power_action(uuid, action, user, role):
+            # Loguear para debug
+            if update.get("status") == "in_progress":
+                logger.info(f"🔄 [{uuid}] Step: {update.get('step')} - {update.get('message')}")
+            
+            # Guardamos el último update
+            final_result = update
+            
+            # Actualizar estado de Celery en tiempo real
+            # IMPORTANTE: update_state es lo que permite al frontend ver el progreso
+            self.update_state(
+                state='STARTED',
+                meta={
+                    'status': update.get('status'),
+                    'step': update.get('step'),
+                    'message': update.get('message'),
+                    'elapsed_time': update.get('elapsed'),
+                    'uuid': uuid,
+                    'action': action,
+                    'details': update.get('details') # Puede venir en completed
+                }
+            )
+
+        # Evaluar resultado final
+        if final_result and final_result.get("status") == "completed":
+            return {
+                "status": "completed",
+                "message": final_result.get("message"),
+                "elapsed_time": final_result.get("elapsed"),
+                "uuid": uuid,
+                "action": action,
+                "details": final_result.get("details")
+            }
+        else:
+            # FAILURE - Timeout o error
+            error_msg = final_result.get("message", "Error desconocido") if final_result else "No hubo respuesta del monitor"
+            logger.error(f"❌ {error_msg}")
+            raise Exception(error_msg)
+
         
     except Exception as e:
         logger.error(f"❌ Error reiniciando {uuid}: {e}")
-        return {"success": False, "message": str(e)}
+        raise  # Esto marcará la tarea como FAILURE
+
 
 @celery_app.task(name="tasks.restart_bulk_devices")
 def task_restart_bulk_devices(uuids: list, action: str, user: str = "SYSTEM", role: str = "SYSTEM"):

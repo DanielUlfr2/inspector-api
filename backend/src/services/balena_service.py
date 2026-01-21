@@ -286,6 +286,7 @@ class BalenaService:
 
     @staticmethod
     def stream_device_logs(uuid: str) -> Generator[str, None, None]:
+
         if not BalenaService.login():
             # Formato SSE: siempre empezar con 'data: '
             yield "data: ❌ Error: Could not log in to Balena CLI.\n\n"

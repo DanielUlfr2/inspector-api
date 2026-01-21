@@ -37,13 +37,26 @@
 
 .item {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     padding: 8px 12px;
     background: #1e293b;
     border-radius: 6px;
-    gap: 12px;
+    gap: 4px;
     border: 1px solid #334155;
     font-size: 0.9rem;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.progressMsg {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-left: 2px;
 }
 
 .name {

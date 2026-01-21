@@ -166,22 +166,48 @@ async def get_task_status(
     x_role: str = Header("SYSTEM", alias="X-Role")
 ):
     """
-    Obtiene el estado de una tarea de Celery (PENDING, STARTED, SUCCESS, FAILURE, REVOKED).
+    Obtiene el estado detallado de una tarea de Celery.
+    
+    Estados posibles:
+    - PENDING: Tarea encolada, aún no ha iniciado
+    - STARTED: En progreso (comando enviado, esperando confirmación)
+    - SUCCESS: Completada exitosamente (reinicio confirmado)
+    - FAILURE: Falló (error o timeout)
+    - REVOKED: Cancelada
+    
+    Retorna:
+        {
+            "task_id": str,
+            "status": str,  # PENDING, STARTED, SUCCESS, FAILURE, REVOKED
+            "result": dict | None,  # Resultado final si SUCCESS
+            "error": str | None,  # Mensaje de error si FAILURE
+            "meta": dict | None  # Metadata de progreso si STARTED
+        }
     """
     task_result = celery_app.AsyncResult(task_id)
     
     response = {
         "task_id": task_id,
         "status": task_result.status,
-        "result": None
+        "result": None,
+        "error": None,
+        "meta": None
     }
     
-    # Solo incluir resultado si terminó
-    if task_result.ready():
-        if task_result.successful():
-            response["result"] = task_result.result
-        else:
-            # Si falló, el result suele ser la excepción str(e)
-            response["result"] = str(task_result.result)
-            
+    # STARTED - Tarea en progreso
+    if task_result.status == "STARTED":
+        response["meta"] = task_result.info  # {status: "in_progress", message: "...", uuid: "...", action: "..."}
+    
+    # SUCCESS - Tarea completada exitosamente
+    elif task_result.status == "SUCCESS":
+        response["result"] = task_result.result
+    
+    # FAILURE - Tarea falló
+    elif task_result.status == "FAILURE":
+        response["error"] = str(task_result.result)
+    
+    # PENDING - Aún no ha iniciado (estado por defecto)
+    # No necesita información adicional
+    
     return response
+

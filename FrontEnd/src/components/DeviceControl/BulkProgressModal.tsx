@@ -16,6 +16,7 @@ interface DeviceStatus {
     name: string;
     status: 'pending' | 'processing' | 'success' | 'error';
     message?: string;
+    step?: string;
 }
 
 const MAX_CONCURRENT = 5;
@@ -49,7 +50,7 @@ const BulkProgressModal = ({ isOpen, action, devices, onClose }: BulkProgressMod
 
         const processDevice = async (device: Device) => {
             setStatuses(prev => prev.map(s =>
-                s.uuid === device.uuidinspector ? { ...s, status: 'processing' } : s
+                s.uuid === device.uuidinspector ? { ...s, status: 'processing', message: 'Iniciando...' } : s
             ));
 
             try {
@@ -61,26 +62,50 @@ const BulkProgressModal = ({ isOpen, action, devices, onClose }: BulkProgressMod
 
                     let taskStatus = 'PENDING';
                     let attempts = 0;
+
+                    // Polling mejorado que lee metadata
                     while (['PENDING', 'STARTED'].includes(taskStatus) && attempts < 60) {
-                        await new Promise(r => setTimeout(r, 1000));
+                        await new Promise(r => setTimeout(r, 500));
                         const statusResponse = await deviceService.getTaskStatus(response.task_id);
                         taskStatus = statusResponse.status;
+
+                        // Si hay metadata de progreso, actualizamos la UI
+                        if (statusResponse.meta) {
+                            setStatuses(prev => prev.map(s =>
+                                s.uuid === device.uuidinspector ? {
+                                    ...s,
+                                    message: statusResponse.meta.message,
+                                    step: statusResponse.meta.step
+                                } : s
+                            ));
+                        }
+
                         if (['SUCCESS', 'FAILURE', 'REVOKED'].includes(taskStatus)) {
+                            // Si terminó exitosamente, usamos el mensaje final
+                            if (taskStatus === 'SUCCESS' && statusResponse.result) {
+                                setStatuses(prev => prev.map(s =>
+                                    s.uuid === device.uuidinspector ? {
+                                        ...s,
+                                        status: 'success',
+                                        message: statusResponse.result.message || 'Completado'
+                                    } : s
+                                ));
+                            }
+                            // Si falló, usamos el error
+                            if (taskStatus === 'FAILURE') {
+                                throw new Error(statusResponse.error || 'Error en la tarea');
+                            }
                             break;
                         }
                         attempts++;
                     }
 
-                    if (taskStatus === 'SUCCESS') {
-                        setStatuses(prev => prev.map(s =>
-                            s.uuid === device.uuidinspector ? { ...s, status: 'success' } : s
-                        ));
-                    } else {
-                        throw new Error(`Task failed with status: ${taskStatus}`);
+                    if (taskStatus !== 'SUCCESS') {
+                        throw new Error(`Timeout o error desconocido (Status: ${taskStatus})`);
                     }
                 } else {
                     setStatuses(prev => prev.map(s =>
-                        s.uuid === device.uuidinspector ? { ...s, status: 'success' } : s
+                        s.uuid === device.uuidinspector ? { ...s, status: 'success', message: 'Completado' } : s
                     ));
                 }
 
@@ -135,14 +160,25 @@ const BulkProgressModal = ({ isOpen, action, devices, onClose }: BulkProgressMod
                 <div className={styles.list}>
                     {statuses.map(s => (
                         <div key={s.uuid} className={styles.item}>
-                            <span className={styles.name}>{s.name}</span>
-                            <span className={styles.status}>
-                                {s.status === 'pending' && <span className={styles.pending}>⏳</span>}
-                                {s.status === 'processing' && <Loader2 className={styles.spin} size={16} />}
-                                {s.status === 'success' && <CheckCircle2 className={styles.success} size={16} />}
-                                {s.status === 'error' && <XCircle className={styles.error} size={16} />}
-                            </span>
-                            {s.message && <span className={styles.errorMsg}>{s.message}</span>}
+                            <div className={styles.row}>
+                                <span className={styles.name}>{s.name}</span>
+                                <span className={styles.status}>
+                                    {s.status === 'pending' && <span className={styles.pending}>⏳</span>}
+                                    {s.status === 'processing' && <Loader2 className={styles.spin} size={16} />}
+                                    {s.status === 'success' && <CheckCircle2 className={styles.success} size={16} />}
+                                    {s.status === 'error' && <XCircle className={styles.error} size={16} />}
+                                </span>
+                            </div>
+                            {/* Mostrar mensaje de progreso o error */}
+                            {s.message && (
+                                <div className={styles.progressMsg} style={{
+                                    fontSize: '0.8rem',
+                                    color: s.status === 'error' ? 'var(--red-400)' : 'var(--gray-400)',
+                                    marginLeft: '1rem'
+                                }}>
+                                    {s.message}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

@@ -1,5 +1,6 @@
 import logging
 from fastapi.concurrency import run_in_threadpool
+from asgiref.sync import async_to_sync
 from src.services.balena_service import BalenaService
 from src.repositories.provisioning_repo import ProvisioningRepository
 from src.repositories.info_devices_repo import InfoDevicesRepository
@@ -77,6 +78,100 @@ class DeviceAdminService:
             await TransactionManager.finish_transaction(historic_id, script_id, status, msg)
 
         return {"success": success, "message": msg}
+
+    @classmethod
+    def monitor_power_action(
+        cls, uuid: str, action: str, user: str = "SYSTEM", role: str = "SYSTEM"
+    ):
+        """
+        Generador Simplificado que:
+        1. Inicia transacción
+        2. Ejecuta Balena CLI (que espera a 'done')
+        3. Reporta éxito/fallo basado en el exit code del CLI
+        """
+        logger.info(f"⚡ Ejecutando '{action}' en {uuid} por {user}")
+        
+        script_id = cls.SCRIPT_MAP.get(action, "DEFAULT")
+        
+        snapshot = async_to_sync(InfoDevicesRepository.get_device_by_uuid)(uuid) or {}
+        historic_id = async_to_sync(TransactionManager.start_transaction)(
+            script_id, user=user, role=role
+        )
+        
+        if historic_id:
+            async_to_sync(HistoryRepository.log_device_snapshot)(
+                historic_id, uuid, TransactionStatus.EN_PROGRESO, snapshot
+            )
+
+        try:
+            # 1. Login Balena
+            if not BalenaService.login():
+                msg = "Fallo Login Balena CLI"
+                if historic_id:
+                     async_to_sync(TransactionManager.finish_transaction)(
+                         historic_id, script_id, TransactionStatus.FALLIDO, msg
+                     )
+                yield {"status": "failed", "message": msg}
+                return
+
+            # 2. Reportar In inicio (Feedback visual inicial)
+            yield {
+                "status": "in_progress", 
+                "step": "executing", 
+                "message": f"Ejecutando {action} en Balena (esperando confirmación)..."
+            }
+
+            # 3. Ejecutar acción (El CLI bloqueará hasta que termine o falle)
+            import time
+            start_time = time.time()
+            action_success = False
+            
+            if action == "reboot":
+                action_success = BalenaService.reboot_device(uuid)
+            elif action == "restart":
+                action_success = BalenaService.restart_device(uuid)
+            elif action == "shutdown":
+                action_success = BalenaService.shutdown_device(uuid)
+            else:
+                yield {"status": "failed", "message": f"Acción {action} no soportada"}
+                return
+            
+            elapsed = time.time() - start_time
+
+            # 4. Evaluar resultado del CLI
+            if action_success:
+                msg = f"{action.capitalize()} ejecutado exitosamente."
+                
+                if historic_id:
+                    async_to_sync(TransactionManager.finish_transaction)(
+                        historic_id, script_id, TransactionStatus.COMPLETO, msg
+                    )
+                
+                yield {
+                    "status": "completed", 
+                    "step": "done", 
+                    "message": msg,
+                    "elapsed": elapsed
+                }
+            else:
+                msg = f"Error: Balena CLI falló al ejecutar {action}."
+                
+                if historic_id:
+                    async_to_sync(TransactionManager.finish_transaction)(
+                        historic_id, script_id, TransactionStatus.FALLIDO, msg
+                    )
+                
+                yield {"status": "failed", "message": msg}
+        
+        except Exception as e:
+            logger.error(f"❌ Error en monitor_power_action: {e}")
+            if historic_id:
+                async_to_sync(TransactionManager.finish_transaction)(
+                    historic_id, script_id, TransactionStatus.FALLIDO, f"Error: {e}"
+                )
+            yield {"status": "failed", "message": str(e)}
+
+
 
     # ==========================================
     # 3. GESTIÓN DE NOTAS
