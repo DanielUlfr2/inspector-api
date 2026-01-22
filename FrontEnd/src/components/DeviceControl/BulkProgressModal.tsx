@@ -57,15 +57,16 @@ const BulkProgressModal = ({ isOpen, action, devices, onClose }: BulkProgressMod
                 const response = await deviceService.sendSingleAction(device.uuidinspector, action);
 
                 if (response.task_id) {
-                    // Esperar 2s para que el worker tome la tarea de la cola
-                    await new Promise(r => setTimeout(r, 2000));
+                    // Esperar 1s para que el worker tome la tarea de la cola
+                    await new Promise(r => setTimeout(r, 1000));
 
                     let taskStatus = 'PENDING';
                     let attempts = 0;
 
                     // Polling mejorado que lee metadata
-                    while (['PENDING', 'STARTED'].includes(taskStatus) && attempts < 60) {
-                        await new Promise(r => setTimeout(r, 500));
+                    // 480 intentos * 250ms = 120 segundos (2 minutos) de timeout
+                    while (['PENDING', 'STARTED'].includes(taskStatus) && attempts < 480) {
+                        await new Promise(r => setTimeout(r, 250));
                         const statusResponse = await deviceService.getTaskStatus(response.task_id);
                         taskStatus = statusResponse.status;
 

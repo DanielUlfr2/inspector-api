@@ -9,7 +9,12 @@
 }
 
 .notesContainer:hover {
-    border-color: var(--accent);
+    border-color: #00377B;
+}
+
+/* Dark mode: use cyan for hover */
+:global([data-theme='dark']) .notesContainer:hover {
+    border-color: #00C8FF;
 }
 
 .header {
@@ -44,8 +49,8 @@
 }
 
 .editBtn:hover {
-    color: var(--accent);
-    background: rgba(168, 85, 247, 0.1);
+    color: #00C8FF;
+    background: rgba(0, 200, 255, 0.1);
 }
 
 .noteContent {
@@ -86,8 +91,14 @@
 
 .textarea:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.2);
+    border-color: #00377B;
+    box-shadow: 0 0 0 2px rgba(0, 55, 123, 0.1);
+}
+
+/* Dark mode: use cyan for focus */
+:global([data-theme='dark']) .textarea:focus {
+    border-color: #00C8FF;
+    box-shadow: 0 0 0 2px rgba(0, 200, 255, 0.2);
 }
 
 .actions {
@@ -110,13 +121,27 @@
 }
 
 .saveBtn {
-    background: var(--accent);
+    background: #00377B;
     color: white;
 }
 
 .saveBtn:hover {
-    background: #9333ea;
-    /* Darker accent */
+    background: #002a5c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 55, 123, 0.3);
+}
+
+/* Dark mode: use cyan tint */
+:global([data-theme='dark']) .saveBtn {
+    background: rgba(0, 200, 255, 0.2);
+    color: #00C8FF;
+    border: 1px solid rgba(0, 200, 255, 0.3);
+}
+
+:global([data-theme='dark']) .saveBtn:hover {
+    background: #00377B;
+    color: white;
+    border-color: #00C8FF;
 }
 
 .cancelBtn {

@@ -38,6 +38,8 @@ const DeviceActionBar = ({ selectedDevices, onActionComplete }: Props) => {
                     <button
                         onClick={() => triggerAction('shutdown')}
                         className={styles.danger}
+                        disabled={selectedDevices.length > 1}
+                        title={selectedDevices.length > 1 ? "Solo se puede apagar un equipo a la vez" : "Apagar equipo"}
                     >
                         <Power size={16} /> Shutdown
                     </button>

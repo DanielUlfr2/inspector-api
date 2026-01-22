@@ -119,17 +119,19 @@
     color: #000000;
 }
 
-/* Botón de Shutdown (Peligro) */
+/* Botón de Shutdown (Peligro) - Smooth transition like delete button */
 .danger {
-    background: rgba(239, 68, 68, 0.1) !important;
-    color: #f87171 !important;
-    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--bg-hover);
+    transition: all 0.3s ease;
 }
 
 .danger:hover:not(:disabled) {
-    background: #ef4444 !important;
-    color: white !important;
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+    transform: translateY(-2px);
 }
 
 /* Estados deshabilitados */

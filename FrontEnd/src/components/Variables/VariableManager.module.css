@@ -132,9 +132,9 @@
 }
 
 .addBtn {
-    background: var(--accent);
+    background: #C8E3E7;
     border: none;
-    color: white;
+    color: #64748b;
     padding: 10px 16px;
     border-radius: 8px;
     cursor: pointer;
@@ -143,11 +143,22 @@
     justify-content: center;
     transition: all 0.2s;
     flex-shrink: 0;
+    font-weight: 600;
 }
 
 .addBtn:hover {
-    background: #9333ea;
+    background: #A8D5DB;
     transform: translateY(-1px);
+}
+
+/* Dark mode: use accent color */
+:global([data-theme='dark']) .addBtn {
+    background: var(--accent);
+    color: white;
+}
+
+:global([data-theme='dark']) .addBtn:hover {
+    background: #9333ea;
 }
 
 .addBtn:disabled {

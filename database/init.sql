@@ -122,6 +122,7 @@ CREATE TABLE Crm (
 CREATE TABLE InspectorService (
   strInspectorServiceId varchar(40) PRIMARY KEY, -- Esto parece ser un ID externo (string), se deja igual
   idProduct int NOT NULL,
+  idServiceStatus int NOT NULL,
   idTechnology int NOT NULL,
   idCity int NOT NULL,
   idServiceType int NOT NULL,
@@ -137,7 +138,8 @@ CREATE TABLE InspectorService (
   CONSTRAINT fk_inspectorservice_city FOREIGN KEY (idCity) REFERENCES City (idCity),
   CONSTRAINT fk_inspectorservice_servicetype FOREIGN KEY (idServiceType) REFERENCES ServiceType (idServiceType),
   CONSTRAINT fk_inspectorservice_cmtsolt FOREIGN KEY (idCmtsOlt) REFERENCES CmtsOlt (idCmtsOlt),
-  CONSTRAINT fk_inspectorservice_crm FOREIGN KEY (idCrm) REFERENCES Crm (idCrm)
+  CONSTRAINT fk_inspectorservice_crm FOREIGN KEY (idCrm) REFERENCES Crm (idCrm),
+  CONSTRAINT fk_inspectorservice_servicestatus FOREIGN KEY (idServiceStatus) REFERENCES ServiceStatus (idServiceStatus)
 );
 
 CREATE TABLE InspectorTerminalClient (
@@ -314,6 +316,7 @@ CREATE TABLE StatusInspectorHistory (
   idHistoricScript BIGINT NOT NULL,
   dtValidate timestamp NOT NULL,
   CONSTRAINT fk_statushistory_inspector FOREIGN KEY (uuidInspector) REFERENCES Inspector (uuidInspector),
+  CONSTRAINT fk_statushistory_transactionstatus FOREIGN KEY (idTransactionStatus) REFERENCES TransactionStatus (idTransactionStatus),
   CONSTRAINT pk_constraint_statusinsphist PRIMARY KEY (idInspectorHistory, dtValidate) 
 ) PARTITION BY RANGE (dtValidate);
 

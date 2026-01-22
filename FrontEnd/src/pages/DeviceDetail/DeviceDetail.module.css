@@ -25,7 +25,7 @@
 }
 
 .backBtn:hover {
-    color: var(--accent);
+    color: #00C8FF;
 }
 
 /* Encabezado */
@@ -174,7 +174,7 @@
 }
 
 .copyBtnInline:hover {
-    color: var(--accent);
+    color: #00C8FF;
 }
 
 .actionWrapper {
@@ -272,7 +272,7 @@
 }
 
 .copyIconButton:hover {
-    color: var(--accent);
+    color: #00C8FF;
 }
 
 .statusDotGreen {
