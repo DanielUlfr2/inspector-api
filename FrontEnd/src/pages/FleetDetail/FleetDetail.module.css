@@ -40,7 +40,7 @@
 }
 
 :global([data-theme="dark"]) .fleetHeader {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
@@ -87,7 +87,7 @@
 }
 
 :global([data-theme="dark"]) .fleetTag {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #e5e5e5;
 }
 
@@ -240,13 +240,13 @@
 }
 
 :global([data-theme="dark"]) .searchInput {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
 }
 
 :global([data-theme="dark"]) .searchInput:focus {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     border-color: #a855f7;
 }
 
@@ -265,7 +265,7 @@
 }
 
 :global([data-theme="dark"]) .refreshBtn {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #a0a0a0;
 }
@@ -276,7 +276,7 @@
 }
 
 :global([data-theme="dark"]) .refreshBtn:hover {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #a855f7;
 }
 
@@ -305,7 +305,7 @@
 }
 
 :global([data-theme="dark"]) .tableContainer {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
@@ -328,7 +328,7 @@
 }
 
 :global([data-theme="dark"]) .table th {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #e5e5e5;
     border-bottom-color: #333;
 }
@@ -340,7 +340,7 @@
 }
 
 :global([data-theme="dark"]) .table td {
-    border-bottom-color: #1a1a1a;
+    border-bottom-color: var(--bg-hover);
     color: #e5e5e5;
 }
 
@@ -448,7 +448,7 @@
 }
 
 :global([data-theme="dark"]) .filterRow th {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     border-bottom-color: #333;
 }
 
@@ -466,13 +466,13 @@
 }
 
 :global([data-theme="dark"]) .columnInput {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
 }
 
 :global([data-theme="dark"]) .columnInput:focus {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     border-color: #a855f7;
 }
 
@@ -492,7 +492,7 @@
 }
 
 :global([data-theme="dark"]) .columnSelect {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
 }

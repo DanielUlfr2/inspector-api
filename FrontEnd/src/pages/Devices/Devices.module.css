@@ -317,14 +317,14 @@
 
 /* Barra de búsqueda */
 :global([data-theme='dark']) .searchInput {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
 }
 
 :global([data-theme='dark']) .searchInput:focus {
     border-color: #00C8FF;
-    background: #1a1a1a;
+    background: var(--bg-hover);
 }
 
 :global([data-theme='dark']) .searchInput::placeholder {
@@ -337,25 +337,25 @@
 
 /* Botón de refrescar */
 :global([data-theme='dark']) .refreshBtn {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #a0a0a0;
 }
 
 :global([data-theme='dark']) .refreshBtn:hover {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #00C8FF;
 }
 
 /* Contenedor de la tabla */
 :global([data-theme='dark']) .tableContainer {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
 }
 
 /* Encabezados de tabla */
 :global([data-theme='dark']) .table th {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #e5e5e5;
     border-bottom-color: #333;
 }
@@ -363,25 +363,25 @@
 /* Celdas de tabla */
 :global([data-theme='dark']) .table td {
     color: #e5e5e5;
-    border-bottom-color: #1a1a1a;
+    border-bottom-color: var(--bg-hover);
 }
 
 /* Fila de filtros */
 :global([data-theme='dark']) .filterRow th {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     border-bottom-color: #333;
 }
 
 /* Inputs de filtro */
 :global([data-theme='dark']) .columnInput {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
 }
 
 :global([data-theme='dark']) .columnInput:focus {
     border-color: #00C8FF;
-    background: #1a1a1a;
+    background: var(--bg-hover);
 }
 
 :global([data-theme='dark']) .columnInput::placeholder {
@@ -390,7 +390,7 @@
 
 /* Select de filtro */
 :global([data-theme='dark']) .columnSelect {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
 }
@@ -401,7 +401,7 @@
 
 /* Badge de flota */
 :global([data-theme='dark']) .fleetBadge {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #e5e5e5;
 }
 
@@ -417,7 +417,7 @@
 
 /* Estado "Unknown" */
 :global([data-theme='dark']) .unknown {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #94a3b8;
     border-color: #333;
 }

@@ -8,6 +8,8 @@
     /* Modo Claro - Pastel Beige/Cream */
     --bg-main: #f5f3f0;
     --bg-sidebar: #ebe8e3;
+    --bg-card: #ffffff;
+    /* Added for consistency */
     --bg-hover: #e0ddd8;
     --text-primary: #1a1a1a;
     --text-muted: #6b6b6b;
@@ -15,10 +17,15 @@
 }
 
 [data-theme='dark'] {
-    /* Modo Oscuro (True Black - Basado en imagen de referencia) */
-    --bg-main: #000000;
-    --bg-sidebar: #0a0a0a;
-    --bg-hover: #1a1a1a;
+    /* Modo Oscuro (New Palette) */
+    --bg-main: #131417;
+    /* Background user requested */
+    --bg-sidebar: #1F1F1F;
+    /* Sidebar/Cards user requested */
+    --bg-card: #1F1F1F;
+    /* Component surface color */
+    --bg-hover: #2d2d2d;
+    /* Slightly lighter than card for hover/active */
     --text-primary: #ffffff;
     --text-muted: #a0a0a0;
     --accent: #3d5afe;

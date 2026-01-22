@@ -21,7 +21,7 @@
 }
 
 [data-theme="dark"] .trigger {
-    background: #1a1a1a;
+    background: var(--bg-card);
     border-color: #333;
     color: #f1f5f9;
 }
@@ -79,7 +79,7 @@
 }
 
 [data-theme="dark"] .dropdown {
-    background: #1a1a1a;
+    background: var(--bg-card);
     border-color: #00C8FF;
     box-shadow: 0 10px 25px -5px rgba(0, 200, 255, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
 }
@@ -128,7 +128,7 @@
 }
 
 [data-theme="dark"] .searchInput {
-    background: #0a0a0a;
+    background: var(--bg-hover);
     border-color: #333;
     color: #f1f5f9;
 }
@@ -139,7 +139,7 @@
 }
 
 [data-theme="dark"] .searchInput:focus {
-    background: #1a1a1a;
+    background: var(--bg-hover);
 }
 
 .searchInput::placeholder {
@@ -163,7 +163,7 @@
 }
 
 [data-theme="dark"] .optionsList::-webkit-scrollbar-track {
-    background: #0a0a0a;
+    background: var(--bg-card);
 }
 
 .optionsList::-webkit-scrollbar-thumb {
@@ -204,7 +204,7 @@
 }
 
 [data-theme="dark"] .option:hover {
-    background: #262626;
+    background: var(--bg-hover);
 }
 
 .optionSelected {

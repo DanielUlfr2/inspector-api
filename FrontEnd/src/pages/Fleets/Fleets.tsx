@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { LayoutGrid, List, RefreshCw, Plus } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { LayoutGrid, List, RefreshCw, Plus, Search } from 'lucide-react';
 import { useFleets } from '../../hooks/useFleets';
 import { useNavigate } from 'react-router-dom';
 import CreateFleetModal from '../../components/Fleets/CreateFleetModal';
@@ -10,7 +10,16 @@ const Fleets: React.FC = () => {
     const { fleets, loading, error, refresh } = useFleets();
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
+
+    // Lógica de filtrado
+    const filteredFleets = useMemo(() => {
+        return fleets.filter(fleet =>
+            fleet.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (fleet.device_type_slug || '').toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [fleets, searchTerm]);
 
     if (loading) return <div style={{ padding: '2rem' }}>Cargando flotas...</div>;
     if (error) return <div style={{ padding: '2rem', color: 'red' }}>Error: {error}</div>;
@@ -32,9 +41,20 @@ const Fleets: React.FC = () => {
             <header className={styles.header}>
                 <div className={styles.titleSection}>
                     <h1>Flotas</h1>
-                    <span className={styles.badge}>{fleets.length}</span>
+                    <span className={styles.badge}>{filteredFleets.length}</span>
                 </div>
                 <div className={styles.actions}>
+                    <div className={styles.searchWrapper}>
+                        <Search size={18} className={styles.searchIcon} />
+                        <input
+                            type="text"
+                            placeholder="Buscar flota..."
+                            className={styles.searchInput}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
                     <button className={styles.createBtn} onClick={() => setShowCreateModal(true)}>
                         <Plus size={18} />
                         <span>Nueva Flota</span>
@@ -60,10 +80,10 @@ const Fleets: React.FC = () => {
             </header>
 
             <div className={viewMode === 'grid' ? styles.grid : styles.list}>
-                {fleets.length === 0 ? (
-                    <div className={styles.emptyState}>No hay flotas disponibles</div>
+                {filteredFleets.length === 0 ? (
+                    <div className={styles.emptyState}>No hay flotas que coincidan con la búsqueda.</div>
                 ) : (
-                    fleets.map(fleet => (
+                    filteredFleets.map(fleet => (
                         <div
                             key={fleet.id}
                             className={styles.fleetCard}

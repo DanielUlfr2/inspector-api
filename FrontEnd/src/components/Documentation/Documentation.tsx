@@ -2,6 +2,23 @@ import { BarChart3, Truck, MonitorSmartphone, Activity, Wrench, AlertCircle, Che
 import styles from './Documentation.module.css';
 import ImageCarousel from './ImageCarousel';
 
+// Import local images
+import imgDashboard from '../../assets/Public/Documentacion_panel_Dashboard.png';
+import imgDashboardDate from '../../assets/Public/Documentacion_panel_Dashboard_date.png';
+
+import imgFleets from '../../assets/Public/Documentacion_panel_flotas.png';
+import imgFleetsCreate from '../../assets/Public/Documentacion_panel_flotas_creacion.png';
+import imgFleetsDetail from '../../assets/Public/Documentacion_panel_flotas_detail.png';
+import imgFleetsRename from '../../assets/Public/Documentacion_panel_flotas_detail_rename.png';
+import imgFleetsVars from '../../assets/Public/Documentacion_panel_flotas_detail_variables.png';
+import imgFleetsDelete from '../../assets/Public/Documentacion_panel_flotas_eliminacion.png';
+
+import imgDevices from '../../assets/Public/Documentacion_panel_dispositivos.png';
+import imgDevicesDetail from '../../assets/Public/Documentacion_panel_dispositivos_detail.png';
+import imgDevicesProvision from '../../assets/Public/Documentacion_panel_dispositivos_detail_inventariado.png';
+import imgDevicesGraph from '../../assets/Public/Documentacion_panel_dispositivos_detail_graph.png';
+import imgDevicesLogs from '../../assets/Public/Documentacion_panel_dispositivos_detail_logs.png';
+
 const Documentation = () => {
     return (
         <div className={styles.container}>
@@ -75,9 +92,8 @@ const Documentation = () => {
                     {/* Image Carousel */}
                     <ImageCarousel
                         images={[
-                            '/placeholder-dashboard-1.png',
-                            '/placeholder-dashboard-2.png',
-                            '/placeholder-dashboard-3.png'
+                            imgDashboard,
+                            imgDashboardDate
                         ]}
                         sectionName="Dashboard de Inspección"
                     />
@@ -141,9 +157,12 @@ const Documentation = () => {
                     {/* Image Carousel */}
                     <ImageCarousel
                         images={[
-                            '/placeholder-fleets-1.png',
-                            '/placeholder-fleets-2.png',
-                            '/placeholder-fleets-3.png'
+                            imgFleets,
+                            imgFleetsCreate,
+                            imgFleetsDetail,
+                            imgFleetsRename,
+                            imgFleetsVars,
+                            imgFleetsDelete
                         ]}
                         sectionName="Gestión de Flotas"
                     />
@@ -196,9 +215,9 @@ const Documentation = () => {
                     {/* Image Carousel */}
                     <ImageCarousel
                         images={[
-                            '/placeholder-devices-1.png',
-                            '/placeholder-devices-2.png',
-                            '/placeholder-devices-3.png'
+                            imgDevices,
+                            imgDevicesDetail,
+                            imgDevicesProvision
                         ]}
                         sectionName="Control de Dispositivos"
                     />
@@ -250,9 +269,9 @@ const Documentation = () => {
                     {/* Image Carousel */}
                     <ImageCarousel
                         images={[
-                            '/placeholder-performance-1.png',
-                            '/placeholder-performance-2.png',
-                            '/placeholder-performance-3.png'
+                            imgDevicesGraph,
+                            imgDevicesLogs,
+                            imgDevicesDetail // Reusing overview for context
                         ]}
                         sectionName="Análisis de Rendimiento"
                     />
@@ -331,12 +350,11 @@ const Documentation = () => {
                         </div>
                     </div>
 
-                    {/* Image Carousel */}
+                    {/* Image Carousel - Reusing Fleet Creation/Vars images as they are relevant to deployment steps */}
                     <ImageCarousel
                         images={[
-                            '/placeholder-deployment-1.png',
-                            '/placeholder-deployment-2.png',
-                            '/placeholder-deployment-3.png'
+                            imgFleetsCreate,
+                            imgFleetsVars
                         ]}
                         sectionName="Proceso de Despliegue"
                     />
@@ -562,16 +580,6 @@ CMD ["bash","start.sh"]`}</pre>
                             <strong>¡Configuración Completa!</strong> Tu imagen está lista para ser desplegada en las sondas de tu flota.
                         </div>
                     </div>
-
-                    {/* Image Carousel */}
-                    <ImageCarousel
-                        images={[
-                            '/placeholder-config-1.png',
-                            '/placeholder-config-2.png',
-                            '/placeholder-config-3.png'
-                        ]}
-                        sectionName="Configuración de Imagen"
-                    />
                 </div>
             </section>
         </div>
@@ -579,3 +587,4 @@ CMD ["bash","start.sh"]`}</pre>
 };
 
 export default Documentation;
+

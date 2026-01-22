@@ -60,6 +60,12 @@ export interface Device {
     region_id?: number;
     department_id?: number;
 
+    // Names (Joined)
+    city_name?: string;
+    cmts_olt_name?: string;
+    technology_name?: string;
+    service_type_name?: string;
+
     // Variables de configuración
     device_variables?: Variable[];
     fleet_variables?: Variable[];

@@ -289,11 +289,21 @@ class InfoDevicesRepository:
                 ser.strInspectorServiceId AS inspector_service_id,
                 ser.strClientName AS client_name,
                 ser.strAddress AS address,
+                
                 ser.idCity AS city_id,
+                cit.strCityName AS city_name,
+                
                 ser.idCmtsOlt AS cmts_olt_id,
+                co.strCmtsOltName AS cmts_olt_name,
+                
                 ser.idProduct AS product_id,
+                
                 ser.idTechnology AS technology_id,
+                tec.strTechnologyName AS technology_name,
+                
                 ser.idServiceType AS service_type_id,
+                sty.strServiceTypeName AS service_type_name,
+                
                 ser.idCrm AS crm_id,
                 ser.intdownspeed AS down_speed,
                 ser.intupspeed AS up_speed
@@ -305,6 +315,13 @@ class InfoDevicesRepository:
             -- Unión con servicios para obtener los datos de negocio
             LEFT JOIN inspector.InspectorService ser 
                 ON i.strInspectorServiceId = ser.strInspectorServiceId
+            
+            -- Uniones para nombres descriptivos
+            LEFT JOIN inspector.City cit ON ser.idCity = cit.idCity
+            LEFT JOIN inspector.CmtsOlt co ON ser.idCmtsOlt = co.idCmtsOlt
+            LEFT JOIN inspector.Technology tec ON ser.idTechnology = tec.idTechnology
+            LEFT JOIN inspector.ServiceType sty ON ser.idServiceType = sty.idServiceType
+
             WHERE i.uuidInspector = $1 AND i.strInspectorName != 'ELIMINADO'
         """
         

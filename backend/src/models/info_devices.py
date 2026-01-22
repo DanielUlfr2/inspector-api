@@ -77,6 +77,12 @@ class DeviceDetailSchema(BaseModel):
     region_id: Optional[int] = Field(None, alias="region_id")
     department_id: Optional[int] = Field(None, alias="department_id")
 
+    # Names (Descriptive)
+    city_name: Optional[str] = Field(None, alias="city_name")
+    cmts_olt_name: Optional[str] = Field(None, alias="cmts_olt_name")
+    technology_name: Optional[str] = Field(None, alias="technology_name")
+    service_type_name: Optional[str] = Field(None, alias="service_type_name")
+
     class Config:
         from_attributes = True
         populate_by_name = True

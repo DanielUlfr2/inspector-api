@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
     Globe, Clipboard, Check, Terminal, Settings,
-    Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X, BarChart2, Trash2
+    Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X, BarChart2, Trash2,
+    Hash, User, MapPin, Zap, Layers, Circle, Wifi, Server, Map as MapIcon, Briefcase, UserCheck
 } from 'lucide-react';
 
 import { deviceService } from '../../features/devices/deviceService';
@@ -168,6 +169,9 @@ const DeviceDetail = () => {
                 <div className={styles.headerMain}>
                     <div className={styles.titleGroup}>
                         <h1>{device.strinspectorname}</h1>
+                        <button onClick={() => handleCopy(device.strinspectorname, 'name-header')} className={styles.copyBtnInline} title="Copiar nombre">
+                            {copiedKey === 'name-header' ? <Check size={20} color="#10b981" /> : <Clipboard size={20} />}
+                        </button>
                         <button className={styles.pencilBtn} onClick={() => setIsInventoryOpen(true)} title="Editar Inventario">
                             <Pencil size={18} />
                         </button>
@@ -207,12 +211,19 @@ const DeviceDetail = () => {
                 {showMoreInfo && (
                     <div className={styles.moreInfoPanel}>
                         <div className={styles.infoGrid}>
-                            <InfoField label="SERVICE ID" value={device.inspector_service_id || 'N/A'} />
-                            <InfoField label="CLIENTE" value={device.client_name || 'Sin registro'} />
-                            <InfoField label="DIRECCIÓN" value={device.address || 'Sin registro'} />
-                            <InfoField label="VELOCIDAD" value={`${device.down_speed || 0} / ${device.up_speed || 0} Mbps`} />
-                            <InfoField label="ESTADO" value={device.status_name || 'Desconocido'} />
-                            <InfoField label="FLEET" value={device.stridinspectorfleet} />
+                            <InfoField icon={<Hash size={14} />} label="SERVICE ID" value={device.inspector_service_id || 'N/A'} />
+                            <InfoField icon={<User size={14} />} label="CLIENTE" value={device.client_name || 'Sin registro'} />
+                            <InfoField icon={<MapPin size={14} />} label="DIRECCIÓN" value={device.address || 'Sin registro'} />
+                            <InfoField icon={<MapIcon size={14} />} label="CIUDAD" value={device.city_name || 'N/A'} />
+
+                            <InfoField icon={<Zap size={14} />} label="VELOCIDAD" value={`${device.down_speed || 0} / ${device.up_speed || 0} Mbps`} />
+                            <InfoField icon={<Server size={14} />} label="TECNOLOGÍA" value={device.technology_name || 'N/A'} />
+                            <InfoField icon={<Wifi size={14} />} label="CMTS/OLT" value={device.cmts_olt_name || 'N/A'} />
+                            <InfoField icon={<Briefcase size={14} />} label="TIPO CLIENTE" value={device.service_type_name || 'N/A'} />
+
+                            <InfoField icon={<UserCheck size={14} />} label="USUARIO" value={device.client_name || 'N/A'} />
+                            <InfoField icon={<Circle size={14} />} label="ESTADO" value={device.status_name || 'Desconocido'} />
+                            <InfoField icon={<Layers size={14} />} label="FLEET" value={device.stridinspectorfleet} />
                         </div>
                     </div>
                 )}
@@ -235,7 +246,7 @@ const DeviceDetail = () => {
                             <Globe size={18} /> <h2>Información Técnica</h2>
                         </div>
                         <div className={styles.techInfoGrid}>
-                            {/* Fila 1: Estado y Fleet */}
+                            {/* Fila 1: Estado y Fleet - side by side */}
                             <div className={styles.techField}>
                                 <span className={styles.techLabel}>ESTADO INVENTARIO</span>
                                 <div className={styles.techValue}>
@@ -246,11 +257,11 @@ const DeviceDetail = () => {
                             </div>
 
                             <div className={styles.techField}>
-                                <span className={styles.techLabel}>FLEET</span>
+                                <span className={styles.techLabel}>FLEET OMNI</span>
                                 <span className={styles.techValue}>{device.stridinspectorfleet}</span>
                             </div>
 
-                            {/* Fila 2: Conectividad */}
+                            {/* Fila 2: Conectividad y Versiones */}
                             <div className={styles.techField}>
                                 <span className={styles.techLabel}>CONECTIVIDAD</span>
                                 <div className={styles.techValue}>
@@ -262,30 +273,45 @@ const DeviceDetail = () => {
                             </div>
 
                             <div className={styles.techField}>
-                                <span className={styles.techLabel}>ÚLTIMA CONEXIÓN</span>
-                                <span className={styles.techValue}>
-                                    {new Date(device.dtlastconnectivityevent).toLocaleString('es-ES', {
-                                        day: '2-digit',
-                                        month: 'short',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    })}
-                                </span>
+                                <span className={styles.techLabel}>SUPERVISOR</span>
+                                <span className={styles.techValue}>{device.strsupervisorversion}</span>
                             </div>
 
-                            {/* Fila 3: Direcciones */}
-                            <div className={styles.techField} style={{ gridColumn: '1 / -1' }}>
-                                <span className={styles.techLabel}>DIRECCIÓN IP</span>
-                                <div className={styles.techValue}>
-                                    <code className={styles.codeValue}>{device.stripaddress}</code>
-                                    <button onClick={() => handleCopy(device.stripaddress, 'ip')} className={styles.copyIconButton}>
-                                        {copiedKey === 'ip' ? <Check size={14} color="#10b981" /> : <Clipboard size={14} />}
-                                    </button>
-                                </div>
-                            </div>
+                            {/* Fila 3: IPs Separadas */}
+                            {(() => {
+                                const ips = (device.stripaddress || '').split(' ');
+                                const ipv4 = ips.find(ip => ip.includes('.')) || 'N/A';
+                                const ipv6 = ips.find(ip => ip.includes(':')) || 'N/A';
+                                return (
+                                    <>
+                                        <div className={styles.techField}>
+                                            <span className={styles.techLabel}>DIRECCIÓN IPv4</span>
+                                            <div className={styles.techValue}>
+                                                <code className={styles.codeValue}>{ipv4}</code>
+                                                {ipv4 !== 'N/A' && (
+                                                    <button onClick={() => handleCopy(ipv4, 'ipv4')} className={styles.copyIconButton}>
+                                                        {copiedKey === 'ipv4' ? <Check size={14} color="#10b981" /> : <Clipboard size={14} />}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className={styles.techField}>
+                                            <span className={styles.techLabel}>DIRECCIÓN IPv6</span>
+                                            <div className={styles.techValue}>
+                                                <code className={styles.codeValue} title={ipv6}>{ipv6}</code>
+                                                {ipv6 !== 'N/A' && (
+                                                    <button onClick={() => handleCopy(ipv6, 'ipv6')} className={styles.copyIconButton}>
+                                                        {copiedKey === 'ipv6' ? <Check size={14} color="#10b981" /> : <Clipboard size={14} />}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                );
+                            })()}
 
-                            <div className={styles.techField} style={{ gridColumn: '1 / -1' }}>
+                            {/* Fila 4: MAC y OS */}
+                            <div className={styles.techField}>
                                 <span className={styles.techLabel}>MAC ADDRESS</span>
                                 <div className={styles.techValue}>
                                     <code className={styles.codeValue}>{device.jsonbobservaciones.mac_address || 'N/A'}</code>
@@ -295,18 +321,22 @@ const DeviceDetail = () => {
                                 </div>
                             </div>
 
-                            {/* Fila 4: Versiones */}
-                            <div className={styles.techField}>
-                                <span className={styles.techLabel}>SUPERVISOR</span>
-                                <span className={styles.techValue}>{device.strsupervisorversion}</span>
-                            </div>
-
                             <div className={styles.techField}>
                                 <span className={styles.techLabel}>SISTEMA OPERATIVO</span>
                                 <span className={styles.techValue}>{device.strosversion}</span>
                             </div>
 
-                            {/* Fila 5: Notas (Componente Interactivo) */}
+                            {/* Fila 5: Última Conexión */}
+                            <div className={styles.techField} style={{ gridColumn: '1 / -1' }}>
+                                <span className={styles.techLabel}>ÚLTIMA CONEXIÓN</span>
+                                <span className={styles.techValue}>
+                                    {new Date(device.dtlastconnectivityevent).toLocaleString('es-ES', {
+                                        weekday: 'long', day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                    })}
+                                </span>
+                            </div>
+
+                            {/* Fila 6: Notas (Componente Interactivo) */}
                             <DeviceNotes
                                 deviceUuid={device.uuidinspector}
                                 initialNote={device.strnote}
@@ -349,7 +379,17 @@ const DeviceDetail = () => {
                             <Terminal size={18} /> <h2>Consola de Logs (Stream)</h2>
                         </div>
                         <div className={styles.console} ref={consoleRef}>
-                            <pre><code>{logs}</code></pre>
+                            {logs && !logs.startsWith('Iniciando') ? (
+                                <pre><code>{logs}</code></pre>
+                            ) : (
+                                <div className={styles.terminalLoader}>
+                                    <div className={styles.terminalText}>
+                                        <span className={styles.prompt}>$</span> connecting to device stream...
+                                        <span className={styles.cursor}>_</span>
+                                    </div>
+                                    <div className={styles.loaderBar}></div>
+                                </div>
+                            )}
                         </div>
                     </section>
                 </div>
@@ -423,7 +463,10 @@ const DeviceDetail = () => {
 
 const InfoField = ({ label, value, copyable, onCopy, isCopied, icon, isStatus, online }: any) => (
     <div className={styles.infoField}>
-        <span className={styles.fieldLabel}>{label} {icon}</span>
+        <span className={styles.fieldLabel}>
+            {icon && <span style={{ marginRight: '6px', display: 'inline-flex' }}>{icon}</span>}
+            {label}
+        </span>
         <div className={styles.fieldValue}>
             {isStatus && <span className={online ? styles.statusDotGreen : styles.statusDotRed} />}
             {value}

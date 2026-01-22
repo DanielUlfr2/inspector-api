@@ -3,7 +3,7 @@
     height: 100vh;
     width: 100vw;
     overflow: hidden;
-    background-color: #000000;
+    background-color: var(--bg-main);
     align-items: stretch;
 }
 
@@ -17,5 +17,5 @@
 }
 
 [data-theme="dark"] .content {
-    background: #000000;
+    background: var(--bg-main);
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import styles from './BulkProgressModal.module.css';
 import { Device } from '../../types/device';
 import { deviceService } from '../../features/devices/deviceService';
@@ -160,25 +160,20 @@ const BulkProgressModal = ({ isOpen, action, devices, onClose }: BulkProgressMod
                 <div className={styles.list}>
                     {statuses.map(s => (
                         <div key={s.uuid} className={styles.item}>
-                            <div className={styles.row}>
+                            <div className={styles.itemContent}>
                                 <span className={styles.name}>{s.name}</span>
-                                <span className={styles.status}>
-                                    {s.status === 'pending' && <span className={styles.pending}>⏳</span>}
-                                    {s.status === 'processing' && <Loader2 className={styles.spin} size={16} />}
-                                    {s.status === 'success' && <CheckCircle2 className={styles.success} size={16} />}
-                                    {s.status === 'error' && <XCircle className={styles.error} size={16} />}
-                                </span>
+                                {s.message && (
+                                    <span className={`${styles.message} ${s.status === 'error' ? styles.errorText : ''}`}>
+                                        {s.message}
+                                    </span>
+                                )}
                             </div>
-                            {/* Mostrar mensaje de progreso o error */}
-                            {s.message && (
-                                <div className={styles.progressMsg} style={{
-                                    fontSize: '0.8rem',
-                                    color: s.status === 'error' ? 'var(--red-400)' : 'var(--gray-400)',
-                                    marginLeft: '1rem'
-                                }}>
-                                    {s.message}
-                                </div>
-                            )}
+                            <div className={styles.status}>
+                                {s.status === 'pending' && <Clock className={styles.pending} size={20} />}
+                                {s.status === 'processing' && <Loader2 className={styles.spin} size={20} />}
+                                {s.status === 'success' && <CheckCircle2 className={styles.success} size={20} />}
+                                {s.status === 'error' && <XCircle className={styles.error} size={20} />}
+                            </div>
                         </div>
                     ))}
                 </div>

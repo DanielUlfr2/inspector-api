@@ -5,6 +5,7 @@
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -12,57 +13,86 @@
 }
 
 .modal {
-    background: #1e293b;
+    background: var(--bg-card);
     padding: 24px;
-    border-radius: 12px;
+    border-radius: 16px;
     width: 600px;
     max-height: 80vh;
     display: flex;
     flex-direction: column;
-    color: white;
-    border: 1px solid #334155;
+    color: var(--text-primary);
+    border: 1px solid var(--bg-hover);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal h3 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--bg-hover);
+    padding-bottom: 1rem;
+    margin-bottom: 0;
 }
 
 .list {
     flex: 1;
     overflow-y: auto;
     margin: 20px 0;
-    background: #0f172a;
+    background: var(--bg-main);
     border-radius: 8px;
-    padding: 10px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    border: 1px solid var(--bg-hover);
 }
 
 .item {
     display: flex;
-    flex-direction: column;
-    padding: 8px 12px;
-    background: #1e293b;
-    border-radius: 6px;
-    gap: 4px;
-    border: 1px solid #334155;
-    font-size: 0.9rem;
-}
-
-.row {
-    display: flex;
+    flex-direction: row;
+    /* Horizontal layout */
     align-items: center;
-    width: 100%;
-    gap: 12px;
+    /* Vertically center content */
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    gap: 16px;
+    border: 1px solid var(--bg-hover);
+    font-size: 0.9rem;
+    transition: all 0.2s;
 }
 
-.progressMsg {
+.item:hover {
+    border-color: #00C8FF;
+    transform: translateX(2px);
+}
+
+.itemContent {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    /* Allows text truncate if needed */
+}
+
+.message {
+    font-family: 'Fira Code', monospace;
     font-size: 0.75rem;
-    color: #94a3b8;
-    margin-left: 2px;
+    color: var(--text-muted);
+}
+
+.errorText {
+    color: #ef4444;
 }
 
 .name {
     flex: 1;
     font-weight: 500;
-    color: #e2e8f0;
+    color: var(--text-primary);
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
 }
 
 .status {
@@ -74,11 +104,11 @@
 
 .spin {
     animation: spin 1s linear infinite;
-    color: #3b82f6;
+    color: #00C8FF;
 }
 
 .success {
-    color: #22c55e;
+    color: #10b981;
 }
 
 .error {
@@ -87,15 +117,7 @@
 
 .pending {
     opacity: 0.5;
-}
-
-.errorMsg {
-    font-size: 0.8rem;
-    color: #ef4444;
-    max-width: 200px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: var(--text-muted);
 }
 
 .actions {
@@ -103,41 +125,50 @@
     justify-content: flex-end;
     gap: 12px;
     margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bg-hover);
 }
 
 .actions button {
     padding: 10px 20px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     border: none;
     transition: all 0.2s;
+    font-size: 0.9rem;
 }
 
 .cancelBtn,
 .closeBtn {
-    background: #334155;
-    color: white;
+    background: var(--bg-hover);
+    color: var(--text-muted);
 }
 
 .cancelBtn:hover,
 .closeBtn:hover {
-    background: #475569;
-}
-
-.confirmBtn {
-    background: #3b82f6;
+    background: #333;
     color: white;
 }
 
+.confirmBtn {
+    background: #00C8FF;
+    color: #00377B;
+}
+
 .confirmBtn:hover {
-    background: #2563eb;
+    background: #00377B;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 200, 255, 0.3);
 }
 
 .processingBtn {
-    background: #64748b;
-    color: #ccc;
-    cursor: not-allowed;
+    background: var(--bg-hover);
+    color: var(--text-muted);
+    cursor: wait;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 @keyframes spin {
@@ -148,4 +179,22 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+/* Scrollbar styling for the list */
+.list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.list::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+.list::-webkit-scrollbar-thumb {
+    background: var(--bg-hover);
+    border-radius: 4px;
+}
+
+.list::-webkit-scrollbar-thumb:hover {
+    background: #333;
 }

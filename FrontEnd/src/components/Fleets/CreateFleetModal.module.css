@@ -20,7 +20,7 @@
 }
 
 [data-theme="dark"] .modal {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border: 1px solid #333;
 }
 
@@ -109,7 +109,7 @@
 
 [data-theme="dark"] .input,
 [data-theme="dark"] .select {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     border-color: #333;
     color: #f1f5f9;
 }
@@ -154,7 +154,7 @@
 }
 
 [data-theme="dark"] .select option {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #f1f5f9;
 }
 

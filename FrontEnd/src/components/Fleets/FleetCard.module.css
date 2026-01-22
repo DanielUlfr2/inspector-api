@@ -11,7 +11,7 @@
 }
 
 [data-theme="dark"] .card {
-    background-color: #0a0a0a;
+    background-color: var(--bg-card);
     border-color: #333;
 }
 

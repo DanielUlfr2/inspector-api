@@ -53,6 +53,54 @@
     align-items: center;
 }
 
+/* Barra de Búsqueda */
+.searchWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+}
+
+.searchInput {
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    width: 250px;
+    /* Slightly smaller than Devices to fit actions */
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.searchInput:focus {
+    border-color: #00377B;
+    box-shadow: 0 0 0 3px rgba(0, 55, 123, 0.1);
+}
+
+[data-theme="dark"] .searchInput {
+    background: var(--bg-card);
+    border-color: #333;
+    color: #e5e5e5;
+}
+
+[data-theme="dark"] .searchInput:focus {
+    border-color: #00C8FF;
+    background: var(--bg-hover);
+}
+
+[data-theme="dark"] .searchInput::placeholder {
+    color: #666;
+}
+
+[data-theme="dark"] .searchIcon {
+    color: #666;
+}
+
 .refreshBtn {
     display: flex;
     align-items: center;
@@ -72,13 +120,13 @@
 }
 
 [data-theme="dark"] .refreshBtn {
-    background: #000;
+    background: var(--bg-card);
     border-color: #333;
     color: #94a3b8;
 }
 
 [data-theme="dark"] .refreshBtn:hover {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #00C8FF;
 }
 
@@ -127,7 +175,7 @@
 }
 
 [data-theme="dark"] .viewToggle {
-    background: #000;
+    background: var(--bg-card);
     border-color: #333;
 }
 
@@ -154,7 +202,7 @@
 }
 
 [data-theme="dark"] .viewToggle button.active {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #818cf8;
 }
 
@@ -163,7 +211,7 @@
 }
 
 [data-theme="dark"] .viewToggle button:hover:not(.active) {
-    background: #111;
+    background: var(--bg-hover);
 }
 
 
@@ -200,7 +248,7 @@
 }
 
 [data-theme="dark"] .fleetCard {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
 }
 

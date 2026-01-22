@@ -71,18 +71,19 @@
 }
 
 /* Dark Mode Support */
+/* Dark Mode Support */
 :global([data-theme='dark']) .container {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
 }
 
 :global([data-theme='dark']) .btn:hover:not(.active) {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #e5e5e5;
 }
 
 :global([data-theme='dark']) .active {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #00C8FF;
     /* Tigo Cyan for Dark Mode visibility */
     border: 1px solid #00377B;

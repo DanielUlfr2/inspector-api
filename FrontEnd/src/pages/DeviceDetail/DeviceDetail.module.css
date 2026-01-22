@@ -503,27 +503,54 @@
 }
 
 .statusBadge[data-status="Ocupado"] {
+    background: rgba(0, 200, 255, 0.15);
+    /* Cyan */
+    color: #00C8FF;
+    border: 1px solid rgba(0, 200, 255, 0.3);
+}
+
+.statusBadge[data-status="Libre"] {
+    background: rgba(168, 85, 247, 0.15);
+    /* Purple */
+    color: #a855f7;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+}
+
+.statusBadge[data-status="Perdida"] {
     background: rgba(239, 68, 68, 0.15);
+    /* Red */
     color: #ef4444;
     border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.statusBadge[data-status="Libre"] {
+.statusBadge[data-status="Por instalar"] {
     background: rgba(16, 185, 129, 0.15);
+    /* Green */
     color: #10b981;
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.statusBadge[data-status="Mantenimiento"] {
+.statusBadge[data-status="Por retirar"] {
     background: rgba(245, 158, 11, 0.15);
+    /* Orange */
     color: #f59e0b;
     border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
-.statusBadge[data-status="Desconocido"] {
-    background: rgba(107, 114, 128, 0.15);
-    color: #6b7280;
-    border: 1px solid rgba(107, 114, 128, 0.3);
+/* Default / Unknown */
+.statusBadge[data-status="Desconocido"],
+.statusBadge {
+    background: rgba(0, 55, 123, 0.15);
+    /* Dark Blue fallback */
+    color: #00377B;
+    border: 1px solid rgba(0, 55, 123, 0.3);
+}
+
+:global([data-theme='dark']) .statusBadge[data-status="Desconocido"],
+:global([data-theme='dark']) .statusBadge {
+    color: #60a5fa;
+    /* Lighter blue for dark mode visibility */
+    border-color: #60a5fa;
 }
 
 .statusIndicator {
@@ -560,8 +587,8 @@
 
 .modalContent {
     background: var(--bg-main);
-    width: 90%;
-    max-width: 900px;
+    width: 95%;
+    max-width: 1000px;
     border-radius: 16px;
     border: 1px solid var(--bg-hover);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -607,13 +634,29 @@
     overflow-y: auto;
 }
 
+/* More Info Panel - Refined */
+/* More Info Panel - Refined */
 .moreInfoPanel {
-    background: var(--bg-main);
+    background: rgba(255, 255, 255, 0.5);
+    /* Light mode: cleaner look */
     border: 1px solid var(--bg-hover);
     padding: 1.5rem;
     border-radius: 12px;
     margin-top: 1rem;
     animation: fadeIn 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+:global([data-theme='dark']) .moreInfoPanel {
+    background: rgba(0, 0, 0, 0.2);
+    /* Dark mode: keep existing */
+}
+
+.infoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    /* Adaptive columns */
+    gap: 2rem;
 }
 
 @keyframes fadeIn {
@@ -633,4 +676,78 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
     margin-top: 1.5rem;
+}
+
+/* Terminal Loader */
+.terminalLoader {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: var(--text-muted);
+    gap: 1rem;
+}
+
+.terminalText {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prompt {
+    color: #10b981;
+    font-weight: 700;
+}
+
+.cursor {
+    display: inline-block;
+    width: 8px;
+    height: 16px;
+    background: var(--text-muted);
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+.loaderBar {
+    width: 150px;
+    height: 2px;
+    background: var(--bg-hover);
+    position: relative;
+    overflow: hidden;
+    border-radius: 2px;
+}
+
+.loaderBar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: #00C8FF;
+    animation: loading 1.5s infinite ease-in-out;
+}
+
+@keyframes loading {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(200%);
+    }
 }

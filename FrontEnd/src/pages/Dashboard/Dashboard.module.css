@@ -40,7 +40,7 @@
 }
 
 :global([data-theme='dark']) .card {
-    background: #0a0a0a;
+    background: var(--bg-card);
     /* True Black / Sidebar bg */
     border-color: #333;
     color: #e5e5e5;
@@ -49,7 +49,7 @@
 /* Eliminated empty ruleset for .cardLabel */
 
 :global([data-theme='dark']) .chartSection {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
 }
@@ -184,13 +184,13 @@
 }
 
 :global([data-theme='dark']) .refreshButton {
-    background: #0a0a0a;
+    background: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
 }
 
 :global([data-theme='dark']) .refreshButton:hover {
-    background: #1a1a1a;
+    background: var(--bg-hover);
     color: #3d5afe;
     border-color: #3d5afe;
 }
@@ -288,7 +288,7 @@
 }
 
 :global([data-theme='dark']) .customTooltip {
-    background-color: #0a0a0a;
+    background-color: var(--bg-card);
     border-color: #333;
     color: #e5e5e5;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
