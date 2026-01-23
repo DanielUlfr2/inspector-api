@@ -1526,8 +1526,15 @@ INSERT INTO inspector.ServiceType (strServiceTypeName, strDescription, dtModific
 ('Autoconsumo', 'Inspector instalados sobre autoconsumos', CURRENT_TIMESTAMP),
 ('Laboratorio', 'Inspector instalados en Laboratorio', CURRENT_TIMESTAMP);
 
-INSERT INTO inspector.InspectorService (strInspectorServiceId, strAddress, intDownSpeed, intUpSpeed, idProduct, idTechnology, idCity, idServiceType, idCmtsOlt, idCrm, strClientName, dtModificationDate)VALUES
-('1111', 'DEFAULT', 0, 0, 1, 4, 1, 1, 2, 6, 'DEFAULT', CURRENT_TIMESTAMP);
+INSERT INTO inspector.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
+('Activo', CURRENT_TIMESTAMP),
+('Suspendido', CURRENT_TIMESTAMP),
+('En proceso de retiro', CURRENT_TIMESTAMP),
+('Retirado', CURRENT_TIMESTAMP),
+('Indeterminado', CURRENT_TIMESTAMP);
+
+INSERT INTO inspector.InspectorService (strInspectorServiceId, strAddress, intDownSpeed, intUpSpeed, idProduct, idServiceStatus, idTechnology, idCity, idServiceType, idCmtsOlt, idCrm, strClientName, idServiceStatusRef, dtModificationDate)VALUES
+('1111', 'DEFAULT', 0, 0, 1, 5, 4, 1, 1, 2, 6, 'DEFAULT', 5, CURRENT_TIMESTAMP);
 
 INSERT INTO inspector.InventoryInspectorStatus (strInventoryStatus, strDescriptionStatus, dtModificationDate)VALUES
 ('Ocupado', 'Inspector instalados', CURRENT_TIMESTAMP),
@@ -1646,6 +1653,7 @@ INSERT INTO inspector.DeviceType (strDeviceNameType, strDeviceSlug, strCpuArchit
 
 INSERT INTO inspector.InspectorFleets
 (stridInspectorFleet, intIdBalenaFleet, strSlug, idDeviceType, intDeviceCount, dtCreate, dtModificationDate)VALUES
+('GENERAL', -1, 'general-stats', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('DEFAULT', 0, 'DEFAULT', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 ON CONFLICT (stridInspectorFleet) DO NOTHING;
 
@@ -1691,12 +1699,7 @@ INSERT INTO inspector.InspectorDeviceVariables (uuidInspector, strDeviceVarName,
 INSERT INTO inspector.InspectorFleetsVariables (stridInspectorFleet, strFleetVarName, strFleetVarValue, dtCreate, dtModificationDate) VALUES
 ('DEFAULT', 'DEFAULT', 'DEFAULT', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO inspector.ServiceStatus (strServiceStatus, dtModificationDate)VALUES
-('Activo', CURRENT_TIMESTAMP),
-('Suspendido', CURRENT_TIMESTAMP),
-('En proceso de retiro', CURRENT_TIMESTAMP),
-('Retirado', CURRENT_TIMESTAMP),
-('Indeterminado', CURRENT_TIMESTAMP);
+
 
 
 INSERT INTO inspector.transactionstatus (strtransactionstatus, dtModificationDate) VALUES

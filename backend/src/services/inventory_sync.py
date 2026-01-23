@@ -76,11 +76,9 @@ class InventorySyncService:
             # --- PASO 2: DISPOSITIVOS (PARALELO) ---
             total_devices_processed = 0
             
-            # 👇 CONTADORES GLOBALES (Agrupados)
-            global_count_online = 0
-            global_count_offline = 0
-            global_count_reduced = 0
-            global_count_free = 0
+            # 👇 CONTADORES (Diccionario: FleetSlug -> {online, offline, reduced, free})
+            fleet_stats = {f['slug']: {'on': 0, 'off': 0, 'red': 0, 'free': 0} for f in fleets_to_save}
+            fleet_stats['GENERAL'] = {'on': 0, 'off': 0, 'red': 0, 'free': 0} # Acumulador Global
 
             semaphore = asyncio.Semaphore(cls.MAX_CONCURRENT_TASKS)
 
@@ -111,23 +109,25 @@ class InventorySyncService:
                     # A. Guardar en BD (El repo ya espera 'device_status_id')
                     await InfoDevicesRepository.upsert_batch(devices_full_data)
                     
-                    # B. Sumar a los contadores globales (Agrupación Lógica)
+                    # B. Sumar a los contadores (Por Flota + Global)
                     for d in devices_full_data:
                         # Obtenemos el ID Específico (1-9)
                         sid = d.get("device_status_id", 3)
                         
-                        # Mapeamos a las 4 Categorías Globales
+                        inc_key = 'off' # Default
+                        # Mapeamos a las 4 Categorías
                         if sid == 4: # Free
-                            global_count_free += 1
+                            inc_key = 'free'
                         elif sid in [3, 8]: # Disconnected, Inactive -> OFFLINE
-                            global_count_offline += 1
+                            inc_key = 'off'
                         elif sid in [2, 9]: # Reduced, Frozen -> REDUCED
-                            global_count_reduced += 1
+                            inc_key = 'red'
                         elif sid in [1, 5, 6, 7]: # Operational, Configuring, Updating, PostProv -> ONLINE
-                            global_count_online += 1
-                        else:
-                            # Default a Offline si llega algo raro
-                            global_count_offline += 1
+                            inc_key = 'on'
+                        
+                        # Incrementamos para la Flota y para General
+                        fleet_stats[fleet_slug][inc_key] += 1
+                        fleet_stats['GENERAL'][inc_key] += 1
 
                     # C. Guardar Snapshot Individual
                     if historic_id:
@@ -145,14 +145,38 @@ class InventorySyncService:
                     for new_uuid in new_devices_uuids_to_sync:
                         celery_app.send_task("tasks.sync_single_device_vars", args=[new_uuid])
 
-            # --- PASO 3: GUARDAR FOTO HISTÓRICA GLOBAL 📸 ---
-            await HistoryRepository.log_global_stats(
-                global_count_online,
-                global_count_offline,
-                global_count_reduced,
-                global_count_free
-            )
-            logger.info(f"📊 Stats Globales: Free={global_count_free}, Off={global_count_offline}, On={global_count_online}, Red={global_count_reduced}")
+            # --- PASO 3: GUARDAR FOTO HISTÓRICA (POR FLOTA y GLOBAL) 📸 ---
+            for f_slug, s in fleet_stats.items():
+                if f_slug == 'GENERAL' or f_slug in [f['slug'] for f in fleets_to_save]:
+                    await HistoryRepository.log_global_stats(
+                        s['on'],
+                        s['off'],
+                        s['red'],
+                        s['free'],
+                        fleet_id=f_slug if f_slug != 'GENERAL' else 'GENERAL' # Si es general usa GENERAL, si no el slug (que debe coincidir con stridInspectorFleet)
+                        # OJO: La tabla InspectorFleets usa stridInspectorFleet (app_name en balena normalmente, o slug).
+                        # En el paso 1 guardamos fleets_to_save usando: "id": app_name. 
+                        # Si InspectorFleets PK es el app_name, debemos usar app_name aqui.
+                        # Revisemos fleets_to_save... "id" es lo que guardamos en DB.
+                    )
+            
+            # Corrección rápida: Necesitamos el ID de la base de datos (stridInspectorFleet) para log_global_stats
+            # fleet_stats esta usando SLUG como key. 
+            # Debemos mapear slug -> db_id (app_name)
+            slug_to_id = {f['slug']: f['id'] for f in fleets_to_save}
+            
+            # Guardar GENERAL
+            gen = fleet_stats['GENERAL']
+            await HistoryRepository.log_global_stats(gen['on'], gen['off'], gen['red'], gen['free'], 'GENERAL')
+            
+            # Guardar Por Flota
+            for f_slug, s in fleet_stats.items():
+                if f_slug == 'GENERAL': continue
+                db_id = slug_to_id.get(f_slug)
+                if db_id:
+                    await HistoryRepository.log_global_stats(s['on'], s['off'], s['red'], s['free'], db_id)
+
+            logger.info(f"📊 Stats Globales: Free={gen['free']}, Off={gen['off']}, On={gen['on']}, Red={gen['red']}")
 
             # --- CIERRE EXITOSO ---
             if historic_id:

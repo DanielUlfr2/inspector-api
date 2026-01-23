@@ -9,28 +9,27 @@ class HistoryRepository:
 
     # 👇 ESTE ES EL MÉTODO QUE FALTABA Y CAUSABA EL ERROR 👇
     @staticmethod
-    async def log_global_stats(online: int, offline: int, reduced: int, free: int):
+    async def log_global_stats(online: int, offline: int, reduced: int, free: int, fleet_id: str = 'GENERAL'):
         """
-        Guarda la FOTO GLOBAL (Conteo total por estado) en InspectorGlobalStats.
+        Guarda la FOTO (Conteo total por estado) en InspectorGlobalStats.
+        Puede ser GLOBAL (fleet_id='GENERAL') o por FLOTA.
         """
         total = online + offline + reduced + free
         
         query = """
             INSERT INTO inspector.InspectorGlobalStats 
-            (intCountOnline, intCountOffline, intCountReduced, intCountFree, intTotalDevices, dtRegistered)
-            VALUES ($1, $2, $3, $4, $5, NOW())
+            (intCountOnline, intCountOffline, intCountReduced, intCountFree, intTotalDevices, stridInspectorFleet, dtRegistered)
+            VALUES ($1, $2, $3, $4, $5, $6, NOW())
         """
         
         conn = await PostgresConnector.get_connection()
         try:
-            await conn.execute(query, online, offline, reduced, free, total)
-            logger.info(f"📊 Foto Histórica Guardada: On={online}, Off={offline}, Red={reduced}, Free={free}")
+            await conn.execute(query, online, offline, reduced, free, total, fleet_id)
+            logger.info(f"📊 Foto Guardada [{fleet_id}]: On={online}, Off={offline}, Red={reduced}, Free={free}")
         except Exception as e:
-            logger.error(f"❌ Error guardando Global Stats: {e}")
+            logger.error(f"❌ Error guardando Stats ({fleet_id}): {e}")
         finally:
             await PostgresConnector.release_connection(conn)
-    # 👆 FIN DEL MÉTODO NUEVO 👆
-
 
     @staticmethod
     async def log_device_snapshot(historic_id: int, uuid: str, status_id: int, snapshot: dict):
@@ -96,10 +95,13 @@ class HistoryRepository:
             await PostgresConnector.release_connection(conn)
 
     @staticmethod
-    async def get_global_stats_range(start_date: datetime, end_date: datetime) -> List[dict]:
+    async def get_global_stats_range(start_date: datetime, end_date: datetime, fleet_id: str = None) -> List[dict]:
         """
-        Obtiene el historial de estados globales para gráficas.
+        Obtiene el historial de estados para gráficas. 
+        Si fleet_id es None, trae 'GENERAL'.
         """
+        target_fleet = fleet_id if fleet_id else 'GENERAL'
+
         query = """
             SELECT 
                 to_timestamp(floor(extract(epoch from dtRegistered) / 300) * 300) as timestamp,
@@ -110,15 +112,16 @@ class HistoryRepository:
                 CAST(AVG(intTotalDevices) AS INTEGER) as total
             FROM inspector.InspectorGlobalStats
             WHERE dtRegistered BETWEEN $1 AND $2
+              AND stridInspectorFleet = $3
             GROUP BY 1
             ORDER BY 1 ASC
         """
         conn = await PostgresConnector.get_connection()
         try:
-            records = await conn.fetch(query, start_date, end_date)
+            records = await conn.fetch(query, start_date, end_date, target_fleet)
             return [dict(r) for r in records]
         except Exception as e:
-            logger.error(f"❌ Error fetching global stats: {e}")
+            logger.error(f"❌ Error fetching global stats ({target_fleet}): {e}")
             return []
         finally:
             await PostgresConnector.release_connection(conn)

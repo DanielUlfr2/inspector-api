@@ -132,6 +132,7 @@ CREATE TABLE InspectorService (
   intDownSpeed int NOT NULL,
   intUpSpeed int NOT NULL,
   strClientName varchar(70) NOT NULL,
+  idServiceStatusRef int NOT NULL,
   dtModificationDate timestamp NOT NULL DEFAULT NOW(),
   CONSTRAINT fk_inspectorservice_product FOREIGN KEY (idProduct) REFERENCES Product (idProduct),
   CONSTRAINT fk_inspectorservice_technology FOREIGN KEY (idTechnology) REFERENCES Technology (idTechnology),
@@ -139,7 +140,7 @@ CREATE TABLE InspectorService (
   CONSTRAINT fk_inspectorservice_servicetype FOREIGN KEY (idServiceType) REFERENCES ServiceType (idServiceType),
   CONSTRAINT fk_inspectorservice_cmtsolt FOREIGN KEY (idCmtsOlt) REFERENCES CmtsOlt (idCmtsOlt),
   CONSTRAINT fk_inspectorservice_crm FOREIGN KEY (idCrm) REFERENCES Crm (idCrm),
-  CONSTRAINT fk_inspectorservice_servicestatus FOREIGN KEY (idServiceStatus) REFERENCES ServiceStatus (idServiceStatus)
+  CONSTRAINT fk_inspectorservice_servicestatus FOREIGN KEY (idServiceStatusRef) REFERENCES ServiceStatus (idServiceStatus)
 );
 
 CREATE TABLE InspectorTerminalClient (
@@ -185,8 +186,10 @@ CREATE TABLE IF NOT EXISTS inspector.InspectorGlobalStats (
     intCountReduced INTEGER DEFAULT 0,
     intCountFree INTEGER DEFAULT 0,
     intTotalDevices INTEGER DEFAULT 0,
+    stridInspectorFleet varchar(50) NOT NULL,
     dtRegistered TIMESTAMP NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (idGlobalStat, dtRegistered)
+    PRIMARY KEY (idGlobalStat, dtRegistered),
+    CONSTRAINT fk_inspectorglobalstats_inspectorfleet FOREIGN KEY (stridInspectorFleet) REFERENCES InspectorFleets (stridInspectorFleet)
 ) PARTITION BY RANGE (dtRegistered);
 
 CREATE TABLE DeviceStatus (
