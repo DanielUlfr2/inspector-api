@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import keycloak from '../../features/auth/keycloakService';
-import { User, Pencil, Lock, ArrowRight, AlertCircle, BookOpen } from 'lucide-react';
+import apiClient from '../../api/apiClient';
+import { User, Pencil, Lock, ArrowRight, BookOpen } from 'lucide-react';
 import styles from './Settings.module.css';
 import Documentation from '../../components/Documentation/Documentation';
 
@@ -14,37 +14,65 @@ const availableAvatars = [
 ];
 
 const Settings = () => {
-    const [selectedAvatar, setSelectedAvatar] = useState(keycloak.tokenParsed?.avatar || 'avatar-01.png');
-    const [tempAvatar, setTempAvatar] = useState(selectedAvatar);
+    // Estado inicial vacío, se carga via API
+    const [selectedAvatar, setSelectedAvatar] = useState('avatar-01.png');
+    const [tempAvatar, setTempAvatar] = useState('avatar-01.png');
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
 
     // ESTADOS PARA CONTRASEÑA
-    const [showVerifyInput, setShowVerifyInput] = useState(false);
-    const [currentPass, setCurrentPass] = useState('');
-    const [passError, setPassError] = useState('');
+    // (Ya no necesitamos inputs locales para el nuevo flujo)
 
     // ESTADO PARA TABS
     const [activeTab, setActiveTab] = useState<'profile' | 'documentation'>('profile');
 
-    const userInfo = {
-        username: keycloak.tokenParsed?.preferred_username || '',
-        fullName: keycloak.tokenParsed?.name || 'Usuario',
-        email: keycloak.tokenParsed?.email || '',
-        firstName: keycloak.tokenParsed?.given_name || '',
-        lastName: keycloak.tokenParsed?.family_name || '',
-        role: (() => {
-            const realmRoles = keycloak.tokenParsed?.realm_access?.roles || [];
-            const clientRoles = keycloak.tokenParsed?.resource_access?.[import.meta.env.VITE_KEYCLOAK_CLIENT]?.roles || [];
-            const allRoles = [...realmRoles, ...clientRoles].filter(r =>
-                !['offline_access', 'uma_authorization', 'default-roles-milicon'].includes(r)
-            );
-            return allRoles.find(r => r.toLowerCase().includes('admin')) ||
-                allRoles.find(r => r.toLowerCase().includes('manager')) ||
-                allRoles[0] || 'Viewer';
-        })()
-    };
+    const [userInfo, setUserInfo] = useState({
+        username: '',
+        fullName: 'Cargando...',
+        email: '',
+        role: ''
+    });
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                // Usamos apiClient que maneja cookies automáticamente
+                const response = await apiClient.get('/auth/user');
+                const data = response.data;
+
+                const username = data.preferred_username || '';
+                const fullName = data.name || 'Usuario';
+                const email = data.email || '';
+                const avatar = data.avatar || 'avatar-01.png'; // Idealmente traer avatar del backend
+
+                let role = 'Viewer';
+                // Lógica simplificada de roles
+                const realmRoles = data.realm_access?.roles || [];
+                const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT;
+                const resourceRoles = data.resource_access?.[clientId]?.roles || [];
+                const allRoles = [...realmRoles, ...resourceRoles];
+
+                if (allRoles.length > 0) {
+                    const validRoles = allRoles.filter((r: string) =>
+                        !['offline_access', 'uma_authorization', 'default-roles-milicon'].includes(r)
+                    );
+                    if (validRoles.length > 0) {
+                        role = validRoles.find((r: string) => r.toLowerCase().includes('admin')) ||
+                            validRoles.find((r: string) => r.toLowerCase().includes('manager')) ||
+                            validRoles[0];
+                    }
+                }
+
+                setUserInfo({ username, fullName, email, role });
+                setSelectedAvatar(avatar);
+                setTempAvatar(avatar);
+            } catch (error) {
+                console.error("Error cargando perfil", error);
+            }
+        };
+        fetchUserData();
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -56,67 +84,26 @@ const Settings = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // 1. GUARDAR AVATAR (POST a /account)
+    // 1. GUARDAR AVATAR (Deshabilitado temporalmente)
     const saveAvatar = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${keycloak.authServerUrl}/realms/${keycloak.realm}/account`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${keycloak.token}`
-                },
-                body: JSON.stringify({
-                    username: userInfo.username,
-                    email: userInfo.email,
-                    firstName: userInfo.firstName,
-                    lastName: userInfo.lastName,
-                    attributes: { avatar: [tempAvatar] }
-                })
-            });
-            if (!response.ok) throw new Error();
-            window.dispatchEvent(new CustomEvent('avatarUpdated', { detail: tempAvatar }));
-            setSelectedAvatar(tempAvatar);
-            alert("Avatar actualizado ✅");
-            setIsPickerOpen(false);
-        } catch (error) {
-            alert("Error al guardar avatar.");
-        } finally {
-            setLoading(false);
-        }
+        alert("La actualización de avatar estará disponible pronto (requiere cambios en backend).");
     };
 
-    // 2. VERIFICAR Y REDIRIGIR
-    const handleVerifyAndRedirect = async () => {
+    // 2. VERIFICAR Y REDIRIGIR (Cambio de Contraseña)
+    const handleVerifyAndRedirect = () => {
         setLoading(true);
-        setPassError('');
         try {
-            // Validamos la contraseña actual usando el flujo de token
-            const params = new URLSearchParams();
-            params.append('grant_type', 'password');
-            params.append('client_id', 'inspector_client');
-            params.append('username', userInfo.username);
-            params.append('password', currentPass);
+            const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT;
+            const realm = import.meta.env.VITE_KEYCLOAK_REALM;
+            const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL;
+            const redirectUri = encodeURIComponent(window.location.href);
 
-            const response = await fetch(`${keycloak.authServerUrl}/realms/${keycloak.realm}/protocol/openid-connect/token`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: params
-            });
+            // Redirección directa a la acción de Keycloak UPDATE_PASSWORD
+            const actionUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid&kc_action=UPDATE_PASSWORD`;
 
-            if (response.ok) {
-                // Si es correcta, usamos la ACCIÓN de Keycloak para ir directo al cambio
-                // Esto abrirá la página oficial de Keycloak solo para poner la NUEVA clave.
-                keycloak.login({
-                    action: 'UPDATE_PASSWORD',
-                    redirectUri: window.location.href // Para que vuelva a /settings al terminar
-                });
-            } else {
-                setPassError('La contraseña actual no es correcta.');
-            }
+            window.location.href = actionUrl;
         } catch (error) {
-            setPassError('Error de conexión con Keycloak.');
-        } finally {
+            console.error(error);
             setLoading(false);
         }
     };
@@ -148,7 +135,7 @@ const Settings = () => {
                             <h2 className={styles.title}>Mi Perfil</h2>
                             <div className={styles.profileHeader}>
                                 <div className={styles.avatarContainer}>
-                                    <img src={`/src/assets/avatars/${tempAvatar}`} className={styles.mainAvatar} alt="Avatar" />
+                                    <img src={`/src/assets/avatars/${tempAvatar}`} className={styles.mainAvatar} alt="Avatar" onError={(e) => (e.target as HTMLImageElement).src = '/src/assets/avatars/avatar-01.png'} />
                                     <button className={styles.editBadge} onClick={() => setIsPickerOpen(!isPickerOpen)}><Pencil size={14} /></button>
                                     {isPickerOpen && (
                                         <div className={styles.avatarDropdown} ref={pickerRef}>
@@ -178,38 +165,21 @@ const Settings = () => {
                         <section className={styles.section}>
                             <h2 className={styles.title}>Seguridad</h2>
                             <div className={styles.securityCard}>
-                                {!showVerifyInput ? (
-                                    <div className={styles.passwordStepContent}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                            <Lock size={20} />
-                                            <h4>Cambiar Contraseña</h4>
-                                        </div>
-                                        <p>Para cambiar tu clave, primero verificaremos que eres tú.</p>
-                                        <button className={styles.btnPrimary} onClick={() => setShowVerifyInput(true)} style={{ marginTop: '15px' }}>
-                                            Iniciar proceso de cambio
-                                        </button>
+                                <div className={styles.passwordStepContent}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <Lock size={20} />
+                                        <h4>Cambiar Contraseña</h4>
                                     </div>
-                                ) : (
-                                    <div className={styles.passwordStepContent}>
-                                        <h4>Confirma tu identidad</h4>
-                                        <p>Ingresa tu contraseña actual:</p>
-                                        <input
-                                            type="password"
-                                            placeholder="Contraseña actual"
-                                            className={styles.inputField}
-                                            value={currentPass}
-                                            onChange={(e) => setCurrentPass(e.target.value)}
-                                            autoFocus
-                                        />
-                                        {passError && <div className={styles.errorMessage}><AlertCircle size={14} /> {passError}</div>}
-                                        <div className={styles.stepActions}>
-                                            <button onClick={handleVerifyAndRedirect} className={styles.btnPrimary} disabled={!currentPass || loading}>
-                                                {loading ? 'Verificando...' : 'Siguiente'} <ArrowRight size={16} />
-                                            </button>
-                                            <button onClick={() => { setShowVerifyInput(false); setCurrentPass(''); setPassError(''); }} className={styles.btnGhost}>Cancelar</button>
-                                        </div>
-                                    </div>
-                                )}
+                                    <p>Serás redirigido a la página segura de administración de cuenta.</p>
+                                    <button
+                                        className={styles.btnPrimary}
+                                        onClick={handleVerifyAndRedirect}
+                                        disabled={loading}
+                                        style={{ marginTop: '15px' }}
+                                    >
+                                        {loading ? 'Redirigiendo...' : 'Ir a cambiar contraseña'} <ArrowRight size={16} />
+                                    </button>
+                                </div>
                             </div>
                         </section>
                     </>

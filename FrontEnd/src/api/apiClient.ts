@@ -1,29 +1,49 @@
 import axios from 'axios';
-import keycloak from '../features/auth/keycloakService';
+import { login } from '../features/auth/keycloakService';
 
+// Configuración para usar cookies (HttpOnly)
 const apiClient = axios.create({
-    // Usamos la variable que apunta al Gateway (puerto 8081)
     baseURL: import.meta.env.VITE_API_BASE_URL,
+    withCredentials: true, // Importante: permite enviar y recibir cookies
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
-// Interceptor Asíncrono: Asegura que el token sea válido antes de enviar
-apiClient.interceptors.request.use(
-    async (config) => {
-        try {
-            // updateToken(5) intenta refrescar el token si le quedan menos de 5 segundos de vida
-            await keycloak.updateToken(5);
-
-            if (keycloak.token) {
-                config.headers.Authorization = `Bearer ${keycloak.token}`;
-            }
-        } catch (error) {
-            console.error("No se pudo refrescar el token de Keycloak", error);
-            // Si el refresco falla (ej: sesión cerrada), podrías forzar el logout
-            // keycloak.logout(); 
-        }
-        return config;
+// Interceptor de respuesta para manejar errores de sesión (401)
+apiClient.interceptors.response.use(
+    (response) => {
+        return response;
     },
-    (error) => Promise.reject(error)
+    async (error) => {
+        const originalRequest = error.config;
+
+        // Si recibimos un 401 (No autorizado) y no hemos re-intentado
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+
+            try {
+                // Intentamos refrescar el token (el backend usa la cookie REFRESH_TOKEN)
+                // Usamos una instancia separada para evitar bucles infinitos
+                await axios.post(
+                    `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
+                    {},
+                    { withCredentials: true }
+                );
+
+                // Si el refresh es exitoso, reintentamos la petición original
+                // Las cookies se envían automáticamente
+                return apiClient(originalRequest);
+            } catch (refreshError) {
+                console.error("Sesión expirada. Redirigiendo a login...", refreshError);
+                // Si falla el refresh, forzamos logout en Keycloak
+                login();
+                return Promise.reject(refreshError);
+            }
+        }
+
+        return Promise.reject(error);
+    }
 );
 
 export default apiClient;

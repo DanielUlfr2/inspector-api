@@ -1,9 +1,11 @@
 from fastapi import APIRouter
-from src.api.v1.endpoints import health, info_devices, sync, configuration, catalogs, device_admin, fleets, history
+from src.api.v1.endpoints import health, info_devices, sync, configuration, catalogs, device_admin, fleets, history, auth
+
 
 api_router = APIRouter()
 
 api_router.include_router(health.router, prefix="/health", tags=["system"])
+api_router.include_router(auth.router, tags=["Authentication"])  # Auth endpoints (no prefix, already has /auth)
 api_router.include_router(sync.router, prefix="/sync", tags=["sync"])
 api_router.include_router(configuration.router, prefix="/configuration", tags=["configuration"])
 api_router.include_router(info_devices.router, prefix="/infodevices", tags=["Info Devices"])

@@ -33,6 +33,15 @@ class Settings(BaseSettings):
     KEYCLOAK_URL: str
     KEYCLOAK_REALM: str
     KEYCLOAK_AUDIENCE: str
+    KEYCLOAK_CLIENT_ID: str = "inspector_client"
+    KEYCLOAK_CLIENT_SECRET: Optional[str] = None  # Required for token exchange
+    
+    # --- COOKIE SETTINGS ---
+    COOKIE_DOMAIN: Optional[str] = None  # e.g., ".tudominio.com" for production
+    COOKIE_SECURE: bool = False  # Set to True in production (requires HTTPS)
+    COOKIE_SAMESITE: str = "lax"  # "strict" for production, "lax" for development
+    COOKIE_MAX_AGE: int = 3600  # 1 hour in seconds
+    
     
     class Config:
         case_sensitive = True

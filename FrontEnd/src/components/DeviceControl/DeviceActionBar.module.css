@@ -6,21 +6,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: var(--bg-sidebar);
     padding: 0.75rem 1.5rem;
     border-radius: 12px;
     margin-bottom: 1.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     color: var(--text-primary);
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--bg-hover);
     animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     min-width: 600px;
-}
-
-:global([data-theme='dark']) .bar {
-    background: #1e293b;
-    border-color: #334155;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
 .label {
@@ -29,11 +23,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #334155;
-}
-
-:global([data-theme='dark']) .label {
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .label::before {
@@ -58,77 +48,62 @@
     gap: 8px;
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--bg-hover);
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: white;
-    color: #475569;
-}
-
-:global([data-theme='dark']) .group button {
-    background: #0f172a;
-    border-color: #334155;
-    color: #94a3b8;
+    background: var(--bg-main);
+    color: var(--text-primary);
 }
 
 .group button:hover:not(:disabled) {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    color: #0f172a;
     transform: translateY(-1px);
-}
-
-:global([data-theme='dark']) .group button:hover:not(:disabled) {
-    background: #1e293b;
-    border-color: #475569;
-    color: #f1f5f9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Action Specific Colors on Hover */
-.group button:nth-child(1):hover {
+.group button:nth-child(1):hover:not(:disabled) {
     /* Restart */
     color: #2563eb;
     border-color: #bfdbfe;
     background: #eff6ff;
 }
 
-.group button:nth-child(2):hover {
+.group button:nth-child(2):hover:not(:disabled) {
     /* Reboot */
     color: #d97706;
     border-color: #fde68a;
     background: #fffbeb;
 }
 
-/* Danger Button */
-.danger {
-    color: #ef4444 !important;
-    border-color: #fecaca !important;
-}
-
-.danger:hover:not(:disabled) {
-    background: #fef2f2 !important;
-    border-color: #fca5a5 !important;
-    color: #dc2626 !important;
-}
-
-:global([data-theme='dark']) .group button:nth-child(1):hover {
+:global([data-theme='dark']) .group button:nth-child(1):hover:not(:disabled) {
     background: rgba(37, 99, 235, 0.1);
     border-color: rgba(37, 99, 235, 0.3);
     color: #60a5fa;
 }
 
-:global([data-theme='dark']) .group button:nth-child(2):hover {
+:global([data-theme='dark']) .group button:nth-child(2):hover:not(:disabled) {
     background: rgba(217, 119, 6, 0.1);
     border-color: rgba(217, 119, 6, 0.3);
     color: #fbbf24;
 }
 
+/* Danger Button */
+.danger {
+    color: #ef4444 !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.danger:hover:not(:disabled) {
+    background: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.4) !important;
+    color: #dc2626 !important;
+}
+
 :global([data-theme='dark']) .danger {
     color: #f87171 !important;
     border-color: rgba(239, 68, 68, 0.3) !important;
-    background: rgba(239, 68, 68, 0.05) !important;
 }
 
 :global([data-theme='dark']) .danger:hover:not(:disabled) {
@@ -138,14 +113,8 @@
 
 /* Disabled State */
 .group button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background: #f1f5f9;
-}
-
-:global([data-theme='dark']) .group button:disabled {
-    background: #0f172a;
     opacity: 0.4;
+    cursor: not-allowed;
 }
 
 /* Animations */

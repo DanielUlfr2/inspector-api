@@ -4,7 +4,7 @@ import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
     Globe, Clipboard, Check, Terminal, Settings,
     Pencil, Info as InfoIcon, ChevronDown, ChevronUp, X, BarChart2, Trash2,
-    Hash, User, MapPin, Zap, Layers, Circle, Wifi, Server, Map as MapIcon, Briefcase, UserCheck
+    Hash, User, MapPin, Zap, Layers, Circle, Wifi, Server, Map as MapIcon, Briefcase, UserCheck, Maximize2
 } from 'lucide-react';
 
 import { deviceService } from '../../features/devices/deviceService';
@@ -38,6 +38,7 @@ const DeviceDetail = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deleteError, setDeleteError] = useState<string | null>(null);
+    const [isLogsFullscreen, setIsLogsFullscreen] = useState(false);
 
     // Estados de Variables
     const [deviceVariables, setDeviceVariables] = useState<Variable[]>([]);
@@ -376,7 +377,18 @@ const DeviceDetail = () => {
 
                     <section className={styles.consoleCard}>
                         <div className={styles.cardHeader}>
-                            <Terminal size={18} /> <h2>Consola de Logs (Stream)</h2>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Terminal size={18} /> <h2>Consola de Logs (Stream)</h2>
+                                </div>
+                                <button
+                                    className={styles.iconBtn}
+                                    onClick={() => setIsLogsFullscreen(true)}
+                                    title="Pantalla Completa"
+                                >
+                                    <Maximize2 size={18} />
+                                </button>
+                            </div>
                         </div>
                         <div className={styles.console} ref={consoleRef}>
                             {logs && !logs.startsWith('Iniciando') ? (
@@ -455,6 +467,33 @@ const DeviceDetail = () => {
                 loading={deleteLoading}
                 error={deleteError}
             />
+
+            {/* 9. MODAL DE LOGS EN PANTALLA COMPLETA */}
+            {isLogsFullscreen && (
+                <div className={styles.modalOverlay} onClick={() => setIsLogsFullscreen(false)}>
+                    <div className={styles.logsFullscreenModal} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.modalHeader}>
+                            <h3>Consola de Logs - {device.strinspectorname}</h3>
+                            <button className={styles.closeModalBtn} onClick={() => setIsLogsFullscreen(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className={styles.logsFullscreenContent}>
+                            {logs && !logs.startsWith('Iniciando') ? (
+                                <pre><code>{logs}</code></pre>
+                            ) : (
+                                <div className={styles.terminalLoader}>
+                                    <div className={styles.terminalText}>
+                                        <span className={styles.prompt}>$</span> connecting to device stream...
+                                        <span className={styles.cursor}>_</span>
+                                    </div>
+                                    <div className={styles.loaderBar}></div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -15,7 +15,8 @@ import {
 import defaultAvatar from '../../assets/avatars/avatar-01.png'; // Un avatar por defecto
 import { GiCargoShip } from 'react-icons/gi';
 
-import keycloak from '../../features/auth/keycloakService';
+import apiClient from '../../api/apiClient';
+import { logout } from '../../features/auth/keycloakService';
 import styles from './Sidebar.module.css';
 import { useState, useEffect } from 'react';
 
@@ -47,29 +48,43 @@ export const Sidebar = () => {
     }, [theme]);
 
     useEffect(() => {
-        if (keycloak.tokenParsed) {
-            const name = keycloak.tokenParsed.preferred_username || keycloak.tokenParsed.name || 'Usuario';
-            let role = 'Viewer';
-            const realmRoles = keycloak.tokenParsed.realm_access?.roles || [];
-            const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT;
-            const resourceRoles = keycloak.tokenParsed.resource_access?.[clientId]?.roles || [];
-            const allRoles = [...realmRoles, ...resourceRoles];
+        const fetchUserInfo = async () => {
+            try {
+                const response = await apiClient.get('/auth/user');
+                const data = response.data;
 
-            const validRoles = allRoles.filter((r: string) =>
-                !['offline_access', 'uma_authorization', 'default-roles-milicon'].includes(r)
-            );
+                const name = data.preferred_username || data.name || 'Usuario';
 
-            if (validRoles.length > 0) {
-                role = validRoles.find(r => r.toLowerCase().includes('admin')) ||
-                    validRoles.find(r => r.toLowerCase().includes('manager')) ||
-                    validRoles[0];
+                // Intentar extraer roles si vienen en la respuesta (depende de configuración de keycloak)
+                let role = 'Viewer';
+                const realmRoles = data.realm_access?.roles || [];
+                const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT;
+                const resourceRoles = data.resource_access?.[clientId]?.roles || [];
+                const allRoles = [...realmRoles, ...resourceRoles];
+
+                if (allRoles.length > 0) {
+                    const validRoles = allRoles.filter((r: string) =>
+                        !['offline_access', 'uma_authorization', 'default-roles-milicon'].includes(r)
+                    );
+
+                    if (validRoles.length > 0) {
+                        role = validRoles.find((r: string) => r.toLowerCase().includes('admin')) ||
+                            validRoles.find((r: string) => r.toLowerCase().includes('manager')) ||
+                            validRoles[0];
+                    }
+                }
+
+                // Extraer avatar
+                const avatarFile = data.avatar || '';
+
+                setUserInfo({ name, role, avatar: avatarFile });
+            } catch (error) {
+                console.error("Error obteniendo info de usuario:", error);
+                // Si falla, probablemente el token expiró, el interceptor de apiClient manejará el refresh o logout
             }
+        };
 
-            // 1. Extraemos el atributo 'avatar' que configuramos en el Mapper de Keycloak
-            const avatarFile = (keycloak.tokenParsed as any).avatar || '';
-
-            setUserInfo({ name, role, avatar: avatarFile });
-        }
+        fetchUserInfo();
 
         // Listener para actualizar el avatar en tiempo real desde Settings
         const handleAvatarUpdate = (event: Event) => {
@@ -83,6 +98,7 @@ export const Sidebar = () => {
             window.removeEventListener('avatarUpdated', handleAvatarUpdate);
         };
     }, []);
+
 
     const toggleTheme = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -245,10 +261,11 @@ export const Sidebar = () => {
                 </button>
 
                 <button
-                    onClick={() => keycloak.logout()}
+                    onClick={() => logout()}
                     className={styles.logoutBtn}
                     title="Cerrar Sesión"
                 >
+
                     <div className={styles.iconWrapper} style={{ backgroundColor: '#ef444415' }}>
                         <LogOut size={18} style={{ color: '#ef4444' }} />
                     </div>
