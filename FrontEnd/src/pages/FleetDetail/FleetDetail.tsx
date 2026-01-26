@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { RefreshCw, Monitor, Wifi, WifiOff, AlertCircle, AlertTriangle, ExternalLink, Search, ArrowLeft } from 'lucide-react';
+import { RefreshCw, Monitor, Wifi, WifiOff, AlertCircle, AlertTriangle, ExternalLink, Search, ArrowLeft, TrendingUp } from 'lucide-react';
 import { deviceService } from '../../features/devices/deviceService';
 import { fleetService } from '../../features/fleets/fleetService';
 import { variableService, Variable } from '../../features/devices/variableService';
@@ -10,6 +10,7 @@ import { getDeviceRealStatus } from '../../utils/deviceStatus';
 import DeviceActionBar from '../../components/DeviceControl/DeviceActionBar';
 import FleetActionsMenu from '../../components/Fleets/FleetActionsMenu';
 import VariablesModal from '../../components/Variables/VariablesModal';
+import { FleetStatsModal } from '../../components/Fleets/FleetStatsModal';
 import { Link, useNavigate } from 'react-router-dom';
 import FlotasIcon from '../../assets/icons/Flotas.png';
 import styles from './FleetDetail.module.css';
@@ -24,6 +25,9 @@ const FleetDetail: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [showVariablesModal, setShowVariablesModal] = useState(false);
     const [fleetVariables, setFleetVariables] = useState<Variable[]>([]);
+    const [showStatsModal, setShowStatsModal] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
     // Filtros por columna
     const [columnFilters, setColumnFilters] = useState({
@@ -39,7 +43,14 @@ const FleetDetail: React.FC = () => {
             // Fetch fleet data
             const fleets = await fleetService.getAllFleets();
             const currentFleet = fleets.find(f => f.id === fleetId);
-            setFleetData(currentFleet || null);
+
+            // Si la flota no existe, redirigir a 404
+            if (!currentFleet) {
+                navigate('/404', { replace: true });
+                return;
+            }
+
+            setFleetData(currentFleet);
 
             // Fetch devices
             const data = await deviceService.getDevices();
@@ -75,6 +86,34 @@ const FleetDetail: React.FC = () => {
 
     const handleUpdateVariables = async () => {
         await fetchFleetVariables();
+    };
+
+    const handleSync = async () => {
+        // Prevent multiple clicks
+        if (syncing) return;
+
+        // Rate limiting: prevent sync if last sync was < 30 seconds ago
+        if (lastSyncTime && (Date.now() - lastSyncTime.getTime()) < 30000) {
+            alert('⏳ Espera 30 segundos entre sincronizaciones');
+            return;
+        }
+
+        setSyncing(true);
+        try {
+            const result = await deviceService.syncFleet(fleetId!);
+            setLastSyncTime(new Date());
+
+            // Auto-refresh after sync
+            await fetchData();
+
+            alert(`✅ ${result.message}\n\n📊 Dispositivos sincronizados: ${result.devices_synced}`);
+        } catch (error: any) {
+            console.error('Error syncing fleet:', error);
+            const errorMsg = error.response?.data?.detail || error.message || 'Error desconocido';
+            alert(`❌ Error al sincronizar flota:\n\n${errorMsg}`);
+        } finally {
+            setSyncing(false);
+        }
     };
 
     useEffect(() => {
@@ -260,10 +299,31 @@ const FleetDetail: React.FC = () => {
                     </div>
                 </div>
 
-                <FleetActionsMenu
-                    fleetId={fleetId!}
-                    onVariablesClick={handleOpenVariables}
-                />
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <button
+                        onClick={handleSync}
+                        className={styles.syncBtn}
+                        disabled={syncing}
+                        title={syncing ? "Sincronizando..." : "Sincronizar con Balena Cloud"}
+                    >
+                        <RefreshCw size={18} className={syncing ? styles.spin : ''} />
+                        <span>{syncing ? 'Sincronizando...' : 'Sincronizar'}</span>
+                    </button>
+
+                    <button
+                        onClick={() => setShowStatsModal(true)}
+                        className={styles.statsBtn}
+                        title="Ver histórico de estadísticas"
+                    >
+                        <TrendingUp size={18} />
+                        <span>Histórico</span>
+                    </button>
+
+                    <FleetActionsMenu
+                        fleetId={fleetId!}
+                        onVariablesClick={handleOpenVariables}
+                    />
+                </div>
             </div>
 
             {/* Table Header */}
@@ -396,6 +456,13 @@ const FleetDetail: React.FC = () => {
                     entityType="fleet"
                 />
             )}
+
+            {/* Fleet Stats Modal */}
+            <FleetStatsModal
+                isOpen={showStatsModal}
+                onClose={() => setShowStatsModal(false)}
+                fleetId={fleetId!}
+            />
         </div>
     );
 };

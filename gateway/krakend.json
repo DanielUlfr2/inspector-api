@@ -3,7 +3,7 @@
     "name": "Inspector AI Gateway",
     "port": 8080,
     "cache_ttl": "60s",
-    "timeout": "5000ms",
+    "timeout": "60000ms",
     "extra_config": {
         "github_com/devopsfaith/krakend-gologging": {
             "level": "DEBUG",
@@ -96,6 +96,7 @@
                     }
                 }
             ],
+            "cache_ttl": "0s",
             "extra_config": {
                 "auth/validator": {
                     "issuer": "http://localhost:8080/realms/inspector_realm",
@@ -133,6 +134,7 @@
                     ]
                 }
             ],
+            "cache_ttl": "0s",
             "extra_config": {
                 "auth/validator": {
                     "issuer": "http://localhost:8080/realms/inspector_realm",
@@ -205,7 +207,8 @@
             "level": "DEBUG",
             "input_query_strings": [
                 "start_date",
-                "end_date"
+                "end_date",
+                "fleet_id"
             ],
             "backend": [
                 {
@@ -332,6 +335,43 @@
                     "host": [
                         "http://open_balena_apis:5000"
                     ]
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
+                    "disable_jwk_security": true,
+                    "alg": "RS256",
+                    "roles_key": "roles",
+                    "roles": [
+                        "Inspector_operator",
+                        "Inspector_admin"
+                    ],
+                    "propagate_claims": [
+                        [
+                            "sub",
+                            "X-User-Id"
+                        ],
+                        [
+                            "roles",
+                            "X-Role"
+                        ]
+                    ]
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/sync/inventory/fleet/{fleet_id}",
+            "method": "POST",
+            "level": "DEBUG",
+            "backend": [
+                {
+                    "url_pattern": "/api/v1/sync/inventory/fleet/{fleet_id}",
+                    "host": [
+                        "http://open_balena_apis:5000"
+                    ],
+                    "timeout": "60s"
                 }
             ],
             "extra_config": {

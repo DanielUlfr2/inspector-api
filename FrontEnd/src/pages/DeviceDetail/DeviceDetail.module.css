@@ -188,6 +188,12 @@
     gap: 2rem;
 }
 
+.leftPanel,
+.rightPanel {
+    min-width: 0;
+    /* Prevents grid blowout from wide content */
+}
+
 @media (max-width: 1200px) {
     .layout {
         grid-template-columns: 1fr;

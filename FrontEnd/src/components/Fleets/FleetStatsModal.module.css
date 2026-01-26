@@ -9,51 +9,133 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
+    backdrop-filter: blur(4px);
 }
 
 .modal {
-    background-color: #1e1e1e;
-    border-radius: 8px;
+    background: white;
+    border-radius: 16px;
     width: 90%;
-    max-width: 900px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-    color: #fff;
+    max-width: 1100px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+}
+
+:global([data-theme="dark"]) .modal {
+    background: var(--bg-card);
     border: 1px solid #333;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 10px;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+:global([data-theme="dark"]) .header {
+    border-bottom-color: #333;
 }
 
 .header h2 {
     margin: 0;
     font-size: 1.5rem;
-    color: #e0e0e0;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+:global([data-theme="dark"]) .header h2 {
+    color: #e5e5e5;
+}
+
+.fleetName {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.875rem;
+    color: #64748b;
+    font-family: monospace;
+}
+
+:global([data-theme="dark"]) .fleetName {
+    color: #94a3b8;
 }
 
 .closeBtn {
     background: none;
     border: none;
-    color: #aaa;
+    color: #64748b;
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
+    padding: 0.5rem;
+    border-radius: 8px;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+:global([data-theme="dark"]) .closeBtn {
+    color: #94a3b8;
 }
 
 .closeBtn:hover {
-    color: #fff;
-    background-color: #333;
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+:global([data-theme="dark"]) .closeBtn:hover {
+    background: var(--bg-hover);
+    color: #e5e5e5;
+}
+
+.chartHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+:global([data-theme="dark"]) .chartHeader {
+    background: var(--bg-hover);
+    border-bottom-color: #333;
+}
+
+.chartTitle h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+:global([data-theme="dark"]) .chartTitle h3 {
+    color: #e5e5e5;
+}
+
+.chartSubtitle {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.selectorWrapper {
+    position: relative;
 }
 
 .content {
-    min-height: 200px;
+    flex: 1;
+    overflow: auto;
+    padding: 1.5rem;
+}
+
+.chartContainer {
+    height: 450px;
+    width: 100%;
 }
 
 .loading,
@@ -61,7 +143,50 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 300px;
-    color: #888;
-    font-size: 1.1rem;
+    height: 450px;
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+:global([data-theme="dark"]) .loading,
+:global([data-theme="dark"]) .noData {
+    color: #cbd5e1;
+}
+
+/* Custom Tooltip */
+.customTooltip {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+:global([data-theme="dark"]) .customTooltip {
+    background: var(--bg-card);
+    border-color: #333;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.tooltipLabel {
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.5rem;
+}
+
+:global([data-theme="dark"]) .tooltipLabel {
+    color: #e5e5e5;
+    border-bottom-color: #333;
+}
+
+.tooltipItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
 }

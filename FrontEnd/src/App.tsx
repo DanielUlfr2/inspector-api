@@ -6,6 +6,7 @@ import DevicesPage from './pages/Devices/Devices';
 import DeviceDetail from './pages/DeviceDetail/DeviceDetail';
 import Fleets from './pages/Fleets/Fleets';
 import FleetDetail from './pages/FleetDetail/FleetDetail';
+import NotFound from './pages/NotFound/NotFound';
 
 // Importación de Páginas (Features)
 // Nota: Por ahora crearemos componentes simples para que no te dé error
@@ -27,9 +28,10 @@ function App() {
                     <Route path="fleets" element={<Fleets />} />
                     <Route path="fleets/:fleetId" element={<FleetDetail />} />
 
-                    {/* Ruta para manejar errores 404 */}
-                    <Route path="*" element={<div>404 - Página no encontrada</div>} />
                 </Route>
+
+                {/* Ruta 404 fuera del Layout principal (sin sidebar) */}
+                <Route path="*" element={<NotFound />} />
             </Routes>
         </Router>
     );

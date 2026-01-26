@@ -181,6 +181,92 @@
     background-color: #3b82f6;
 }
 
+/* Stats Button */
+.statsBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+:global([data-theme="dark"]) .statsBtn {
+    background: var(--bg-card);
+    border-color: #333;
+    color: #a0a0a0;
+}
+
+.statsBtn:hover {
+    background: #f8fafc;
+    color: #a855f7;
+    border-color: #a855f7;
+}
+
+:global([data-theme="dark"]) .statsBtn:hover {
+    background: var(--bg-hover);
+    color: #a855f7;
+    border-color: #a855f7;
+}
+
+/* Sync Button */
+.syncBtn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+:global([data-theme="dark"]) .syncBtn {
+    background: var(--bg-card);
+    border-color: #333;
+    color: #a0a0a0;
+}
+
+.syncBtn:hover:not(:disabled) {
+    background: #f0fdf4;
+    color: #10b981;
+    border-color: #10b981;
+}
+
+:global([data-theme="dark"]) .syncBtn:hover:not(:disabled) {
+    background: var(--bg-hover);
+    color: #10b981;
+    border-color: #10b981;
+}
+
+.syncBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Spin Animation */
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 /* Table Header */
 .tableHeader {
     display: flex;
@@ -543,5 +629,69 @@
 }
 
 [data-theme="dark"] .loading {
+    color: #cbd5e1;
+}
+
+/* Historical Chart Section */
+.chartSection {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+:global([data-theme="dark"]) .chartSection {
+    background: var(--bg-card);
+    border-color: #333;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.chartHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.chartTitle h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+:global([data-theme="dark"]) .chartTitle h3 {
+    color: #e5e5e5;
+}
+
+.chartSubtitle {
+    font-size: 0.875rem;
+    color: #94a3b8;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.selectorWrapper {
+    position: relative;
+}
+
+.chartContainer {
+    height: 300px;
+    width: 100%;
+}
+
+.chartLoading,
+.noData {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+}
+
+:global([data-theme="dark"]) .chartLoading,
+:global([data-theme="dark"]) .noData {
     color: #cbd5e1;
 }

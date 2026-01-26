@@ -159,5 +159,24 @@ export const deviceService = {
         const url = `${API_BASE}${ADMIN_PATH}/tasks/${taskId}`;
         const response = await apiClient.get(url);
         return response.data;
+    },
+
+    /**
+     * Sincroniza una flota específica con Balena Cloud
+     * Más rápido que sincronizar todo el inventario
+     */
+    async syncFleet(fleetId: string): Promise<{ success: boolean, devices_synced: number, message: string }> {
+        const url = `${API_BASE}/v1/sync/inventory/fleet/${fleetId}`;
+        const response = await apiClient.post(url);
+        return response.data;
+    },
+
+    /**
+     * Mueve un dispositivo a otra flota
+     */
+    async moveDevice(uuid: string, targetFleet: string): Promise<{ success: boolean, message: string }> {
+        const url = `${API_BASE}${ADMIN_PATH}/${uuid}/move`;
+        // Payload matches DeviceMoveRequest schema on backend: { "target_fleet": "slug" }
+        return (await apiClient.post(url, { target_fleet: targetFleet })).data;
     }
 };

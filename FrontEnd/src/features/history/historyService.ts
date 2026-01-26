@@ -86,8 +86,11 @@ export const historyService = {
 
     /**
      * Obtiene las estadísticas globales en un rango de fechas
+     * @param startDate Fecha de inicio (opcional)
+     * @param endDate Fecha de fin (opcional)
+     * @param fleetId ID de la flota para filtrar (opcional)
      */
-    async getGlobalStats(startDate?: string, endDate?: string): Promise<GlobalStat[]> {
+    async getGlobalStats(startDate?: string, endDate?: string, fleetId?: string): Promise<GlobalStat[]> {
         const range = this.getDefaultRange();
         const start = startDate || range.start;
         const end = endDate || range.end;
@@ -96,7 +99,8 @@ export const historyService = {
             const response = await apiClient.get<{ stats: GlobalStat[] }>(`${HISTORY_PATH}/global-stats`, {
                 params: {
                     start_date: start,
-                    end_date: end
+                    end_date: end,
+                    ...(fleetId && { fleet_id: fleetId }) // Solo incluir si fleetId está definido
                 }
             });
 

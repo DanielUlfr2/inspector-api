@@ -76,6 +76,29 @@ class FleetRepository:
             await PostgresConnector.release_connection(conn)
 
     @staticmethod
+    async def get_by_id(fleet_id: str) -> Dict[str, Any]:
+        """
+        Obtiene una flota específica por su ID.
+        """
+        query = """
+            SELECT 
+                stridinspectorfleet as id,
+                strslug as slug,
+                iddevicetype as device_type_id
+            FROM inspector.inspectorfleets
+            WHERE stridinspectorfleet = $1
+        """
+        conn = await PostgresConnector.get_connection()
+        try:
+            record = await conn.fetchrow(query, fleet_id)
+            return dict(record) if record else None
+        except Exception as e:
+            logger.error(f"❌ Error fetching fleet {fleet_id}: {e}")
+            return None
+        finally:
+            await PostgresConnector.release_connection(conn)
+
+    @staticmethod
     async def get_all_fleets_with_stats() -> List[Dict[str, Any]]:
         """
         Retrieves all fleets with aggregated device statistics.

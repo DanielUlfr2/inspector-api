@@ -76,8 +76,8 @@ class InventorySyncService:
             # --- PASO 2: DISPOSITIVOS (PARALELO) ---
             total_devices_processed = 0
             
-            # 👇 CONTADORES (Diccionario: FleetSlug -> {online, offline, reduced, free})
-            fleet_stats = {f['slug']: {'on': 0, 'off': 0, 'red': 0, 'free': 0} for f in fleets_to_save}
+            # 👇 CONTADORES (Diccionario: FleetID -> {online, offline, reduced, free})
+            fleet_stats = {f['id']: {'on': 0, 'off': 0, 'red': 0, 'free': 0} for f in fleets_to_save}
             fleet_stats['GENERAL'] = {'on': 0, 'off': 0, 'red': 0, 'free': 0} # Acumulador Global
 
             semaphore = asyncio.Semaphore(cls.MAX_CONCURRENT_TASKS)
@@ -89,7 +89,7 @@ class InventorySyncService:
                 summary_devices = BalenaService.get_devices_by_fleet(fleet_slug)
                 if not summary_devices: continue
                 
-                logger.info(f"⚡ Procesando {len(summary_devices)} equipos en '{fleet_slug}'...")
+                logger.info(f"⚡ Procesando {len(summary_devices)} equipos en '{fleet_db_id}'...")
 
                 tasks = []
                 new_devices_uuids_to_sync = []
@@ -126,7 +126,7 @@ class InventorySyncService:
                             inc_key = 'on'
                         
                         # Incrementamos para la Flota y para General
-                        fleet_stats[fleet_slug][inc_key] += 1
+                        fleet_stats[fleet_db_id][inc_key] += 1
                         fleet_stats['GENERAL'][inc_key] += 1
 
                     # C. Guardar Snapshot Individual
@@ -146,35 +146,16 @@ class InventorySyncService:
                         celery_app.send_task("tasks.sync_single_device_vars", args=[new_uuid])
 
             # --- PASO 3: GUARDAR FOTO HISTÓRICA (POR FLOTA y GLOBAL) 📸 ---
-            for f_slug, s in fleet_stats.items():
-                if f_slug == 'GENERAL' or f_slug in [f['slug'] for f in fleets_to_save]:
-                    await HistoryRepository.log_global_stats(
-                        s['on'],
-                        s['off'],
-                        s['red'],
-                        s['free'],
-                        fleet_id=f_slug if f_slug != 'GENERAL' else 'GENERAL' # Si es general usa GENERAL, si no el slug (que debe coincidir con stridInspectorFleet)
-                        # OJO: La tabla InspectorFleets usa stridInspectorFleet (app_name en balena normalmente, o slug).
-                        # En el paso 1 guardamos fleets_to_save usando: "id": app_name. 
-                        # Si InspectorFleets PK es el app_name, debemos usar app_name aqui.
-                        # Revisemos fleets_to_save... "id" es lo que guardamos en DB.
-                    )
-            
-            # Corrección rápida: Necesitamos el ID de la base de datos (stridInspectorFleet) para log_global_stats
-            # fleet_stats esta usando SLUG como key. 
-            # Debemos mapear slug -> db_id (app_name)
-            slug_to_id = {f['slug']: f['id'] for f in fleets_to_save}
             
             # Guardar GENERAL
             gen = fleet_stats['GENERAL']
             await HistoryRepository.log_global_stats(gen['on'], gen['off'], gen['red'], gen['free'], 'GENERAL')
             
             # Guardar Por Flota
-            for f_slug, s in fleet_stats.items():
-                if f_slug == 'GENERAL': continue
-                db_id = slug_to_id.get(f_slug)
-                if db_id:
-                    await HistoryRepository.log_global_stats(s['on'], s['off'], s['red'], s['free'], db_id)
+            for fleet_id, stats in fleet_stats.items():
+                if fleet_id == 'GENERAL': 
+                    continue
+                await HistoryRepository.log_global_stats(stats['on'], stats['off'], stats['red'], stats['free'], fleet_id)
 
             logger.info(f"📊 Stats Globales: Free={gen['free']}, Off={gen['off']}, On={gen['on']}, Red={gen['red']}")
 
@@ -312,3 +293,124 @@ class InventorySyncService:
             return datetime.fromisoformat(date_str.replace('Z', '+00:00'))
         except:
             return datetime.now(timezone.utc)
+
+    @classmethod
+    async def sync_single_fleet(cls, fleet_id: str, user: str = "SYSTEM", role: str = "SYSTEM"):
+        """
+        Sincroniza solo los dispositivos de una flota específica.
+        Más rápido y eficiente que sync_all().
+        
+        Args:
+            fleet_id: ID de la flota en la BD (app_name)
+            user: Usuario que ejecuta la sincronización
+            role: Rol del usuario
+            
+        Returns:
+            dict con success, devices_synced, y mensaje
+        """
+        logger.info(f"🔄 Sincronizando flota: {fleet_id}")
+        
+        # Verificar login a Balena
+        if not BalenaService.login():
+            raise Exception("Fallo login Balena")
+        
+        # Iniciar transacción
+        script_id = ScriptIds.MANUAL_SYNC
+        historic_id = await TransactionManager.start_transaction(script_id, user, role)
+        
+        if not historic_id:
+            raise Exception("No se pudo iniciar la transacción (posiblemente ya hay una en progreso)")
+        
+        try:
+            # Obtener datos de la flota desde BD
+            fleet_data = await FleetRepository.get_by_id(fleet_id)
+            if not fleet_data:
+                raise Exception(f"Flota {fleet_id} no encontrada en BD")
+            
+            fleet_slug = fleet_data.get('slug')
+            if not fleet_slug:
+                raise Exception(f"Flota {fleet_id} no tiene slug")
+            
+            logger.info(f"📡 Consultando Balena para flota '{fleet_id}' (slug: {fleet_slug})...")
+            
+            # Obtener dispositivos de Balena para esta flota
+            summary_devices = BalenaService.get_devices_by_fleet(fleet_slug)
+            if not summary_devices:
+                logger.warning(f"⚠️ No se encontraron dispositivos en Balena para {fleet_id}")
+                await TransactionManager.finish_transaction(
+                    historic_id, script_id, TransactionStatus.COMPLETO,
+                    f"Sincronización completada. 0 dispositivos encontrados en {fleet_id}"
+                )
+                return {"success": True, "devices_synced": 0, "message": "No hay dispositivos en esta flota"}
+            
+            logger.info(f"⚡ Procesando {len(summary_devices)} equipos en '{fleet_id}'...")
+            
+            # Procesar dispositivos en paralelo
+            semaphore = asyncio.Semaphore(cls.MAX_CONCURRENT_TASKS)
+            tasks = []
+            devices_to_save = []
+            
+            # Contadores para estadísticas
+            stats = {'on': 0, 'off': 0, 'red': 0, 'free': 0}
+            
+            for item in summary_devices:
+                uuid = item.get("uuid")
+                if uuid:
+                    tasks.append(cls._fetch_device_detail_concurrent(uuid, fleet_id, semaphore))
+            
+            # Ejecutar todas las tareas en paralelo
+            results = await asyncio.gather(*tasks)
+            
+            # Filtrar resultados válidos y contar estados
+            for device_data in results:
+                if device_data:
+                    devices_to_save.append(device_data)
+                    
+                    # Contar por estado
+                    status_id = device_data.get('status_id', 0)
+                    if status_id == 1:  # Operativo
+                        stats['on'] += 1
+                    elif status_id == 2:  # Reducido
+                        stats['red'] += 1
+                    elif status_id == 3:  # Desconectado
+                        stats['off'] += 1
+                    elif status_id == 4:  # Libre
+                        stats['free'] += 1
+            
+            # Guardar dispositivos en BD
+            if devices_to_save:
+                await InfoDevicesRepository.upsert_batch(devices_to_save)
+                logger.info(f"💾 Guardados {len(devices_to_save)} dispositivos de {fleet_id}")
+            
+            # Guardar estadísticas para esta flota específica
+            await HistoryRepository.log_global_stats(
+                stats['on'], stats['off'], stats['red'], stats['free'], fleet_id
+            )
+            
+            # También actualizar estadísticas GENERAL
+            await HistoryRepository.log_global_stats(
+                stats['on'], stats['off'], stats['red'], stats['free'], 'GENERAL'
+            )
+            
+            # Finalizar transacción exitosamente
+            await TransactionManager.finish_transaction(
+                historic_id, script_id, TransactionStatus.COMPLETO,
+                f"Sincronización completada. {len(devices_to_save)} dispositivos procesados en {fleet_id}"
+            )
+            
+            logger.info(f"✅ Sincronización de {fleet_id} completada: {len(devices_to_save)} dispositivos")
+            
+            return {
+                "success": True,
+                "devices_synced": len(devices_to_save),
+                "message": f"Flota {fleet_id} sincronizada exitosamente",
+                "stats": stats
+            }
+            
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"❌ Error sincronizando flota {fleet_id}: {error_msg}")
+            await TransactionManager.finish_transaction(
+                historic_id, script_id, TransactionStatus.FALLIDO, error_msg
+            )
+            raise

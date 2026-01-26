@@ -101,6 +101,12 @@ class HistoryRepository:
         Si fleet_id es None, trae 'GENERAL'.
         """
         target_fleet = fleet_id if fleet_id else 'GENERAL'
+        
+        # Convertir a naive datetime (sin timezone) para PostgreSQL
+        if start_date.tzinfo is not None:
+            start_date = start_date.replace(tzinfo=None)
+        if end_date.tzinfo is not None:
+            end_date = end_date.replace(tzinfo=None)
 
         query = """
             SELECT 

@@ -1,9 +1,9 @@
-// src/components/DeviceControl/DeviceActionBar.tsx
 import { useState } from 'react';
-import { Power, RotateCw, RefreshCcw } from 'lucide-react';
-import { DeviceAction } from '../../features/devices/deviceService';
+import { Power, RotateCw, RefreshCcw, Truck } from 'lucide-react';
+import { DeviceAction, deviceService } from '../../features/devices/deviceService';
 import { Device } from '../../types/device';
 import BulkProgressModal from './BulkProgressModal';
+import MoveDeviceModal from './MoveDeviceModal';
 import styles from './DeviceActionBar.module.css';
 
 interface Props {
@@ -12,12 +12,22 @@ interface Props {
 }
 
 const DeviceActionBar = ({ selectedDevices, onActionComplete }: Props) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+    const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [currentAction, setCurrentAction] = useState<DeviceAction | 'idle'>('idle');
 
     const triggerAction = (action: DeviceAction) => {
         setCurrentAction(action);
-        setIsModalOpen(true);
+        setIsActionModalOpen(true);
+    };
+
+    const handleMoveConfirm = async (targetFleetSlug: string) => {
+        if (selectedDevices.length === 1) {
+            await deviceService.moveDevice(selectedDevices[0].uuidinspector, targetFleetSlug);
+            if (onActionComplete) onActionComplete();
+        } else {
+            alert('Por seguridad, mueva los dispositivos uno por uno.');
+        }
     };
 
     if (selectedDevices.length === 0) return null;
@@ -35,6 +45,16 @@ const DeviceActionBar = ({ selectedDevices, onActionComplete }: Props) => {
                     <button onClick={() => triggerAction('reboot')}>
                         <RotateCw size={16} /> Reboot
                     </button>
+
+                    {/* Move Button - Only supported for single device selection currently */}
+                    <button
+                        onClick={() => setIsMoveModalOpen(true)}
+                        disabled={selectedDevices.length !== 1}
+                        title={selectedDevices.length !== 1 ? "Seleccione un solo dispositivo para mover" : "Mover a otra flota"}
+                    >
+                        <Truck size={16} /> Mover
+                    </button>
+
                     <button
                         onClick={() => triggerAction('shutdown')}
                         className={styles.danger}
@@ -48,14 +68,23 @@ const DeviceActionBar = ({ selectedDevices, onActionComplete }: Props) => {
 
             {currentAction !== 'idle' && (
                 <BulkProgressModal
-                    isOpen={isModalOpen}
+                    isOpen={isActionModalOpen}
                     action={currentAction}
                     devices={selectedDevices}
                     onClose={() => {
-                        setIsModalOpen(false);
+                        setIsActionModalOpen(false);
                         setCurrentAction('idle');
                         if (onActionComplete) onActionComplete();
                     }}
+                />
+            )}
+
+            {selectedDevices.length === 1 && (
+                <MoveDeviceModal
+                    isOpen={isMoveModalOpen}
+                    onClose={() => setIsMoveModalOpen(false)}
+                    onConfirm={handleMoveConfirm}
+                    deviceName={selectedDevices[0].strinspectorname || selectedDevices[0].uuidinspector.substring(0, 7)}
                 />
             )}
         </>

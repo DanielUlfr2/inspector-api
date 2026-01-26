@@ -210,13 +210,40 @@ class DeviceAdminService:
     # 4. MOVER DE FLOTA
     # ==========================================
     @classmethod
-    async def move_device_to_fleet(cls, uuid: str, target_fleet_slug: str, user: str = "SYSTEM", role: str = "SYSTEM"):
-        logger.info(f"🚚 Moviendo {uuid} -> {target_fleet_slug} por {user}")
+    async def move_device_to_fleet(cls, uuid: str, target_fleet_identifier: str, user: str = "SYSTEM", role: str = "SYSTEM"):
+        """
+        Mueve un dispositivo de flota.
+        Maneja la discrepancia entre ID Local (ej: 'andina_2') y Slug Balena (ej: 'admin/andina_2').
+        """
+        logger.info(f"🚚 Moviendo {uuid} -> Solicitado: '{target_fleet_identifier}' por {user}")
         
         script_id = cls.SCRIPT_MAP["move"]
         snapshot = await InfoDevicesRepository.get_device_by_uuid(uuid) or {}
         
-        # PASAMOS USER Y ROLE AQUÍ 👇
+        # 1. Resolver Fleet ID Local vs Balena Slug
+        # Intentamos obtener la flota asumiendo que el identifier es el ID primero
+        fleet_id_local = target_fleet_identifier
+        balena_target = target_fleet_identifier
+
+        # Verificamos si existe en BD para obtener el slug correcto para Balena
+        try:
+            from src.repositories.fleet_repo import FleetRepository
+            fleet_info = await FleetRepository.get_by_id(target_fleet_identifier)
+            
+            if fleet_info:
+                # Es un ID local válido (ej: 'andina_2')
+                fleet_id_local = fleet_info['id']
+                balena_target = fleet_info['slug'] # Usamos el slug real para Balena (ej: 'admin/andina_2')
+                logger.info(f"✅ Flota resuelta: Local='{fleet_id_local}', Balena='{balena_target}'")
+            else:
+                # Si no lo encontramos por ID, podría ser que nos enviaron el slug directamente?
+                # Por ahora asumimos que lo que envian es lo que usaremos, pero logueamos advertencia.
+                logger.warning(f"⚠️ Flota '{target_fleet_identifier}' no encontrada en BD local. Se intentará usar tal cual.")
+        
+        except Exception as e:
+            logger.error(f"⚠️ Error resolviendo flota: {e}")
+
+        # Pasamos USER Y ROLE AQUÍ 👇
         historic_id = await TransactionManager.start_transaction(script_id, user=user, role=role)
         if historic_id:
              await HistoryRepository.log_device_snapshot(historic_id, uuid, TransactionStatus.EN_PROGRESO, snapshot)
@@ -225,14 +252,24 @@ class DeviceAdminService:
             if historic_id: await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.FALLIDO, "Fallo Login")
             return {"success": False, "message": "Fallo Login"}
 
-        if BalenaService.move_device(uuid, target_fleet_slug):
+        # 2. Mover en Balena con el SLUG
+        if BalenaService.move_device(uuid, balena_target):
             try:
-                await InfoDevicesRepository.update_device_fleet(uuid, target_fleet_slug)
+                # 3. Mover en BD Local con el ID LOCAL
+                await InfoDevicesRepository.update_device_fleet(uuid, fleet_id_local)
+                
+                # Bonus: Actualizar variables si es necesario (sync parcial)
+                # ...
+                
             except Exception as e:
                 logger.error(f"⚠️ Balena moved OK but DB update failed: {e}")
+                # No retornamos False porque en Balena SÍ se movió.
+                if historic_id:
+                     await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.COMPLETO, f"Balena OK. Error BD: {e}")
+                return {"success": True, "message": f"Movido en Balena, error en BD: {e}"}
                 
             if historic_id: 
-                await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.COMPLETO, f"Movido a {target_fleet_slug}")
+                await TransactionManager.finish_transaction(historic_id, script_id, TransactionStatus.COMPLETO, f"Movido a {fleet_id_local}")
             return {"success": True, "message": "Dispositivo movido correctamente."}
         
         if historic_id: 
