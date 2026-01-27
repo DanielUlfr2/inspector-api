@@ -7,7 +7,6 @@ import DeviceDetail from './pages/DeviceDetail/DeviceDetail';
 import Fleets from './pages/Fleets/Fleets';
 import FleetDetail from './pages/FleetDetail/FleetDetail';
 import NotFound from './pages/NotFound/NotFound';
-import AuthCallback from './pages/AuthCallback/AuthCallback';
 
 
 // Importación de Páginas (Features)
@@ -19,9 +18,6 @@ function App() {
     return (
         <Router>
             <Routes>
-                {/* Ruta de Callback Pública */}
-                <Route path="/auth/callback" element={<AuthCallback />} />
-
                 {/* Envolvemos las rutas protegidas en un Layout común */}
                 <Route path="/" element={<MainLayout />}>
                     {/* Al entrar a "/", redirigimos automáticamente al Dashboard */}

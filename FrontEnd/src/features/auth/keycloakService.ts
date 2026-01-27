@@ -1,6 +1,4 @@
-// Versión modificada para Cookie-based Auth
 import Keycloak from 'keycloak-js';
-import axios from 'axios';
 
 const keycloakConfig = {
     url: import.meta.env.VITE_KEYCLOAK_URL,
@@ -11,65 +9,74 @@ const keycloakConfig = {
 const keycloak = new Keycloak(keycloakConfig);
 
 /**
- * Verifica si existe una sesión válida en el backend (vía cookie)
+ * Establece el token en una cookie accesible (NO HttpOnly) para que el backend pueda leerla.
+ * @param token Token JWT
  */
-export const checkSession = async (): Promise<boolean> => {
-    try {
-        const response = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL}/auth/session`,
-            { withCredentials: true }
-        );
-        return response.data.authenticated === true;
-    } catch (error) {
-        console.error("Error verificando sesión:", error);
-        return false;
+const setSessionCookie = (token: string | undefined) => {
+    if (token) {
+        // Establecemos la cookie 'SESSION_ID' con el token.
+        // path=/ asegura que esté disponible para todo el dominio.
+        // samesite=Lax permite navegación segura.
+        // NO usamos HttpOnly porque js debe escribirla.
+        document.cookie = `SESSION_ID=${token}; path=/; samesite=Lax; secure`;
     }
 };
 
 /**
- * Inicia el proceso de login redirigiendo a Keycloak
+ * Inicializa Keycloak y configura los listeners de eventos.
  */
-/**
- * Inicia el proceso de login redirigiendo a Keycloak manualmente
- * Evitamos usar keycloak.init() para tener control total de la URL y parámetros
- */
-export const login = () => {
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/callback`);
-    const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT;
-    const realm = import.meta.env.VITE_KEYCLOAK_REALM;
-    const keycloakUrl = import.meta.env.VITE_KEYCLOAK_URL;
+export const initKeycloak = (onAuthenticatedCallback: (authenticated: boolean) => void) => {
+    keycloak.init({
+        onLoad: 'login-required',
+        pkceMethod: 'S256',
+        checkLoginIframe: false,
+    })
+        .then((authenticated) => {
+            if (authenticated) {
+                setSessionCookie(keycloak.token);
 
-    // Construimos la URL estándar de OAuth2/OpenID Connect
-    const authUrl = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid profile email`;
-
-    window.location.href = authUrl;
+                // Configurar actualización automática del token
+                setInterval(() => {
+                    keycloak.updateToken(70).then((refreshed) => {
+                        if (refreshed) {
+                            console.log('Token refreshed, updating cookie');
+                            setSessionCookie(keycloak.token);
+                        }
+                    }).catch(() => {
+                        console.error('Failed to refresh token');
+                        keycloak.logout();
+                    });
+                }, 60000); // Chequear cada minuto
+            }
+            onAuthenticatedCallback(authenticated);
+        })
+        .catch((error) => {
+            console.error("Keycloak init failed", error);
+            onAuthenticatedCallback(false);
+        });
 };
 
+export const logout = () => {
+    // Limpiamos la cookie al salir
+    document.cookie = "SESSION_ID=; path=/; max-age=0; samesite=Lax";
+    keycloak.logout({ redirectUri: window.location.origin });
+};
 
 /**
- * Cierra sesión: primero en backend (limpia cookies), luego en Keycloak
+ * Helper para obtener información del usuario desde el token parseado
  */
-export const logout = async () => {
-    try {
-        // 1. Limpiar cookies en backend
-        await axios.post(
-            `${import.meta.env.VITE_API_BASE_URL}/auth/logout`,
-            {},
-            { withCredentials: true }
-        );
-    } catch (error) {
-        console.error("Error en logout de backend:", error);
-    } finally {
-        // 2. Redirigir a Keycloak para logout completo
-        // Se reinicia Keycloak solo para usar su método logout
-        if (!keycloak.authenticated) {
-            const redirectUri = window.location.origin;
-            window.location.href = `${keycloakConfig.url}/realms/${keycloakConfig.realm}/protocol/openid-connect/logout?client_id=${keycloakConfig.clientId}&post_logout_redirect_uri=${encodeURIComponent(redirectUri)}`;
-        } else {
-            keycloak.logout({ redirectUri: window.location.origin });
-        }
+export const getUserProfile = () => {
+    if (keycloak.tokenParsed) {
+        return {
+            username: keycloak.tokenParsed.preferred_username,
+            email: keycloak.tokenParsed.email,
+            name: keycloak.tokenParsed.name,
+            roles: keycloak.tokenParsed.realm_access?.roles || [],
+        };
     }
+    return null;
 };
 
+export const getToken = () => keycloak.token;
 
 export default keycloak;

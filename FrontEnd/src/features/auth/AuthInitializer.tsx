@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { checkSession, login } from './keycloakService';
+import React, { useState, useEffect, useRef } from 'react';
+import { initKeycloak } from './keycloakService';
 
 interface AuthInitializerProps {
     children: React.ReactNode;
@@ -7,25 +7,16 @@ interface AuthInitializerProps {
 
 const AuthInitializer: React.FC<AuthInitializerProps> = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+    const didInit = useRef(false);
 
     useEffect(() => {
-        const initAuth = async () => {
-            // Permitir ruta de callback sin verificación previa
-            if (window.location.pathname.startsWith('/auth/callback')) {
-                setIsAuthenticated(true);
-                return;
-            }
+        // Evitar doble inicialización en React.StrictMode
+        if (didInit.current) return;
+        didInit.current = true;
 
-            const hasSession = await checkSession();
-
-            if (hasSession) {
-                setIsAuthenticated(true);
-            } else {
-                login();
-            }
-        };
-
-        initAuth();
+        initKeycloak((authenticated) => {
+            setIsAuthenticated(authenticated);
+        });
     }, []);
 
     if (isAuthenticated === null) {
@@ -41,11 +32,15 @@ const AuthInitializer: React.FC<AuthInitializerProps> = ({ children }) => {
                         borderTop: '4px solid #fff',
                         animation: 'spin 1s linear infinite'
                     }}></div>
-                    <p>Verificando sesión...</p>
+                    <p>Conectando con Keycloak...</p>
                     <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
                 </div>
             </div>
         );
+    }
+
+    if (!isAuthenticated) {
+        return <div>No autenticado. Redirigiendo...</div>;
     }
 
     return <>{children}</>;

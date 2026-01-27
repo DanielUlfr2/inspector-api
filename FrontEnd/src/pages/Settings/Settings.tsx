@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import apiClient from '../../api/apiClient';
 import { User, Pencil, Lock, ArrowRight, BookOpen } from 'lucide-react';
 import styles from './Settings.module.css';
 import Documentation from '../../components/Documentation/Documentation';
+import { getUserProfile } from '../../features/auth/keycloakService';
 
 const availableAvatars = [
     { id: 'avatar-01.png', label: 'Ovni' }, { id: 'avatar-02.png', label: 'Año nuevo' },
@@ -14,15 +14,12 @@ const availableAvatars = [
 ];
 
 const Settings = () => {
-    // Estado inicial vacío, se carga via API
+    // Estado inicial vacío
     const [selectedAvatar, setSelectedAvatar] = useState('avatar-01.png');
     const [tempAvatar, setTempAvatar] = useState('avatar-01.png');
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
-
-    // ESTADOS PARA CONTRASEÑA
-    // (Ya no necesitamos inputs locales para el nuevo flujo)
 
     // ESTADO PARA TABS
     const [activeTab, setActiveTab] = useState<'profile' | 'documentation'>('profile');
@@ -34,27 +31,21 @@ const Settings = () => {
         role: ''
     });
 
+    // ... inside useEffect ...
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                // Usamos apiClient que maneja cookies automáticamente
-                const response = await apiClient.get('/auth/user');
-                const data = response.data;
-
-                const username = data.preferred_username || '';
-                const fullName = data.name || 'Usuario';
-                const email = data.email || '';
-                const avatar = data.avatar || 'avatar-01.png'; // Idealmente traer avatar del backend
+        const loadUserData = () => {
+            const profile = getUserProfile();
+            if (profile) {
+                const username = profile.username || '';
+                const fullName = profile.name || 'Usuario';
+                const email = profile.email || '';
+                const avatar = 'avatar-01.png'; // Keycloak standard token doesn't have avatar
 
                 let role = 'Viewer';
                 // Lógica simplificada de roles
-                const realmRoles = data.realm_access?.roles || [];
-                const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT;
-                const resourceRoles = data.resource_access?.[clientId]?.roles || [];
-                const allRoles = [...realmRoles, ...resourceRoles];
-
-                if (allRoles.length > 0) {
-                    const validRoles = allRoles.filter((r: string) =>
+                const realmRoles = profile.roles || [];
+                if (realmRoles.length > 0) {
+                    const validRoles = realmRoles.filter((r: string) =>
                         !['offline_access', 'uma_authorization', 'default-roles-milicon'].includes(r)
                     );
                     if (validRoles.length > 0) {
@@ -67,11 +58,9 @@ const Settings = () => {
                 setUserInfo({ username, fullName, email, role });
                 setSelectedAvatar(avatar);
                 setTempAvatar(avatar);
-            } catch (error) {
-                console.error("Error cargando perfil", error);
             }
         };
-        fetchUserData();
+        loadUserData();
     }, []);
 
     useEffect(() => {

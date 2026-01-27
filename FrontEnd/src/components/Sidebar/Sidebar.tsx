@@ -15,8 +15,7 @@ import {
 import defaultAvatar from '../../assets/avatars/avatar-01.png'; // Un avatar por defecto
 import { GiCargoShip } from 'react-icons/gi';
 
-import apiClient from '../../api/apiClient';
-import { logout } from '../../features/auth/keycloakService';
+import { getUserProfile, logout } from '../../features/auth/keycloakService';
 import styles from './Sidebar.module.css';
 import { useState, useEffect } from 'react';
 
@@ -48,22 +47,14 @@ export const Sidebar = () => {
     }, [theme]);
 
     useEffect(() => {
-        const fetchUserInfo = async () => {
-            try {
-                const response = await apiClient.get('/auth/user');
-                const data = response.data;
-
-                const name = data.preferred_username || data.name || 'Usuario';
-
-                // Intentar extraer roles si vienen en la respuesta (depende de configuración de keycloak)
+        const loadUserInfo = () => {
+            const profile = getUserProfile();
+            if (profile) {
                 let role = 'Viewer';
-                const realmRoles = data.realm_access?.roles || [];
-                const clientId = import.meta.env.VITE_KEYCLOAK_CLIENT;
-                const resourceRoles = data.resource_access?.[clientId]?.roles || [];
-                const allRoles = [...realmRoles, ...resourceRoles];
+                const realmRoles = profile.roles || [];
 
-                if (allRoles.length > 0) {
-                    const validRoles = allRoles.filter((r: string) =>
+                if (realmRoles.length > 0) {
+                    const validRoles = realmRoles.filter((r: string) =>
                         !['offline_access', 'uma_authorization', 'default-roles-milicon'].includes(r)
                     );
 
@@ -74,19 +65,15 @@ export const Sidebar = () => {
                     }
                 }
 
-                // Extraer avatar
-                const avatarFile = data.avatar || '';
-
-                setUserInfo({ name, role, avatar: avatarFile });
-            } catch (error) {
-                console.error("Error obteniendo info de usuario:", error);
-                // Si falla, probablemente el token expiró, el interceptor de apiClient manejará el refresh o logout
+                setUserInfo({
+                    name: profile.name || profile.username || 'Usuario',
+                    role: role,
+                    avatar: ''
+                });
             }
         };
+        loadUserInfo();
 
-        fetchUserInfo();
-
-        // Listener para actualizar el avatar en tiempo real desde Settings
         const handleAvatarUpdate = (event: Event) => {
             const customEvent = event as CustomEvent;
             setUserInfo(prev => ({ ...prev, avatar: customEvent.detail }));
