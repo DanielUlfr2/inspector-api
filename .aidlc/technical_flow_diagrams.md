@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Flujo de Autenticación Segura (HttpOnly Cookies + JWKS)
+## 1. Flujo de Autenticación (Client-Side + Standard Cookies)
 
 ```mermaid
 sequenceDiagram
@@ -16,31 +16,32 @@ sequenceDiagram
     participant PG as PostgreSQL
     
     %% INICIO DE SESIÓN
-    U->>F: Ingresa credenciales
-    F->>K: POST /auth/login (Credenciales)
-    K->>KC: Intercambio OpenID Connect
+    U->>F: Click "Login"
+    F->>KC: Redirección (OIDC/OAuth2)
+    KC->>U: Pide Credenciales
+    U->>KC: Ingresa Usuario/Password
     KC->>PG: Valida credenciales
     PG-->>KC: OK
-    KC-->>K: Retorna Tokens (Access + Refresh)
+    KC-->>F: Redirección con Auth Code
+    F->>KC: Intercambio Code por Token (PKCE)
+    KC-->>F: Retorna Access + Refresh Token
     
-    Note over K: TRANSFORMACIÓN DE SEGURIDAD:<br/>Krakend oculta los tokens reales
+    Note over F: CLIENT-SIDE STORAGE:<br/>Frontend recibe el Token y lo guarda en Cookie
     
-    K-->>F: 200 OK + Set-Cookie: SESSION_ID=...<br/>HttpOnly; Secure; SameSite=Strict
-    
-    Note over F: El Frontend NO recibe el JWT.<br/>Solo tiene una cookie opaca inaccesible para JS.<br/>¡Inmune a XSS!
+    F->>F: document.cookie = "SESSION_ID=" + token
     
     %% PETICIÓN CON COOKIE
     U->>F: Accede al Dashboard
     F->>K: GET /api/v1/infodevices<br/>Cookie: SESSION_ID=...
     
-    Note over K: KrakenD valida firma localmente (JWKS)
-    K->>K: 1. Extrae JWT de la Cookie/Session
-    K->>K: 2. Verifica firma con clave pública en CACHÉ
+    Note over K: KrakenD valida firma localmente (Stateless)
+    K->>K: 1. Extrae JWT de la Cookie "SESSION_ID"
+    K->>K: 2. Verifica firma con clave pública (Cacheada)
     K->>K: 3. ¿Expirado? (Sin llamar a Keycloak)
     
     K->>B: Enruta petición + Header Authorization: Bearer {JWT}
     
-    B->>B: Backend recibe JWT estándar
+    B->>B: Backend recibe JWT en Header
     B->>PG: SELECT * FROM Inspector
     PG-->>B: Datos
     B-->>F: 200 OK (Datos JSON)
@@ -48,18 +49,18 @@ sequenceDiagram
 
 ---
 
-## 2. Flujo de Validación KrakenD (Zero-Latency)
+## 2. Flujo de Validación KrakenD (Stateless / Zero-Latency)
 
 ```mermaid
 flowchart TD
-    Start([Petición entrante]) --> HasCookie{¿Tiene Cookie<br/>HttpOnly?}
+    Start([Petición entrante]) --> HasCookie{¿Tiene Cookie<br/>SESSION_ID?}
     
     HasCookie -->|No| Unauth[Retornar 401]
     HasCookie -->|Sí| Extract[KrakenD extrae el token JWT]
     
     Extract --> CheckCache{¿Claves JWKS<br/>en Caché?}
     
-    CheckCache -->|No| DownloadJWKS[Descargar llaves públicas<br/>desde Keycloak (1 vez/hora)]
+    CheckCache -->|No| DownloadJWKS[Descargar llaves públicas<br/>desde Keycloak (1 vez/15 min)]
     DownloadJWKS --> SaveCache[Guardar en Memoria KrakenD]
     
     CheckCache -->|Sí| ValidateLocal[Validación Criptográfica Local<br/>(CPU bound, no Network IO)]

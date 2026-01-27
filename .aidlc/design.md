@@ -698,15 +698,16 @@ const pollTaskStatus = async (taskId: string) => {
 #### 7.1.1 Flujo de Autenticación
 
 ```
-1. Usuario → Frontend: Ingresa credenciales
-2. Frontend → KrakenD: POST /auth/login (sin redirección)
-3. KrakenD → Keycloak: Intercambio de credenciales por Token (OIDC)
-4. Keycloak → KrakenD: Retorna Access Token + Refresh Token
-5. KrakenD → Frontend: Retorna 200 OK + **Set-Cookie: SESSION_ID (HttpOnly, Secure)**
-6. Frontend → KrakenD: Petición API con Cookie (automática)
-7. KrakenD: Extracción de Token de Cookie + Validación Local (JWKS Cache)
-8. KrakenD → Backend: Enruta petición con header `Authorization: Bearer <Token>`
-9. Backend → Frontend: Retorna respuesta JSON
+1. Usuario → Frontend: Click en "Iniciar Sesión"
+2. Frontend → Keycloak: Redirección OIDC standard (keycloak-js)
+3. Keycloak → Usuario: Pantalla de Login (Credenciales)
+4. Usuario → Keycloak: Ingresa usuario/password
+5. Keycloak → Frontend: Redirección de vuelta con Access Token + Refresh Token
+6. Frontend → Browser: set_cookie("SESSION_ID", token) [Standard Cookie, JS Accessible]
+7. Frontend → KrakenD: Petición API con Cookie automática
+8. KrakenD: Extracción de Token de Cookie + Validación Local (JWKS Stateless)
+9. KrakenD → Backend: Enruta petición con header `Authorization: Bearer <Token>`
+10. Backend → Frontend: Retorna respuesta JSON
 ```
 
 #### 7.1.2 Estructura del Token JWT
@@ -760,7 +761,7 @@ async def shutdown_device(
 ### 7.3 Seguridad de Datos
 
 - **Passwords**: Nunca almacenados (delegado a Keycloak)
-- **Tokens (Frontend)**: Almacenados en **Cookies HttpOnly, Secure, SameSite=Strict** (No LocalStorage)
+- **Tokens (Frontend)**: Almacenados en **Cookies Standard (Lax, Secure)** accesibles vía JavaScript (`keycloak-js` management).
 - **API Tokens (Backend)**: Almacenados en variables de entorno
 - **Datos Sensibles**: No se almacenan datos de tarjetas de crédito ni información financiera
 - **Logs**: No se registran credenciales ni tokens completos

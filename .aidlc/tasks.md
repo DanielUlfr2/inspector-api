@@ -488,7 +488,7 @@ Cada tarea incluye:
   - [ ] Auth state se maneja en memoria (Context/Zustand), **NO en localStorage**
   - [ ] Sidebar con navegación
   - [ ] Header con usuario y logout
-  - [ ] Logout limpia la cookie (petición a backend)
+  - [ ] Logout limpia la cookie manualment y redirige a Keycloak
 
 ### T-044: Dashboard Page
 
