@@ -614,7 +614,7 @@
                     ],
                     "propagate_claims": [
                         [
-                            "sub",
+                            "preferred_username",
                             "X-User-Id"
                         ],
                         [
@@ -654,7 +654,7 @@
                     ],
                     "propagate_claims": [
                         [
-                            "sub",
+                            "preferred_username",
                             "X-User-Id"
                         ],
                         [
@@ -692,7 +692,7 @@
                     ],
                     "propagate_claims": [
                         [
-                            "sub",
+                            "preferred_username",
                             "X-User-Id"
                         ],
                         [
