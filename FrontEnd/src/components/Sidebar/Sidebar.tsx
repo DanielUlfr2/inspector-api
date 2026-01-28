@@ -65,10 +65,17 @@ export const Sidebar = () => {
                     }
                 }
 
+                // Avatar desde Keycloak (Token)
+                let avatar = '';
+                if (profile.avatar) {
+                    avatar = Array.isArray(profile.avatar) ? profile.avatar[0] : profile.avatar;
+                }
+
+                const username = profile.username || '';
                 setUserInfo({
-                    name: profile.name || profile.username || 'Usuario',
+                    name: profile.name || username || 'Usuario',
                     role: role,
-                    avatar: ''
+                    avatar: avatar
                 });
             }
         };
@@ -76,7 +83,12 @@ export const Sidebar = () => {
 
         const handleAvatarUpdate = (event: Event) => {
             const customEvent = event as CustomEvent;
-            setUserInfo(prev => ({ ...prev, avatar: customEvent.detail }));
+            // Verificar si el detalle es objeto (nueva lógica) o string (legacy)
+            if (typeof customEvent.detail === 'object') {
+                setUserInfo(prev => ({ ...prev, avatar: customEvent.detail.avatar }));
+            } else {
+                setUserInfo(prev => ({ ...prev, avatar: customEvent.detail }));
+            }
         };
 
         window.addEventListener('avatarUpdated', handleAvatarUpdate);

@@ -72,6 +72,7 @@ export const getUserProfile = () => {
             email: keycloak.tokenParsed.email,
             name: keycloak.tokenParsed.name,
             roles: keycloak.tokenParsed.realm_access?.roles || [],
+            avatar: keycloak.tokenParsed.avatar, // Puede ser string o array según mapper
         };
     }
     return null;

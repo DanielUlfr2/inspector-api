@@ -10,6 +10,9 @@ services:
     environment:
       # CORREGIDO: environment
       - TZ=${TZ}
+      - KEYCLOAK_URL=${KEYCLOAK_INTERNAL_URL:-http://keycloak:8080}
+      - KEYCLOAK_ADMIN_USER=${KEYCLOAK_USER}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_PASSWORD}
     restart: unless-stopped
     ports:
       - "5000:5000"
@@ -201,10 +204,7 @@ services:
       dockerfile: Dockerfile
     container_name: celery_worker_inspector
     command: >
-      celery -A src.core.celery_app worker 
-      --loglevel=info 
-      --concurrency=${CELERY_WORKER_CONCURRENCY:-4}
-      --max-tasks-per-child=${CELERY_WORKER_MAX_TASKS_PER_CHILD:-50}
+      celery -A src.core.celery_app worker  --loglevel=info  --concurrency=${CELERY_WORKER_CONCURRENCY:-4} --max-tasks-per-child=${CELERY_WORKER_MAX_TASKS_PER_CHILD:-50}
     volumes:
       - ./backend:/app
       - ./backend_logs:/app/logs

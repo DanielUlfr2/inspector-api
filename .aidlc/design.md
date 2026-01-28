@@ -703,11 +703,12 @@ const pollTaskStatus = async (taskId: string) => {
 3. Keycloak → Usuario: Pantalla de Login (Credenciales)
 4. Usuario → Keycloak: Ingresa usuario/password
 5. Keycloak → Frontend: Redirección de vuelta con Access Token + Refresh Token
-6. Frontend → Browser: set_cookie("SESSION_ID", token) [Standard Cookie, JS Accessible]
-7. Frontend → KrakenD: Petición API con Cookie automática
-8. KrakenD: Extracción de Token de Cookie + Validación Local (JWKS Stateless)
-9. KrakenD → Backend: Enruta petición con header `Authorization: Bearer <Token>`
-10. Backend → Frontend: Retorna respuesta JSON
+6. Frontend → Memoria: Guarda Token (keycloak-js management)
+7. Frontend → KrakenD: Petición API con Header `Authorization: Bearer <Token>`
+8. KrakenD: Extracción de Token de Header + Validación Local (JWKS Stateless) + Inyección de Headers (`X-User-Id`, `X-Role`)
+9. KrakenD → Backend: Enruta petición enriquecida con identidad.
+10. Backend → Frontend: Retorna respuesta JSON.
+    *Nota*: Para operaciones de escritura en Keycloak (ej: avatar), el Backend usa credenciales de Admin Internas conectándose directamente a Keycloak.
 ```
 
 #### 7.1.2 Estructura del Token JWT

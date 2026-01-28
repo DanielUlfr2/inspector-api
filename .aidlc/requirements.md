@@ -13,6 +13,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 ### 1.2 Límites del Sistema
 
 **Incluido**:
+
 - Sincronización de inventario con Balena Cloud
 - Gestión de flotas y dispositivos
 - Monitoreo de métricas en tiempo real
@@ -21,6 +22,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 - Gestión de configuración (variables)
 
 **Excluido**:
+
 - Desarrollo de aplicaciones para dispositivos
 - Actualización de firmware
 - Gestión de conectividad de red de dispositivos
@@ -39,6 +41,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe iniciar automáticamente la sincronización de inventario con Balena Cloud.
 
 **Criterios de Verificación**:
+
 - La tarea `tasks.run_automatic_sync` debe ejecutarse diariamente a las 5:00 AM
 - Debe registrarse una transacción en `HistoricScriptTransaction` con `strScriptId = 'INVENTORY_SYNC_AUTO'`
 
@@ -50,6 +53,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe iniciar inmediatamente la sincronización de inventario.
 
 **Criterios de Verificación**:
+
 - El endpoint `/api/v1/sync/inventory` debe estar disponible
 - Debe registrarse una transacción con `strScriptId = 'INVENTORY_SYNC_MANUAL'`
 - Debe retornar el estado de la tarea Celery
@@ -62,6 +66,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe obtener la lista completa de flotas desde Balena Cloud mediante el comando `balena fleets --json`.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `BalenaService.get_fleets()`
 - Debe retornar un array JSON con todas las flotas
 - En caso de error, debe registrarse en logs con nivel ERROR
@@ -74,6 +79,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe actualizar o insertar cada flota en la tabla `InspectorFleets`.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `FleetRepository.upsert_fleet()` para cada flota
 - Debe actualizarse `dtModificationDate` con timestamp actual
 - Debe mantenerse la relación con `DeviceType`
@@ -86,6 +92,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe obtener todos los dispositivos de esa flota mediante `balena devices --fleet <slug> --json`.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `BalenaService.get_devices_by_fleet(fleet_slug)`
 - Debe retornar array JSON con dispositivos
 - Debe manejar flotas vacías sin error
@@ -98,6 +105,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe obtener sus métricas detalladas mediante `balena device <uuid> --json`.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `BalenaService.get_device_detail(uuid)`
 - Debe retornar métricas: CPU, memoria, almacenamiento, temperatura
 - Debe procesar hasta 5 dispositivos concurrentemente (semáforo)
@@ -110,6 +118,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe actualizar o insertar el dispositivo en la tabla `Inspector`.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `InfoDevicesRepository.upsert_device()`
 - Debe actualizar todos los campos: métricas, estado, versiones, conectividad
 - Debe mantener `dtModificationDate` actualizado
@@ -122,6 +131,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe registrar su estado en `StatusInspectorHistory`.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `HistoryRepository.insert_device_status()`
 - Debe incluir: `uuidInspector`, métricas, `boolOnline`, `idHistoricScript`
 - Debe registrarse con `dtValidate` = timestamp actual
@@ -134,6 +144,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe calcular y registrar estadísticas agregadas en `InspectorGlobalStats`.
 
 **Criterios de Verificación**:
+
 - Debe contar dispositivos por estado: online, offline, reducido, libre
 - Debe registrarse en tabla particionada por mes
 - Debe asociarse con `stridInspectorFleet`
@@ -148,6 +159,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe crear la flota en Balena Cloud y registrarla en la base de datos local.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena fleet create <name> --type <device_type>`
 - Debe registrarse en `InspectorFleets` con `intIdBalenaFleet` único
 - Debe iniciarse transacción de auditoría con `ScriptIds.MANUAL_FLEET_CREATE`
@@ -160,6 +172,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe renombrar la flota en Balena Cloud y actualizar la base de datos local.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena fleet rename <old> <new>`
 - Debe actualizarse `strSlug` en `InspectorFleets`
 - Debe registrarse transacción con `ScriptIds.MANUAL_FLEET_RENAME`
@@ -173,6 +186,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe eliminar la flota en Balena Cloud y en la base de datos local.
 
 **Criterios de Verificación**:
+
 - Debe validar que `intDeviceCount = 0`
 - Debe ejecutarse `balena fleet rm <name> --yes`
 - Debe eliminarse registro de `InspectorFleets`
@@ -186,6 +200,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar todas las flotas con sus estadísticas.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `FleetRepository.get_all_fleets()`
 - Debe incluir: nombre, slug, tipo de dispositivo, conteo de dispositivos
 - Debe ordenarse alfabéticamente por nombre
@@ -198,6 +213,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar la información completa de la flota y sus dispositivos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `FleetRepository.get_fleet_by_id(fleet_id)`
 - Debe incluir lista de dispositivos asociados
 - Debe incluir variables de flota
@@ -212,6 +228,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar todos los dispositivos con su información básica.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `InfoDevicesRepository.get_all_devices()`
 - Debe incluir: UUID, nombre, flota, estado, conectividad, métricas
 - Debe soportar paginación (opcional)
@@ -224,6 +241,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar la información completa del dispositivo.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `InfoDevicesRepository.get_device_by_uuid(uuid)`
 - Debe incluir: métricas, variables, servicio asociado, histórico reciente
 - Debe retornar 404 si el dispositivo no existe
@@ -236,6 +254,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar solo los dispositivos que cumplan el criterio.
 
 **Criterios de Verificación**:
+
 - Debe soportar filtros: operativo, offline, reducido, libre
 - Debe aplicarse la función `get_device_real_status()`
 - Debe retornar array vacío si no hay coincidencias
@@ -248,6 +267,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar dispositivos que coincidan en nombre, UUID o MAC.
 
 **Criterios de Verificación**:
+
 - Debe buscar en campos: `strInspectorName`, `uuidInspector`, `strMacSn`
 - Debe ser case-insensitive
 - Debe retornar resultados ordenados por relevancia
@@ -263,6 +283,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe ejecutar el comando de reinicio y monitorear su completitud.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena device restart <uuid>`
 - Debe encolarse tarea Celery `task_restart_single_device`
 - Debe registrarse transacción con `ScriptIds.MANUAL_RESTART`
@@ -278,6 +299,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe ejecutar el comando de reboot y monitorear su completitud.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena device reboot <uuid>`
 - Debe encolarse tarea Celery `task_restart_single_device` con action='reboot'
 - Debe registrarse transacción con `ScriptIds.MANUAL_REBOOT`
@@ -292,6 +314,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe ejecutar el comando de apagado.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena device shutdown <uuid>`
 - Debe encolarse tarea Celery `task_restart_single_device` con action='shutdown'
 - Debe registrarse transacción con `ScriptIds.MANUAL_SHUTDOWN`
@@ -305,6 +328,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe filtrar dispositivos operativos y procesarlos en lotes de 10.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `task_restart_bulk_devices`
 - Debe filtrar solo dispositivos con estado "operativo"
 - Debe procesar en chunks de 10 dispositivos
@@ -319,6 +343,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe reiniciar todos los dispositivos operativos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse tarea `task_run_automatic_restart` (programada)
 - Debe filtrar solo dispositivos operativos
 - Debe registrarse transacción con `ScriptIds.AUTO_RESTART`
@@ -332,6 +357,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe ejecutar el movimiento en Balena Cloud y actualizar la base de datos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena device move <uuid> --fleet <target>`
 - Debe actualizarse `stridInspectorFleet` en tabla `Inspector`
 - Debe registrarse transacción con `ScriptIds.MANUAL_DEVICE_MOVE`
@@ -345,6 +371,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe eliminar el dispositivo de Balena Cloud y marcarlo como eliminado en la base de datos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena device rm <uuid> --yes`
 - Debe actualizarse estado en BD (soft delete o hard delete según diseño)
 - Debe registrarse transacción con `ScriptIds.MANUAL_DEVICE_DELETE`
@@ -357,6 +384,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe actualizar la nota en Balena Cloud y en la base de datos local.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena device note <uuid> <note>`
 - Debe actualizarse campo `strNote` en tabla `Inspector`
 - Debe registrarse transacción con `ScriptIds.MANUAL_DEVICE_NOTE`
@@ -371,6 +399,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe obtener todas las variables de cada flota desde Balena Cloud.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `BalenaService.get_fleet_vars(fleet_slug)`
 - Debe actualizarse tabla `InspectorFleetsVariables`
 - Debe registrarse auditoría en `InspectorAuditVariables`
@@ -383,6 +412,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe obtener todas las variables de cada dispositivo desde Balena Cloud.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `BalenaService.get_device_vars(uuid)`
 - Debe actualizarse tabla `InspectorDeviceVariables`
 - Debe registrarse auditoría en `InspectorAuditVariables`
@@ -395,6 +425,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe crear la variable en Balena Cloud y registrarla en la base de datos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena env add <key> <value> --fleet <slug>`
 - Debe insertarse en `InspectorFleetsVariables`
 - Debe registrarse auditoría con `strAction = 'CREATE'`
@@ -408,6 +439,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe actualizar la variable en Balena Cloud y en la base de datos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena env add <key> <value> --fleet <slug>` (sobrescribe)
 - Debe actualizarse `strFleetVarValue` en `InspectorFleetsVariables`
 - Debe registrarse auditoría con `strAction = 'UPDATE'`, incluyendo valor antiguo y nuevo
@@ -420,6 +452,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe eliminar la variable de Balena Cloud y de la base de datos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `BalenaService.remove_fleet_variable(fleet_slug, key)`
 - Debe eliminarse de `InspectorFleetsVariables`
 - Debe registrarse auditoría con `strAction = 'DELETE'`
@@ -432,6 +465,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe crear la variable en Balena Cloud y registrarla en la base de datos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena env add <key> <value> --device <uuid>`
 - Debe insertarse en `InspectorDeviceVariables`
 - Debe registrarse auditoría con `strAction = 'CREATE'`
@@ -445,6 +479,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe actualizar la variable en Balena Cloud y en la base de datos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `balena env add <key> <value> --device <uuid>` (sobrescribe)
 - Debe actualizarse `strDeviceVarValue` en `InspectorDeviceVariables`
 - Debe registrarse auditoría con `strAction = 'UPDATE'`
@@ -457,6 +492,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe eliminar la variable de Balena Cloud y de la base de datos.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `BalenaService.remove_device_variable(uuid, key)`
 - Debe eliminarse de `InspectorDeviceVariables`
 - Debe registrarse auditoría con `strAction = 'DELETE'`
@@ -471,6 +507,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe asociar el dispositivo con un servicio, ubicación geográfica y terminal.
 
 **Criterios de Verificación**:
+
 - Debe validar existencia de dispositivo en Balena
 - Debe crear/actualizar registro en `InspectorService`
 - Debe crear/actualizar registro en `InspectorTerminalClient`
@@ -485,6 +522,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe validar la existencia de referencias en catálogos.
 
 **Criterios de Verificación**:
+
 - Debe validar existencia de `idCity` en tabla `City`
 - Debe validar existencia de `idProduct` en tabla `Product`
 - Debe validar existencia de `idCmtsOlt` en tabla `CmtsOlt`
@@ -501,6 +539,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe mostrar estadísticas agregadas de todos los dispositivos.
 
 **Criterios de Verificación**:
+
 - Debe consultar última partición de `InspectorGlobalStats`
 - Debe mostrar: total de dispositivos, online, offline, reducidos, libres
 - Debe agrupar por flota
@@ -513,6 +552,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar los registros de `StatusInspectorHistory` para ese dispositivo.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `HistoryRepository.get_device_history(uuid, date_range)`
 - Debe soportar filtrado por rango de fechas
 - Debe ordenarse por `dtValidate` descendente
@@ -526,6 +566,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar los registros de `HistoricScriptTransaction`.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `HistoryRepository.get_transactions_history(filters)`
 - Debe soportar filtrado por: script, usuario, estado, rango de fechas
 - Debe incluir: descripción, usuario ejecutor, duración, estado
@@ -538,6 +579,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe transmitir los logs en tiempo real desde Balena Cloud.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse `BalenaService.stream_device_logs(uuid)`
 - Debe retornar stream de logs (Server-Sent Events o WebSocket)
 - Debe manejar desconexión y reconexión
@@ -552,9 +594,10 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe validar sus credenciales mediante Keycloak.
 
 **Criterios de Verificación**:
+
 - Debe redirigir a Keycloak para autenticación
 - Debe recibir token JWT válido
-- Debe almacenar token en sesión del navegador
+- Debe almacenar token en memoria del cliente (Client-Side Storage)
 
 ---
 
@@ -564,6 +607,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** KrakenD debe validar el token JWT antes de enrutar la petición.
 
 **Criterios de Verificación**:
+
 - Debe validar firma del token con clave pública de Keycloak
 - Debe validar expiración del token
 - Debe retornar 401 si el token es inválido o expirado
@@ -576,6 +620,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe validar que el rol del usuario tiene permisos para esa acción.
 
 **Criterios de Verificación**:
+
 - Debe extraer rol del token JWT
 - Debe validar permisos según matriz de roles
 - Debe retornar 403 si el usuario no tiene permisos
@@ -588,6 +633,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe registrar la acción en el histórico de transacciones.
 
 **Criterios de Verificación**:
+
 - Debe registrarse en `HistoricScriptTransaction`
 - Debe incluir: `strExecuterUser`, `strExecuterRole`, timestamp
 - Debe ser inmutable (no se puede editar ni eliminar)
@@ -602,6 +648,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe generar configuración WireGuard para el cliente.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse API de `wg-fastapi`
 - Debe generar par de claves pública/privada
 - Debe asignar IP del rango configurado
@@ -615,6 +662,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe retornar todos los clientes registrados.
 
 **Criterios de Verificación**:
+
 - Debe consultar API de `wg-fastapi`
 - Debe incluir: nombre, IP asignada, última conexión, estado
 
@@ -626,6 +674,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe revocar el acceso del cliente.
 
 **Criterios de Verificación**:
+
 - Debe ejecutarse API de `wg-fastapi`
 - Debe eliminar configuración del cliente
 - Debe desconectar sesión activa si existe
@@ -643,6 +692,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe responder en menos de 500ms en el percentil 95.
 
 **Criterios de Verificación**:
+
 - Medición con herramientas de monitoreo (Prometheus/Grafana)
 - Pruebas de carga con Apache JMeter o Locust
 
@@ -654,6 +704,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe procesar hasta 5 dispositivos concurrentemente.
 
 **Criterios de Verificación**:
+
 - Implementación de semáforo con `MAX_CONCURRENT_TASKS = 5`
 - Logs deben mostrar procesamiento paralelo
 
@@ -666,6 +717,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el proceso debe completarse en menos de 10 minutos.
 
 **Criterios de Verificación**:
+
 - Medición de duración en `HistoricScriptTransaction`
 - Campo `dtExecutionFinish - dtExecutionStart < 10 minutos`
 
@@ -679,6 +731,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** debe mantener una disponibilidad del 99% mensual.
 
 **Criterios de Verificación**:
+
 - Monitoreo con healthchecks
 - Cálculo: (tiempo total - tiempo de downtime) / tiempo total >= 0.99
 
@@ -690,6 +743,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** Docker debe reiniciarlo automáticamente.
 
 **Criterios de Verificación**:
+
 - Configuración `restart: unless-stopped` en docker-compose
 - Logs de Docker deben mostrar reinicios automáticos
 
@@ -703,6 +757,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** debe soportar hasta 10,000 dispositivos registrados.
 
 **Criterios de Verificación**:
+
 - Pruebas de carga con dataset de 10,000 dispositivos
 - Consultas deben mantener tiempos de respuesta aceptables
 
@@ -714,6 +769,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe utilizar particionamiento automático por tiempo.
 
 **Criterios de Verificación**:
+
 - Configuración de `pg_partman` para tablas históricas
 - Verificación de particiones creadas automáticamente
 
@@ -727,6 +783,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** las comunicaciones deben estar encriptadas.
 
 **Criterios de Verificación**:
+
 - HTTPS para comunicaciones externas
 - TLS para conexiones a PostgreSQL (producción)
 - WireGuard para VPN
@@ -739,6 +796,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** deben almacenarse en variables de entorno, no en código.
 
 **Criterios de Verificación**:
+
 - Revisión de código: no debe haber credenciales hardcodeadas
 - Uso de archivos `.env` y Docker secrets
 
@@ -750,6 +808,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** debe tener un tiempo de expiración de máximo 24 horas.
 
 **Criterios de Verificación**:
+
 - Configuración de Keycloak con `Access Token Lifespan = 24h`
 - Validación de campo `exp` en token
 
@@ -763,6 +822,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** los logs deben seguir un formato estructurado (JSON).
 
 **Criterios de Verificación**:
+
 - Configuración de logger con formato JSON
 - Logs deben incluir: timestamp, nivel, mensaje, contexto
 
@@ -774,6 +834,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe eliminar automáticamente datos antiguos.
 
 **Criterios de Verificación**:
+
 - Configuración de `pg_partman` con políticas de retención
 - Verificación de eliminación automática de particiones antiguas
 
@@ -787,6 +848,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** la página debe cargar completamente en menos de 2 segundos.
 
 **Criterios de Verificación**:
+
 - Medición con Chrome DevTools (Lighthouse)
 - Métrica: Time to Interactive < 2s
 
@@ -798,6 +860,7 @@ El sistema InspectorGestion 5.0 debe proporcionar una plataforma centralizada pa
 **entonces** el sistema debe mostrar el progreso en tiempo real.
 
 **Criterios de Verificación**:
+
 - Implementación de polling o WebSocket
 - UI debe mostrar estados: pending, in_progress, completed, failed
 

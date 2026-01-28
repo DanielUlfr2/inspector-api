@@ -181,5 +181,109 @@ class KeycloakClient:
             raise
 
 
+    async def get_admin_token(self) -> str:
+        """
+        Get an admin access token.
+        Prioritizes Admin User (Password Grant) via admin-cli if credentials exist.
+        Fallbacks to Service Account (Client Credentials) if not.
+        """
+        from src.core.config import settings # Ensure settings available
+        
+        if settings.KEYCLOAK_ADMIN_USER and settings.KEYCLOAK_ADMIN_PASSWORD:
+            # Use Password Grant (Admin User) - usually 'admin-cli' client
+            # Authenticate against MASTER realm because the AdminUser is global/master.
+            token_url = f"{self.server_url}/realms/master/protocol/openid-connect/token"
+            data = {
+                "grant_type": "password",
+                "client_id": "admin-cli",
+                "username": settings.KEYCLOAK_ADMIN_USER,
+                "password": settings.KEYCLOAK_ADMIN_PASSWORD,
+            }
+        else:
+            # Use Client Credentials (Service Account)
+            token_url = self.token_url
+            data = {
+                "grant_type": "client_credentials",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+            }
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    token_url,
+                    data=data,
+                    headers={"Content-Type": "application/x-www-form-urlencoded"}
+                )
+                response.raise_for_status()
+                token_data = response.json()
+                return token_data["access_token"]
+                
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Failed to get admin token: {e.response.text}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error getting admin token: {str(e)}")
+            raise
+
+    async def update_user_attribute(self, user_id: str, attributes: Dict[str, any]) -> bool:
+        """
+        Update user attributes via Keycloak Admin API.
+        Requires Service Account with 'manage-users' role.
+        """
+        try:
+            # 1. Get Admin Token
+            admin_token = await self.get_admin_token()
+            
+            # 2. Prepare Endpoint
+            # Admin API: PUT /admin/realms/{realm}/users/{id}
+            user_update_url = f"{self.server_url}/admin/realms/{self.realm}/users/{user_id}"
+            
+            # 3. Perform Update (Partial update of attributes)
+            # Fetch current user first to merge attributes if necessary? 
+            # Keycloak PUT often overwrites. PATCH is safer but PUT /users/{id} updates the representation.
+            # To be safe, we typically need to get the user, update the dict, and send it back.
+            # However, for attributes, let's try sending just the attributes. 
+            # If Keycloak requires full representation, we fetch first.
+            
+            async with httpx.AsyncClient() as client:
+                # Fetch current user first
+                get_response = await client.get(
+                    user_update_url,
+                    headers={"Authorization": f"Bearer {admin_token}"}
+                )
+                get_response.raise_for_status()
+                current_user_data = get_response.json()
+                
+                # Merge attributes
+                current_attributes = current_user_data.get("attributes", {})
+                current_attributes.update(attributes)
+                
+                update_payload = {
+                    "attributes": current_attributes
+                }
+                
+                # Send Update
+                update_response = await client.put(
+                    user_update_url,
+                    json=update_payload,
+                    headers={
+                        "Authorization": f"Bearer {admin_token}",
+                        "Content-Type": "application/json"
+                    }
+                )
+                update_response.raise_for_status()
+                
+                logger.info(f"Successfully updated attributes for user {user_id}")
+                return True
+                
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Failed to update user attributes: {e.response.text}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error updating attributes: {str(e)}")
+            raise
+
+
 # Singleton instance
 keycloak_client = KeycloakClient()

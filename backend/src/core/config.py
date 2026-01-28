@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     KEYCLOAK_AUDIENCE: str
     KEYCLOAK_CLIENT_ID: str = "inspector_client"
     KEYCLOAK_CLIENT_SECRET: Optional[str] = None  # Required for token exchange
+    KEYCLOAK_ADMIN_USER: Optional[str] = None
+    KEYCLOAK_ADMIN_PASSWORD: Optional[str] = None
     
     # --- COOKIE SETTINGS ---
     COOKIE_DOMAIN: Optional[str] = None  # e.g., ".tudominio.com" for production

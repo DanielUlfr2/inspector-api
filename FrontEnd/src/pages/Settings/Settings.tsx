@@ -3,6 +3,7 @@ import { User, Pencil, Lock, ArrowRight, BookOpen } from 'lucide-react';
 import styles from './Settings.module.css';
 import Documentation from '../../components/Documentation/Documentation';
 import { getUserProfile } from '../../features/auth/keycloakService';
+import apiClient from '../../api/apiClient';
 
 const availableAvatars = [
     { id: 'avatar-01.png', label: 'Ovni' }, { id: 'avatar-02.png', label: 'Año nuevo' },
@@ -20,6 +21,7 @@ const Settings = () => {
     const [isPickerOpen, setIsPickerOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const pickerRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     // ESTADO PARA TABS
     const [activeTab, setActiveTab] = useState<'profile' | 'documentation'>('profile');
@@ -31,7 +33,6 @@ const Settings = () => {
         role: ''
     });
 
-    // ... inside useEffect ...
     useEffect(() => {
         const loadUserData = () => {
             const profile = getUserProfile();
@@ -39,7 +40,12 @@ const Settings = () => {
                 const username = profile.username || '';
                 const fullName = profile.name || 'Usuario';
                 const email = profile.email || '';
-                const avatar = 'avatar-01.png'; // Keycloak standard token doesn't have avatar
+
+                // Avatar desde Keycloak (puede ser array o string)
+                let avatar = 'avatar-01.png';
+                if (profile.avatar) {
+                    avatar = Array.isArray(profile.avatar) ? profile.avatar[0] : profile.avatar;
+                }
 
                 let role = 'Viewer';
                 // Lógica simplificada de roles
@@ -65,17 +71,41 @@ const Settings = () => {
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            // Si el clic ocurre fuera del picker, cerrar
             if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
                 setIsPickerOpen(false);
             }
         };
+        // Usar capture=true a veces ayuda, pero bubbling standard deberia bastar si usamos stopPropagation
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // 1. GUARDAR AVATAR (Deshabilitado temporalmente)
+    // ... (saveAvatar logic unchanged)
+
+    // ... (render)
+
     const saveAvatar = async () => {
-        alert("La actualización de avatar estará disponible pronto (requiere cambios en backend).");
+        setLoading(true);
+        try {
+            // Llamada al backend para actualizar atributo en Keycloak
+            await apiClient.post('/auth/avatar', { avatar_id: tempAvatar });
+
+            setSelectedAvatar(tempAvatar);
+
+            // Notificar al Sidebar (Optimistic Update)
+            const event = new CustomEvent('avatarUpdated', {
+                detail: { avatar: tempAvatar, username: userInfo.username }
+            });
+            window.dispatchEvent(event);
+
+            alert("Avatar actualizado. El cambio será drástico en el próximo inicio de sesión.");
+        } catch (error) {
+            console.error(error);
+            alert("Error al actualizar avatar.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     // 2. VERIFICAR Y REDIRIGIR (Cambio de Contraseña)
@@ -125,7 +155,14 @@ const Settings = () => {
                             <div className={styles.profileHeader}>
                                 <div className={styles.avatarContainer}>
                                     <img src={`/src/assets/avatars/${tempAvatar}`} className={styles.mainAvatar} alt="Avatar" onError={(e) => (e.target as HTMLImageElement).src = '/src/assets/avatars/avatar-01.png'} />
-                                    <button className={styles.editBadge} onClick={() => setIsPickerOpen(!isPickerOpen)}><Pencil size={14} /></button>
+                                    <button
+                                        ref={buttonRef}
+                                        className={styles.editBadge}
+                                        onMouseDown={(e) => e.stopPropagation()}
+                                        onClick={() => setIsPickerOpen(prev => !prev)}
+                                    >
+                                        <Pencil size={14} />
+                                    </button>
                                     {isPickerOpen && (
                                         <div className={styles.avatarDropdown} ref={pickerRef}>
                                             <div className={styles.avatarGrid}>

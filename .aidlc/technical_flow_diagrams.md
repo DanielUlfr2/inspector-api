@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Flujo de Autenticación (Client-Side + Standard Cookies)
+## 1. Flujo de Autenticación (Client-Side + Header Auth)
 
 ```mermaid
 sequenceDiagram
@@ -26,22 +26,21 @@ sequenceDiagram
     F->>KC: Intercambio Code por Token (PKCE)
     KC-->>F: Retorna Access + Refresh Token
     
-    Note over F: CLIENT-SIDE STORAGE:<br/>Frontend recibe el Token y lo guarda en Cookie
+    Note over F: CLIENT-SIDE STORAGE:<br/>1. Access Token en Memoria (Para API Header)<br/>2. Cookie de Sesión (Keycloak SSO Management)
     
-    F->>F: document.cookie = "SESSION_ID=" + token
-    
-    %% PETICIÓN CON COOKIE
+    %% PETICIÓN CON HEADER
     U->>F: Accede al Dashboard
-    F->>K: GET /api/v1/infodevices<br/>Cookie: SESSION_ID=...
+    F->>K: GET /api/v1/infodevices<br/>Authorization: Bearer {token}
     
     Note over K: KrakenD valida firma localmente (Stateless)
-    K->>K: 1. Extrae JWT de la Cookie "SESSION_ID"
+    K->>K: 1. Extrae JWT del Header Authorization
     K->>K: 2. Verifica firma con clave pública (Cacheada)
     K->>K: 3. ¿Expirado? (Sin llamar a Keycloak)
+    K->>K: 4. Inyecta X-User-Id y X-Role
     
-    K->>B: Enruta petición + Header Authorization: Bearer {JWT}
+    K->>B: Enruta petición + Headers Inyectados
     
-    B->>B: Backend recibe JWT en Header
+    B->>B: Backend recibe X-User-Id
     B->>PG: SELECT * FROM Inspector
     PG-->>B: Datos
     B-->>F: 200 OK (Datos JSON)
@@ -53,10 +52,10 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    Start([Petición entrante]) --> HasCookie{¿Tiene Cookie<br/>SESSION_ID?}
+    Start([Petición entrante]) --> HasHeader{¿Tiene Header<br/>Authorization?}
     
-    HasCookie -->|No| Unauth[Retornar 401]
-    HasCookie -->|Sí| Extract[KrakenD extrae el token JWT]
+    HasHeader -->|No| Unauth[Retornar 401]
+    HasHeader -->|Sí| Extract[KrakenD extrae el token Bearer]
     
     Extract --> CheckCache{¿Claves JWKS<br/>en Caché?}
     
@@ -70,7 +69,7 @@ flowchart TD
     
     IsValid -->|No| Reject[Rechazar Petición - 401]
     
-    IsValid -->|Sí| InjectHeader[Inyectar Header Authorization<br/>para el Backend]
+    IsValid -->|Sí| InjectHeader[Inyectar Headers<br/>X-User-Id, X-Role]
     InjectHeader --> PassToBackend[Pasar al Microservicio]
     
     style Start fill:#e1f5e1
@@ -555,3 +554,42 @@ Para convertir estos diagramas a draw.io:
 | 8. Sincronización Auto | Celery Beat, Balena | `src/services/inventory_sync.py` |
 | 9. Particionamiento | pg_partman, pg_cron | `database/init.sql` |
 | 10. Variables | Balena Cloud, PostgreSQL | `src/services/configuration_sync.py` |
+| 11. Avatar Update | Keycloak (Admin), Backend | `src/api/v1/endpoints/auth.py` |
+
+---
+
+## 11. Flujo de Actualización de Avatar (Gestión de Identidad)
+
+Este flujo ilustra cómo el Backend actúa como administrador de Keycloak para desbloquear operaciones restringidas (escribir en atributos de usuarios).
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario
+    participant F as Frontend
+    participant K as KrakenD
+    participant B as Backend
+    participant KC as Keycloak (Master)
+    
+    Note over U: Usuario carga nueva foto 🖼️
+    
+    F->>K: POST /auth/avatar (Multipart)<br/>Auth: Bearer {user_token}
+    K->>K: Valida {user_token}
+    K->>B: Enruta + Headers (X-User-Id)
+    
+    B->>B: Lee X-User-Id
+    
+    %% AUTENTICACIÓN ADMIN INTERNA
+    Note over B: Backend necesita permisos de Admin<br/>para modificar al usuario
+    B->>KC: POST /realms/master/protocol/openid-connect/token
+    KC-->>B: {admin_access_token}
+    
+    Note over B: Token obtenido usando<br/>KEYCLOAK_ADMIN_USER/PASS
+    
+    %% ACTUALIZACIÓN EN KEYCLOAK
+    B->>KC: PUT /admin/realms/inspector/users/{user_id}<br/>Auth: Bearer {admin_access_token}<br/>Body: {attributes: {avatar: base64_image}}
+    
+    KC-->>B: 204 No Content (Éxito)
+    
+    B-->>F: 200 OK {status: "updated"}
+    F->>F: Actualizar UI
+```

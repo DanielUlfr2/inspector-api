@@ -430,9 +430,9 @@ Cada tarea incluye:
 - **Dependencias**: T-001
 - **Requisitos**: RF-SEC-001, Diseño sección 7.1
 - **Verificación**:
-  - [ ] Realm `inspector` creado
-  - [ ] Cliente `inspector-app` configurado
-  - [ ] Roles Administrador, Operador, Auditor creados
+  - [x] Realm `inspector` creado
+  - [x] Cliente `inspector-app` configurado
+  - [x] Roles Administrador, Operador, Auditor creados
 
 ### T-039: Configuración de KrakenD
 
@@ -440,10 +440,10 @@ Cada tarea incluye:
 - **Dependencias**: T-038
 - **Requisitos**: RF-SEC-002
 - **Verificación**:
-  - [ ] KrakenD valida tokens JWT usando **cache local de JWKS** (no introspección por request)
-  - [ ] Implementa patrón Phantom Token: Convierte Cookie `SESSION_ID` entrante a Header `Authorization: Bearer ...` hacia el backend
-  - [ ] Bloquea peticiones sin cookie válida
-  - [ ] Enrutamiento a backend funciona
+  - [x] KrakenD valida tokens JWT usando **cache local de JWKS** (no introspección por request)
+  - [x] Implementa paso de Headers: `Authorization`, `X-User-Id`
+  - [x] Bloquea peticiones sin token válido
+  - [x] Enrutamiento a backend funciona
 
 ### T-040: Middleware de Seguridad en Backend
 
@@ -451,9 +451,20 @@ Cada tarea incluye:
 - **Dependencias**: T-039
 - **Requisitos**: RF-SEC-003
 - **Verificación**:
-  - [ ] `get_current_user()` extrae usuario del token (recibido desde KrakenD)
-  - [ ] `require_role()` valida permisos
-  - [ ] Retorna 403 si no tiene permisos
+  - [x] `get_current_user()` extrae usuario del token (recibido headers de KrakenD)
+  - [x] `require_role()` valida permisos
+  - [x] Retorna 403 si no tiene permisos
+
+### T-040-A: Gestión de Perfil y Avatar
+
+- **Descripción**: Implementar actualización de avatar persistente en Keycloak
+- **Dependencias**: T-040
+- **Requisitos**: RF-USA-002
+- **Verificación**:
+  - [x] Backend endpoint `POST /auth/avatar`
+  - [x] Conexión Backend -> Keycloak (Admin SDK)
+  - [x] Frontend envía imagen y actualiza UI
+  - [x] Persistencia verificada entre sesiones
 
 ---
 
