@@ -207,7 +207,14 @@ const Devices = () => {
                                         <td>
                                             <div className={styles.nameCell}>
                                                 <Monitor size={16} />
-                                                <span>{device.strinspectorname}</span>
+                                                <Link
+                                                    to={`/devices/${device.uuidinspector}`}
+                                                    style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 500 }}
+                                                    onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
+                                                    onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                                                >
+                                                    {device.strinspectorname}
+                                                </Link>
                                             </div>
                                             <small className={styles.uuid}>{device.uuidinspector}</small>
                                         </td>

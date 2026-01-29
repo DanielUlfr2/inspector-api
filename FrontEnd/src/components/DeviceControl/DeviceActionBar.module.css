@@ -111,6 +111,19 @@
     border-color: rgba(239, 68, 68, 0.5) !important;
 }
 
+/* Move Button */
+.moveBtn:hover:not(:disabled) {
+    color: #7c3aed;
+    border-color: #ddd6fe;
+    background: #f5f3ff;
+}
+
+:global([data-theme='dark']) .moveBtn:hover:not(:disabled) {
+    background: rgba(139, 92, 246, 0.1);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #a78bfa;
+}
+
 /* Disabled State */
 .group button:disabled {
     opacity: 0.4;

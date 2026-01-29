@@ -22,11 +22,11 @@ El sistema sigue una **arquitectura de microservicios containerizados** con los 
 ┌─────────────────────────────────────────────────────────────────┐
 │                         CLIENTE (Browser)                        │
 └────────────────────────────┬────────────────────────────────────┘
-                             │ HTTPS
+                             │ HTTPS (Port 443)
                              ↓
 ┌─────────────────────────────────────────────────────────────────┐
-│                    FRONTEND (React + Vite)                       │
-│  Port: 3001 (dev: npm start)                                    │
+│            FRONTEND (React + Vite + TypeScript)                  │
+│  Port: 443 (Prod) / 3000 (Dev)                                  │
 │  ┌──────────────────────────────────────────────────────────┐   │
 │  │ Pages: Dashboard, Devices, Fleets, Settings             │   │
 │  │ Components: DeviceCard, FleetCard, ActionBar            │   │
@@ -44,70 +44,70 @@ El sistema sigue una **arquitectura de microservicios containerizados** con los 
 │  │ - Request Routing                                        │   │
 │  │ - CORS Handling                                          │   │
 │  └──────────────────────────────────────────────────────────┘   │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                    BACKEND (FastAPI)                             │
-│  IP: 172.16.0.2  Port: 5000                                     │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ API Layer (src/api/v1/)                                  │   │
-│  │  ├─ endpoints/                                           │   │
-│  │  │   ├─ health.py         (Health checks)               │   │
-│  │  │   ├─ sync.py           (Manual sync triggers)        │   │
-│  │  │   ├─ info_devices.py   (Device queries)              │   │
-│  │  │   ├─ device_admin.py   (Device actions)              │   │
-│  │  │   ├─ fleets.py         (Fleet management)            │   │
-│  │  │   ├─ configuration.py  (Variables)                   │   │
-│  │  │   ├─ catalogs.py       (Lookup tables)               │   │
-│  │  │   └─ history.py        (Reports)                     │   │
-│  │  └─ schemas/                                            │   │
-│  │      ├─ device_action_schema.py                         │   │
-│  │      ├─ fleet_schema.py                                 │   │
-│  │      ├─ variable_schema.py                              │   │
-│  │      └─ provisioning_schema.py                          │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Service Layer (src/services/)                            │   │
-│  │  ├─ balena_service.py    (Balena CLI wrapper)           │   │
-│  │  ├─ inventory_sync.py    (Sync orchestration)           │   │
-│  │  ├─ configuration_sync.py (Variable sync)               │   │
-│  │  ├─ device_admin_service.py (Device operations)         │   │
-│  │  ├─ fleet_admin_service.py (Fleet operations)           │   │
-│  │  ├─ info_devices_service.py (Device queries)            │   │
-│  │  └─ catalogs_service.py  (Catalog queries)              │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Repository Layer (src/repositories/)                     │   │
-│  │  ├─ fleet_repo.py                                       │   │
-│  │  ├─ info_devices_repo.py                                │   │
-│  │  ├─ device_vars_repo.py                                 │   │
-│  │  ├─ fleet_vars_repo.py                                  │   │
-│  │  ├─ history_repo.py                                     │   │
-│  │  ├─ provisioning_repo.py                                │   │
-│  │  └─ catalogs_repo.py                                    │   │
-│  └──────────────────────────────────────────────────────────┘   │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Utilities (src/utils/)                                   │   │
-│  │  ├─ transaction_manager.py (Audit transactions)         │   │
-│  │  └─ deviceStatus.py (Status calculation)                │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-        ┌────────────────────┴────────────────────┐
-        ↓                                         ↓
-┌──────────────────┐                    ┌──────────────────┐
-│   POSTGRESQL     │                    │      REDIS       │
-│ 172.16.0.8:5432  │                    │  172.16.0.6:6379 │
-│                  │                    │                  │
-│ ┌──────────────┐ │                    │ ┌──────────────┐ │
-│ │ inspector DB │ │                    │ │ Celery Broker│ │
-│ │ keycloak DB  │ │                    │ │ Cache        │ │
-│ │ wireguard DB │ │                    │ └──────────────┘ │
-│ └──────────────┘ │                    └──────────────────┘
-└──────────────────┘                             ↑
-        ↑                                        │
-        │                                        │
+└──────────────┬──────────────────────────────┬───────────────────┘
+               │                              │
+               ↓                              ↓
+┌────────────────────────────────┐    ┌────────────────────────────────┐
+│      KEYCLOAK (Auth)           │    │       BACKEND (FastAPI)        │
+│  Port: 8080                    │    │  IP: 172.16.0.2  Port: 5000    │
+│  (Identity Provider)           │    │  ┌──────────────────────────┐  │
+│                                │    │  │ API Layer (src/api/v1/)  │  │
+└────────────────────────────────┘    │  │  ├─ endpoints/            │  │
+                                      │  │  │   ├─ health.py         │  │
+                                      │  │  │   ├─ sync.py           │  │
+                                      │  │  │   ├─ info_devices.py   │  │
+                                      │  │  │   ├─ device_admin.py   │  │
+                                      │  │  │   ├─ fleets.py         │  │
+                                      │  │  │   ├─ configuration.py  │  │
+                                      │  │  │   ├─ catalogs.py       │  │
+                                      │  │  │   └─ history.py        │  │
+                                      │  │  └─ schemas/            │  │
+                                      │  │      ├─ device_action_schema.py │  │
+                                      │  │      ├─ fleet_schema.py      │  │
+                                      │  │      ├─ variable_schema.py   │  │
+                                      │  │      └─ provisioning_schema.py│  │
+                                      │  └──────────────────────────┘  │
+                                      │  ┌──────────────────────────┐  │
+                                      │  │ Service Layer (src/services/)│  │
+                                      │  │  ├─ balena_service.py    │  │
+                                      │  │  ├─ inventory_sync.py    │  │
+                                      │  │  ├─ configuration_sync.py│  │
+                                      │  │  ├─ device_admin_service.py│  │
+                                      │  │  ├─ fleet_admin_service.py│  │
+                                      │  │  ├─ info_devices_service.py│  │
+                                      │  │  └─ catalogs_service.py  │  │
+                                      │  └──────────────────────────┘  │
+                                      │  ┌──────────────────────────┐  │
+                                      │  │ Repository Layer (src/repositories/)│  │
+                                      │  │  ├─ fleet_repo.py        │  │
+                                      │  │  ├─ info_devices_repo.py │  │
+                                      │  │  ├─ device_vars_repo.py  │  │
+                                      │  │  ├─ fleet_vars_repo.py   │  │
+                                      │  │  ├─ history_repo.py      │  │
+                                      │  │  ├─ provisioning_repo.py │  │
+                                      │  │  └─ catalogs_repo.py    │  │
+                                      │  └──────────────────────────┘  │
+                                      │  ┌──────────────────────────┐  │
+                                      │  │ Utilities (src/utils/)   │  │
+                                      │  │  ├─ transaction_manager.py│  │
+                                      │  │  └─ deviceStatus.py      │  │
+                                      │  └──────────────────────────┘  │
+                                      └─────────────────┬──────────────┘
+                                                        │
+         ┌────────────────────┴────────────────────┐    │
+         ↓                                         ↓    │
+┌──────────────────┐                    ┌──────────────────┐  │
+│   POSTGRESQL     │                    │      REDIS       │  │
+│ 172.16.0.8:5432  │                    │  172.16.0.6:6379 │  │
+│                  │                    │                  │  │
+│ ┌──────────────┐ │                    │ ┌──────────────┐ │  │
+│ │ inspector DB │ │                    │ │ Celery Broker│ │  │
+│ │ keycloak DB  │ │                    │ │ Cache        │ │  │
+│ │ wireguard DB │ │                    │ └──────────────┘ │  │
+│ └──────────────┘ │                    └──────────────────┘  │
+└──────────────────┘                             ↑            │
+        ↑                                        │            │
+        │                                        │            │
 ┌───────┴────────────────────────────────────────┴────────────┐
 │                   CELERY WORKERS                             │
 │  IP: 172.16.0.14 (worker), 172.16.0.15 (beat)               │
@@ -120,11 +120,12 @@ El sistema sigue una **arquitectura de microservicios containerizados** con los 
 │  │  └─ task_run_automatic_restart                      │   │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────┬────────────────────────────────────┘
-                          │
+                          │ HTTPS (Port 443)
+                          │ (Salida)
                           ↓
                   ┌──────────────┐
                   │ BALENA CLOUD │
-                  │ (External)   │
+                  │ (OpenBalena) │
                   └──────────────┘
 ```
 

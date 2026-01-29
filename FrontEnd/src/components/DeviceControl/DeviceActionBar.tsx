@@ -48,6 +48,7 @@ const DeviceActionBar = ({ selectedDevices, onActionComplete }: Props) => {
 
                     {/* Move Button - Only supported for single device selection currently */}
                     <button
+                        className={styles.moveBtn}
                         onClick={() => setIsMoveModalOpen(true)}
                         disabled={selectedDevices.length !== 1}
                         title={selectedDevices.length !== 1 ? "Seleccione un solo dispositivo para mover" : "Mover a otra flota"}

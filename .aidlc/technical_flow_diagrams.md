@@ -109,7 +109,7 @@ sequenceDiagram
     PG-->>Worker: historic_id: 456
     
     Worker->>Balena: BalenaService.get_fleets()
-    Note over Balena: Ejecuta subprocess:<br/>balena fleets --json
+    Note over Balena: Conexión segura HTTPS (Port 443)<br/>Ejecuta subprocess: balena fleets --json
     Balena-->>Worker: [fleets data]
     
     loop Para cada flota

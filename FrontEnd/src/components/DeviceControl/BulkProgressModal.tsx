@@ -26,16 +26,27 @@ const BulkProgressModal = ({ isOpen, action, devices, onClose }: BulkProgressMod
     const [overallStatus, setOverallStatus] = useState<'idle' | 'processing' | 'completed'>('idle');
     const processingRef = useRef(false);
 
+    const prevDevicesRef = useRef<string>('');
+
     useEffect(() => {
         if (isOpen && devices.length > 0) {
-            const initialStatuses: DeviceStatus[] = devices.map(d => ({
-                uuid: d.uuidinspector,
-                name: d.strinspectorname || d.uuidinspector,
-                status: 'pending'
-            }));
-            setStatuses(initialStatuses);
-            setOverallStatus('idle');
-            processingRef.current = false;
+            // Check if devices actually changed by comparing UUID strings
+            const currentDevicesStr = devices.map(d => d.uuidinspector).sort().join(',');
+
+            if (currentDevicesStr !== prevDevicesRef.current) {
+                const initialStatuses: DeviceStatus[] = devices.map(d => ({
+                    uuid: d.uuidinspector,
+                    name: d.strinspectorname || d.uuidinspector,
+                    status: 'pending'
+                }));
+                setStatuses(initialStatuses);
+                setOverallStatus('idle');
+                processingRef.current = false;
+                prevDevicesRef.current = currentDevicesStr;
+            }
+        } else if (!isOpen) {
+            // Reset reference when modal closes so it re-initializes correctly next time
+            prevDevicesRef.current = '';
         }
     }, [isOpen, devices]);
 

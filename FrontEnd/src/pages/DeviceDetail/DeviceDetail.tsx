@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Cpu, HardDrive, Thermometer, Activity,
@@ -153,6 +153,10 @@ const DeviceDetail = () => {
         }
     };
 
+    // Memoize selectedDevices to prevent re-renders in DeviceActionBar
+    // Must be before conditional returns to avoid "Rendered more hooks" error
+    const selectedDevices = useMemo(() => device ? [device] : [], [device]);
+
     if (loading) return <div className={styles.loadingState}>Sincronizando con Inspector...</div>;
     if (!device) return <div className={styles.errorState}>Dispositivo no encontrado.</div>;
 
@@ -233,7 +237,7 @@ const DeviceDetail = () => {
             {/* 3. ACCIONES RÁPIDAS */}
             <div className={styles.actionWrapper}>
                 <DeviceActionBar
-                    selectedDevices={device ? [device] : []}
+                    selectedDevices={selectedDevices}
                     onActionComplete={loadData}
                 />
             </div>

@@ -50,6 +50,7 @@ class DeviceAdminService:
     @classmethod
     async def execute_power_action(cls, uuid: str, action: str, user: str = "SYSTEM", role: str = "SYSTEM"):
         logger.info(f"⚡ Solicitud '{action}' en {uuid} por {user}")
+        logger.info(f"🔎 DEBUG SERVICE | calling execute_power_action | user={user} | role={role}")
         
         script_id = cls.SCRIPT_MAP.get(action, "DEFAULT")
         snapshot = await InfoDevicesRepository.get_device_by_uuid(uuid)
@@ -90,6 +91,7 @@ class DeviceAdminService:
         3. Reporta éxito/fallo basado en el exit code del CLI
         """
         logger.info(f"⚡ Ejecutando '{action}' en {uuid} por {user}")
+        logger.info(f"🔎 DEBUG SERVICE | calling monitor_power_action | user={user} | role={role}")
         
         script_id = cls.SCRIPT_MAP.get(action, "DEFAULT")
         

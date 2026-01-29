@@ -552,6 +552,14 @@
             "method": "POST",
             "output_encoding": "no-op",
             "level": "DEBUG",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "X-User-Id",
+                "X-Role",
+                "X-User-Email",
+                "X-User-Sub"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/bulk/{action}",
@@ -585,6 +593,14 @@
                         [
                             "roles",
                             "X-Role"
+                        ],
+                        [
+                            "email",
+                            "X-User-Email"
+                        ],
+                        [
+                            "sub",
+                            "X-User-Sub"
                         ]
                     ]
                 }
@@ -595,6 +611,14 @@
             "method": "POST",
             "output_encoding": "no-op",
             "level": "DEBUG",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "X-User-Id",
+                "X-Role",
+                "X-User-Email",
+                "X-User-Sub"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/reboot",
@@ -625,6 +649,14 @@
                         [
                             "roles",
                             "X-Role"
+                        ],
+                        [
+                            "email",
+                            "X-User-Email"
+                        ],
+                        [
+                            "sub",
+                            "X-User-Sub"
                         ]
                     ]
                 }
@@ -635,6 +667,14 @@
             "method": "POST",
             "output_encoding": "no-op",
             "level": "DEBUG",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "X-User-Id",
+                "X-Role",
+                "X-User-Email",
+                "X-User-Sub"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/restart",
@@ -659,12 +699,20 @@
                     ],
                     "propagate_claims": [
                         [
-                            "preferred_username",
+                            "sub",
                             "X-User-Id"
                         ],
                         [
                             "roles",
                             "X-Role"
+                        ],
+                        [
+                            "email",
+                            "X-User-Email"
+                        ],
+                        [
+                            "sub",
+                            "X-User-Sub"
                         ]
                     ]
                 }
@@ -675,6 +723,14 @@
             "method": "POST",
             "output_encoding": "no-op",
             "level": "DEBUG",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "X-User-Id",
+                "X-Role",
+                "X-User-Email",
+                "X-User-Sub"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/shutdown",
@@ -699,12 +755,20 @@
                     ],
                     "propagate_claims": [
                         [
-                            "preferred_username",
+                            "sub",
                             "X-User-Id"
                         ],
                         [
                             "roles",
                             "X-Role"
+                        ],
+                        [
+                            "email",
+                            "X-User-Email"
+                        ],
+                        [
+                            "sub",
+                            "X-User-Sub"
                         ]
                     ]
                 }
@@ -714,6 +778,14 @@
             "endpoint": "/v1/admin/{uuid}/note",
             "method": "PUT",
             "level": "DEBUG",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "X-User-Id",
+                "X-Role",
+                "X-User-Email",
+                "X-User-Sub"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/note",
@@ -737,12 +809,20 @@
                     ],
                     "propagate_claims": [
                         [
-                            "preferred_username",
+                            "sub",
                             "X-User-Id"
                         ],
                         [
                             "roles",
                             "X-Role"
+                        ],
+                        [
+                            "email",
+                            "X-User-Email"
+                        ],
+                        [
+                            "sub",
+                            "X-User-Sub"
                         ]
                     ]
                 }
@@ -752,6 +832,14 @@
             "endpoint": "/v1/admin/{uuid}/move",
             "method": "POST",
             "level": "DEBUG",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "X-User-Id",
+                "X-Role",
+                "X-User-Email",
+                "X-User-Sub"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}/move",
@@ -781,6 +869,14 @@
                         [
                             "roles",
                             "X-Role"
+                        ],
+                        [
+                            "email",
+                            "X-User-Email"
+                        ],
+                        [
+                            "sub",
+                            "X-User-Sub"
                         ]
                     ]
                 }
@@ -791,6 +887,14 @@
             "method": "DELETE",
             "level": "DEBUG",
             "timeout": "30000ms",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "X-User-Id",
+                "X-Role",
+                "X-User-Email",
+                "X-User-Sub"
+            ],
             "backend": [
                 {
                     "url_pattern": "/api/v1/admin/{uuid}",
@@ -819,6 +923,14 @@
                         [
                             "roles",
                             "X-Role"
+                        ],
+                        [
+                            "email",
+                            "X-User-Email"
+                        ],
+                        [
+                            "sub",
+                            "X-User-Sub"
                         ]
                     ]
                 }
