@@ -1,5 +1,15 @@
-# Usamos la imagen oficial de KrakenD
-FROM krakend:latest
+FROM devopsfaith/krakend:2.9
 
-# Copiamos nuestro archivo de configuración al lugar que KrakenD espera
+USER root
+
+# Install ca-certificates
+RUN apk update && apk add --no-cache ca-certificates
+
+# Copy and install our Root CA
+COPY rootCA.crt /usr/local/share/ca-certificates/rootCA.crt
+RUN update-ca-certificates
+
+# Copy config
 COPY krakend.json /etc/krakend/krakend.json
+
+USER krakend

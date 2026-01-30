@@ -108,10 +108,14 @@ services:
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       KC_HOSTNAME_STRICT: "false"
       KC_HTTP_ENABLED: "true"
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/conf/certs/keycloak.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/conf/certs/keycloak.key
     ports:
       - "8080:8080"
+      - "8443:8443"
     volumes:
       - ./keycloak_config:/opt/keycloak/data/import
+      - ./certs:/opt/keycloak/conf/certs:ro
     depends_on:
       postgres_principal:
         condition: service_healthy
