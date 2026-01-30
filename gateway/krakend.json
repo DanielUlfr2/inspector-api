@@ -67,7 +67,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -112,7 +112,7 @@
                     "cache": true,
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -153,7 +153,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -197,7 +197,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -237,7 +237,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -280,7 +280,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -328,7 +328,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -367,7 +367,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -410,7 +410,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -449,7 +449,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -488,7 +488,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -527,7 +527,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -578,7 +578,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -634,7 +634,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -690,7 +690,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -746,7 +746,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -800,7 +800,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -854,7 +854,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -909,7 +909,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -973,7 +973,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1012,7 +1012,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1051,7 +1051,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1090,7 +1090,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1127,7 +1127,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1164,7 +1164,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1201,7 +1201,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1238,7 +1238,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1281,7 +1281,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1320,7 +1320,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1359,7 +1359,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
@@ -1398,7 +1398,7 @@
                     "cookie_key": "SESSION_ID",
                     "issuer": "http://localhost:8080/realms/inspector_realm",
                     "jwk_url": "http://keycloak:8080/realms/inspector_realm/protocol/openid-connect/certs",
-                    "disable_jwk_security": true,
+                    "disable_jwk_security": false,
                     "alg": "RS256",
                     "roles_key": "roles",
                     "roles": [
