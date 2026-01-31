@@ -28,22 +28,22 @@ services:
       - redis
       - postgres_principal
 
-  # frontend:
-  #  build:
-  #    context: ./frontend
-  #    dockerfile: Dockerfile
-  #  container_name: frontend_inspector
-  #  environment:                 # CORREGIDO: environment
-  #    - TZ=${TZ}
-  #  restart: unless-stopped
-  #  ports:
-  #    - "3001:80"
-  #  depends_on:
-  #    - redis
-  #    - postgres_principal
-  #  networks:
-  #    InspecNet:
-  #      ipv4_address: 172.16.0.4
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_inspector
+    environment:
+      - TZ=${TZ}
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - redis
+      - postgres_principal
+    networks:
+      InspecNet:
+        ipv4_address: 172.16.0.4
 
   ### ==========================================
   ### 2. BASE DE DATOS Y CACHÉ

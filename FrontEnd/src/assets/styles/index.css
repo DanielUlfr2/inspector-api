@@ -17,6 +17,7 @@
 }
 
 [data-theme='dark'] {
+    color-scheme: dark;
     /* Modo Oscuro (New Palette) */
     --bg-main: #131417;
     /* Background user requested */
