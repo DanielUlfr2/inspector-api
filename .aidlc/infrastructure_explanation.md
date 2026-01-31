@@ -25,7 +25,8 @@ El sistema se divide en dos grandes segmentos de red:
     *   **Función**: Recibe todas las peticiones del frontend (Puerto 8081). Valida la autenticación (comunicándose con Keycloak) antes de dejar pasar la petición al Backend. Es stateless (sin estado), lo que lo hace muy rápido.
 *   **Keycloak (Identity Provider)**:
     *   **Rol**: Servidor de identidad y acceso.
-    *   **Función**: Gestiona usuarios, roles, login y emisión de tokens (JWT). Garantiza que solo usuarios autenticados reciban credenciales válidas. (Puerto 8080).
+    *   **Función**: Gestiona usuarios, roles, login y emisión de tokens (JWT). Garantiza que solo usuarios autenticados reciban credenciales válidas.
+    *   **Seguridad**: Se ejecuta sobre HTTPS (Puerto 8443) usando certificados firmados por una Root CA interna, permitiendo validación estricta desde el Gateway.
 
 ### C. Capa de Backend y Lógica
 *   **FastAPI (Backend)**:

@@ -306,7 +306,7 @@ CREATE TABLE HistoricScriptTransaction(
 ) PARTITION BY RANGE (dtExecutionStart);
 
 CREATE TABLE StatusInspectorHistory (
-  idInspectorHistory SERIAL, 
+  idInspectorHistory BIGSERIAL, 
   uuidInspector varchar(200) NOT NULL,
   idTransactionStatus INT NOT NULL,
   boolOnline boolean NOT NULL,
@@ -322,6 +322,9 @@ CREATE TABLE StatusInspectorHistory (
   CONSTRAINT fk_statushistory_transactionstatus FOREIGN KEY (idTransactionStatus) REFERENCES TransactionStatus (idTransactionStatus),
   CONSTRAINT pk_constraint_statusinsphist PRIMARY KEY (idInspectorHistory, dtValidate) 
 ) PARTITION BY RANGE (dtValidate);
+
+-- [FIX] Automatización de Particionamiento
+SELECT cron.schedule('@hourly', $$CALL partman.run_maintenance_proc()$$);
 
 SELECT partman.create_parent(
     p_parent_table := 'inspector.inspectorglobalstats',
