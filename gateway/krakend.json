@@ -15,7 +15,9 @@
             "allow_origins": [
                 "http://localhost:3000",
                 "http://localhost:8080",
-                "http://localhost:3001"
+                "http://localhost:3001",
+                "http://192.168.10.20:3001",
+                "http://192.168.10.20:8081"
             ],
             "allow_methods": [
                 "GET",
@@ -66,7 +68,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -111,7 +113,7 @@
             "extra_config": {
                 "auth/validator": {
                     "cache": true,
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -152,7 +154,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -196,7 +198,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -236,7 +238,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -279,7 +281,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -327,7 +329,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -366,7 +368,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -409,7 +411,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -448,7 +450,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -487,7 +489,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -526,7 +528,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -577,7 +579,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -633,7 +635,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -689,7 +691,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -745,7 +747,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -799,7 +801,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -853,7 +855,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -908,7 +910,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -972,7 +974,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1011,7 +1013,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1050,7 +1052,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1089,7 +1091,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1126,7 +1128,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1163,7 +1165,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1200,7 +1202,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1237,7 +1239,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1280,7 +1282,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1319,7 +1321,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1358,7 +1360,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
@@ -1397,7 +1399,7 @@
                 "auth/validator": {
                     "cache": true,
                     "cookie_key": "SESSION_ID",
-                    "issuer": "http://localhost:8080/realms/inspector_realm",
+                    "issuer": "http://192.168.10.20:8080/realms/inspector_realm",
                     "jwk_url": "https://keycloak:8443/realms/inspector_realm/protocol/openid-connect/certs",
                     "disable_jwk_security": false,
                     "alg": "RS256",
