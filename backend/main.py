@@ -28,13 +28,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 app.add_middleware(
     CORSMiddleware,
     # CORS con credenciales requiere orígenes explícitos, no "*"
-    allow_origins=[
-        "http://localhost:3000",      # Frontend
-        "http://localhost:8081",      # Gateway
-        "http://localhost:8080",      # Keycloak
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8081"
-    ],
+    allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

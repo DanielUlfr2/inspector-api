@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     # --- INTEGRACIONES ---
     # La hacemos opcional (= None) por si en algún entorno no la defines
     KEYCLOAK_SERVER: Optional[str] = None  # <--- FALTABA ESTA
+    
+    # --- CORS ---
+    BACKEND_CORS_ORIGINS: list[str] = []
 
     # --- OPEN BALENA ---
     BALENA_EMAIL: str
