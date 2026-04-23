@@ -1,17 +1,10 @@
-# 1. Usamos una base sólida: Python 3.11 sobre Debian Bookworm
 FROM python:3.11-slim-bookworm
 
-# --- VARIABLES DE ENTORNO ---
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    # Rutas para tus certificados privados
-    CERTS_PATH="/usr/local/share/ca-certificates/openbalena-ca.crt" \
-    NODE_EXTRA_CA_CERTS="/usr/local/share/ca-certificates/openbalena-ca.crt"
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# --- 2. INSTALACIÓN DE DEPENDENCIAS DEL SISTEMA ---
-# Agregamos 'build-essential' y 'python3-dev' que NPM necesita para compilar cosas
 RUN apt-get update && apt-get install -y \
     curl \
     gnupg2 \
@@ -24,37 +17,28 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# --- 3. INSTALACIÓN DE NODE.JS (Versión 22 LTS) ---
-# Descargamos el script de instalación oficial de NodeSource
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get update \
     && apt-get install -y nodejs \
-    && npm install -g npm@latest
+    && node -v \
+    && npm -v
 
-# --- 4. INSTALACIÓN DE BALENA CLI (VÍA NPM) ---
-# Usamos --unsafe-perm para evitar errores de permisos siendo root
-# Usamos --production para no instalar dependencias de desarrollo innecesarias
-RUN npm install -g balena-cli --production --unsafe-perm
-
-# Verificar que balena funcione
-RUN balena version
-
-# --- 5. CONFIGURACIÓN DE CERTIFICADOS (Tu archivo ca.pem) ---
-COPY ca.pem $CERTS_PATH
+COPY ca.pem /usr/local/share/ca-certificates/openbalena-ca.crt
 RUN update-ca-certificates
 
-# --- 6. CONFIGURACIÓN DE OPENBALENA ---
-# Apuntamos la CLI a tu dominio privado
+ENV CERTS_PATH="/usr/local/share/ca-certificates/openbalena-ca.crt" \
+    NODE_EXTRA_CA_CERTS="/usr/local/share/ca-certificates/openbalena-ca.crt"
+
 RUN echo "balenaUrl: 'inspectordm.tigo.com.co'" > /root/.balenarc.yml
 
-# --- 7. DEPENDENCIAS PYTHON (TU API) ---
+RUN npm install -g balena-cli@22.2.4 --unsafe-perm
+RUN balena version
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# --- 8. CÓDIGO FUENTE ---
 COPY . .
 
-# Exponemos el puerto de FastAPI
 EXPOSE 5000
 
-# Comando de inicio
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]

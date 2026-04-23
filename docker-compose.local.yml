@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: inspector_postgres_local
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_local:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: inspector_redis_local
+    env_file:
+      - ./backend/.env
+    command: sh -c 'redis-server --requirepass "$$REDIS_PASSWORD"'
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: DockerFile
+    container_name: inspector_backend_local
+    env_file:
+      - ./backend/.env
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  pgdata_local:
